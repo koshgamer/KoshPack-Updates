@@ -1,11 +1,11 @@
 {
   "schema": 1,
   "pack": "KoshPack",
-  "packVersion": "0.1.0-fullpack-test-off-tlauncher-alpha10",
+  "packVersion": "0.1.0-fullpack-test-on-tlauncher-alpha10-retest",
   "minecraft": "1.21.1",
   "neoforge": "21.1",
   "modules": {
-    "test_event": false
+    "test_event": true
   },
   "files": [
     {
