@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "pack": "KoshPack",
+  "packVersion": "0.1.0-fullpack-test-off-alpha6",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.250",
+  "modules": {
+    "test_event": false
+  },
+  "files": [
+    {
+      "module": "test_event",
+      "path": "mods/koshpack_test_event-1.0.0.jar",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/files/koshpack_test_event-1.0.0.jar",
+      "sha256": "6bec312a4fc9b086c52a4e538681387f203b8298034cd4a57ba7a6b9ed254fac"
+    }
+  ]
+}
