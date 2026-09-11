@@ -3,7 +3,7 @@
   "pack": "KoshPack",
   "packVersion": "0.1.0-test-off-alpha6",
   "minecraft": "1.21.1",
-  "neoforge": "21.1.250",
+  "neoforge": "21.1",
   "modules": {
     "test_event": false
   },
