@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a0a09" />
+  <meta name="description" content="Project Meridian — индустриальный Minecraft-проект про развитие, исследования, производство и живой мир." />
+  <title>Project Meridian</title>
+  <style>
+    :root{
+      --bg:#0a0a09; --panel:#11110f; --panel2:#15140f; --ink:#f5efe1; --muted:#92928e;
+      --amber:#ffb000; --amber2:#ffd36b; --line:#2a271f; --danger:#ff4d2e; --ok:#9ecb6b;
+      --max:1180px; --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--bg)}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.55;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    .noise{position:fixed;inset:0;pointer-events:none;opacity:.055;z-index:100;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E")}
+    .grid-bg{position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:linear-gradient(rgba(255,176,0,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,176,0,.045) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,#000,transparent 72%)}
+    .wrap{width:min(var(--max),calc(100% - 36px));margin:auto}
+    header{position:sticky;top:0;z-index:50;background:rgba(10,10,9,.9);backdrop-filter:blur(12px);border-bottom:1px solid #1b1a16}
+    .nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:800;letter-spacing:.08em;color:var(--amber);font-size:15px;white-space:nowrap}
+    .brand small{color:#8c8c87;font-weight:700}
+    .navlinks{display:flex;gap:28px;color:#8f8f8b;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+    .navlinks a:hover{color:var(--ink)}
+    .menu{display:none;border:1px solid #2b2923;background:#151410;color:var(--ink);padding:8px 10px;border-radius:9px}
+
+    .hero{min-height:760px;display:grid;align-items:center;border-bottom:1px solid #1a1915;position:relative;overflow:hidden}
+    .hero:after{content:"";position:absolute;left:0;right:0;top:41%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,176,0,.2),transparent);box-shadow:0 0 36px rgba(255,176,0,.25)}
+    .hero-inner{padding:78px 0 94px;position:relative;z-index:2}
+    .chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:30px}
+    .chip{font:700 11px/1 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d49d20;border:1px solid #302919;background:#15130e;padding:8px 9px;border-radius:2px;box-shadow:inset 0 -1px 0 rgba(255,176,0,.08)}
+    h1{margin:0;max-width:790px;font-size:clamp(64px,8.2vw,122px);line-height:.88;letter-spacing:-.065em;text-transform:uppercase;font-weight:900}
+    .title-line{display:block;position:relative;background:linear-gradient(98deg,#fff8e7 0%,#fff8e7 30%,#ffb000 49%,#fff8e7 68%,#fff8e7 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:meridianGlow 8.5s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(255,196,64,.13))}
+    .title-line:nth-child(2){animation-delay:-3.1s}
+    @keyframes meridianGlow{0%,18%{background-position:100% 50%;filter:drop-shadow(0 0 8px rgba(255,176,0,.10))}47%{background-position:38% 50%;filter:drop-shadow(0 0 18px rgba(255,176,0,.28))}72%,100%{background-position:-35% 50%;filter:drop-shadow(0 0 9px rgba(255,176,0,.10))}}
+    .lead{margin:38px 0 0;padding-left:16px;border-left:2px solid #8c6400;max-width:670px;color:#999995;font-size:18px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:38px}
+    .btn{display:inline-flex;align-items:center;gap:11px;padding:15px 22px;border:1px solid #29271f;background:#151410;color:#ddd8cd;font:800 13px ui-monospace,SFMono-Regular,Consolas,monospace;transition:.2s ease;cursor:pointer}
+    .btn.primary{background:var(--amber);border-color:var(--amber);color:#141006}
+    .btn:hover{transform:translateY(-2px);border-color:#66511a}
+    .btn.primary:hover{box-shadow:0 10px 34px rgba(255,176,0,.18)}
+    .boot{margin-top:78px;color:#3f403d;font:10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.14em}
+
+    section{padding:86px 0;border-bottom:1px solid #1a1915;position:relative}
+    .eyebrow{color:var(--amber);font:800 11px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+    h2{font-size:clamp(34px,5vw,64px);line-height:1.02;letter-spacing:-.04em;margin:0 0 18px}
+    .sub{max-width:760px;color:#989892;margin:0 0 42px;font-size:17px}
+    .motto{font-size:clamp(34px,4vw,62px);font-weight:850;letter-spacing:-.04em;margin:0}.motto b{color:var(--amber)}
+    .motto:after{content:"";display:block;width:64px;height:3px;margin-top:13px;background:var(--amber)}
+
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:42px}
+    .card{min-height:230px;padding:25px;background:linear-gradient(180deg,#13120f,#0f0f0d);border:1px solid #28251d;position:relative;overflow:hidden}
+    .card:before{content:"";position:absolute;left:0;top:0;width:3px;height:46px;background:var(--amber)}
+    .card .n{color:#4f4c43;font:11px ui-monospace,monospace}.card h3{font-size:22px;margin:34px 0 10px}.card p{color:#8d8d88;margin:0}
+
+    .map-shell{display:grid;grid-template-columns:1.65fr .7fr;gap:14px;margin-top:34px}
+    .map{min-height:520px;border:1px solid #29261d;background:#0c0d0b;position:relative;overflow:hidden}
+    .map svg{width:100%;height:100%;display:block;position:absolute;inset:0}
+    .terrain{fill:#121612;stroke:#2b3129;stroke-width:1.2}.water{fill:#0c1215}.road{fill:none;stroke:#5b4b1d;stroke-width:2;stroke-dasharray:7 8;opacity:.7}.rail{fill:none;stroke:#b88613;stroke-width:2.2;opacity:.9}
+    .territory{cursor:pointer;transition:.18s ease;stroke-width:1.5}.territory:hover{filter:brightness(1.25);stroke:#ffd36b}
+    .t-industry{fill:rgba(255,176,0,.20);stroke:#b77900}.t-home{fill:rgba(102,164,255,.14);stroke:#4e78a7}.t-event{fill:rgba(255,70,40,.14);stroke:#9e3a2a}.t-free{fill:rgba(120,180,120,.10);stroke:#4d704d}
+    .map-label{fill:#b2b2ac;font:700 11px ui-monospace,monospace;pointer-events:none}.map-dot{fill:#ffb000}.map-toolbar{position:absolute;left:14px;top:14px;display:flex;gap:7px;flex-wrap:wrap;z-index:3}.layer{background:#12120f;color:#8d8d88;border:1px solid #2b281e;padding:8px 10px;font:700 11px ui-monospace,monospace;cursor:pointer}.layer.on{color:#171208;background:var(--amber);border-color:var(--amber)}
+    .demo{position:absolute;left:14px;bottom:14px;background:rgba(10,10,9,.88);border:1px solid #302a1c;padding:9px 11px;color:#8e8e89;font:11px ui-monospace,monospace}
+    .map-info{border:1px solid #29261d;background:#11110f;padding:24px}.map-info h3{margin:0 0 7px;font-size:22px}.map-info .owner{font:12px ui-monospace,monospace;color:var(--amber)}.map-info dl{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;margin:25px 0 0}.map-info dt{color:#66655f}.map-info dd{margin:0;color:#aaa9a2}
+
+    .updates{display:grid;gap:10px;margin-top:28px}.update{display:grid;grid-template-columns:130px 1fr;gap:25px;padding:20px 0;border-top:1px solid #26241e}.update time{color:#6d6b65;font:12px ui-monospace,monospace}.update h3{margin:0 0 5px;font-size:18px}.update p{margin:0;color:#8f8e88}
+    .install{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:steps}.step{border:1px solid #29261d;background:#11110f;padding:25px;min-height:190px}.step:before{counter-increment:steps;content:"0" counter(steps);display:block;color:var(--amber);font:800 12px ui-monospace,monospace;margin-bottom:32px}.step h3{font-size:22px;margin:0 0 8px}.step p{color:#8d8d88;margin:0}
+
+    details{border-top:1px solid #29271f;padding:19px 0}details:last-child{border-bottom:1px solid #29271f}summary{cursor:pointer;font-weight:750;list-style:none;display:flex;justify-content:space-between;gap:20px}summary:after{content:"+";color:var(--amber);font-family:monospace}details[open] summary:after{content:"−"}details p{color:#90908b;max-width:820px}
+    footer{padding:42px 0 60px;color:#65645f;font:12px ui-monospace,monospace}.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+    @media(max-width:820px){
+      .nav{height:62px}.navlinks{display:none;position:absolute;top:62px;left:0;right:0;background:#0c0c0b;border-bottom:1px solid #29261d;padding:15px 18px;flex-direction:column;gap:5px}.navlinks.open{display:flex}.navlinks a{padding:10px 0}.menu{display:block}
+      .hero{min-height:650px}.hero-inner{padding:58px 0 74px}.chips{margin-bottom:24px}.chip:nth-child(n+4){display:none}h1{font-size:clamp(58px,17vw,88px)}.lead{font-size:16px;margin-top:30px}.actions{display:grid;grid-template-columns:1fr}.btn{justify-content:center;width:100%}.boot{margin-top:50px}
+      section{padding:64px 0}.cards,.install{grid-template-columns:1fr}.map-shell{grid-template-columns:1fr}.map{min-height:430px}.map-info{min-height:auto}.update{grid-template-columns:1fr;gap:5px}
+    }
+    @media(max-width:430px){
+      .wrap{width:min(var(--max),calc(100% - 24px))}.brand{font-size:13px}.hero{min-height:600px}.hero-inner{padding-top:46px}h1{font-size:clamp(52px,17vw,72px)}.lead{padding-left:12px}.chip{font-size:10px;padding:7px}.motto{font-size:36px}.map{min-height:360px}.map-toolbar{right:10px}.layer{padding:7px 8px}.demo{right:10px;font-size:9px}.card,.step,.map-info{padding:20px}
+    }
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.title-line{animation:none}.btn{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div><div class="noise"></div>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#top">■ MERIDIAN <small>__SYS</small></a>
+      <button class="menu" aria-label="Открыть меню" id="menuBtn">☰</button>
+      <nav class="navlinks" id="navLinks">
+        <a href="#top">Главная</a><a href="#about">О проекте</a><a href="#map">Карта мира</a><a href="#updates">Обновления</a><a href="#install">Установка</a><a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div class="chips"><span class="chip">Project Meridian</span><span class="chip">pack dev-current</span><span class="chip">launcher 0.1-dev</span><span class="chip">NeoForge</span><span class="chip">Minecraft 1.21.1</span><span class="chip">SYSTEM READY</span></div>
+        <h1><span class="title-line">PROJECT</span><span class="title-line">MERIDIAN</span></h1>
+        <p class="lead">Индустриальный Minecraft-проект про развитие, исследования, производство и мир, который не стоит на месте.</p>
+        <div class="actions">
+          <a class="btn primary" href="https://github.com/koshgamer/KoshPack-DEV/releases/tag/dev-current" target="_blank" rel="noopener">⇩ Скачать Meridian Launcher</a>
+          <a class="btn" href="#updates">〉_ Последние изменения</a>
+        </div>
+        <div class="boot">/// INITIALIZING SEQUENCE_</div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="wrap">
+        <div class="eyebrow">01 / О проекте</div>
+        <p class="motto">Строй не базу. <b>Строй систему.</b></p>
+        <p class="sub" style="margin-top:28px">Meridian строится вокруг инженерной прогрессии: производство, логистика, металлургия, инфраструктура и события, которые заставляют игроков перестраивать привычные схемы.</p>
+        <div class="cards">
+          <article class="card"><div class="n">01 // INDUSTRY</div><h3>Индустрия</h3><p>Механизмы, производство, металлургия и автоматизация. Каждый новый этап должен ощущаться как расширение настоящего предприятия.</p></article>
+          <article class="card"><div class="n">02 // WORLD</div><h3>Живой мир</h3><p>Мир меняется: события, зоны риска, инфраструктура и общие задачи дают серверу собственный ритм.</p></article>
+          <article class="card"><div class="n">03 // DELIVERY</div><h3>Развитие</h3><p>Сборка обновляется через Meridian Launcher: изменения приходят централизованно, без ручного перебора модов игроками.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="map">
+      <div class="wrap">
+        <div class="eyebrow">02 / Карта мира</div><h2>Территория — это часть системы.</h2>
+        <p class="sub">Демонстрация будущей веб-карты. Позже сюда можно подключить реальные данные сервера и слой BlueMap.</p>
+        <div class="map-shell">
+          <div class="map" id="worldMap">
+            <div class="map-toolbar"><button class="layer on" data-layer="territories">Территории</button><button class="layer on" data-layer="rails">Железные дороги</button><button class="layer on" data-layer="industry">Промышленность</button><button class="layer on" data-layer="events">События</button></div>
+            <svg viewBox="0 0 900 520" role="img" aria-label="Демонстрационная карта Project Meridian">
+              <rect class="water" width="900" height="520"/>
+              <path class="terrain" d="M20 115 C115 58 210 96 282 58 C376 8 481 47 548 92 C625 145 733 94 865 159 L889 453 C780 493 681 457 603 480 C516 507 428 468 343 490 C243 514 151 470 49 447 Z"/>
+              <path class="terrain" d="M97 39 C145 20 193 40 209 73 C162 83 119 88 83 76 Z"/>
+              <g data-svg-layer="territories">
+                <path class="territory t-home" data-name="Поселение «Северный узел»" data-owner="Kosh" data-area="184 чанка" data-type="Жилая / логистика" d="M185 184 L335 149 L390 245 L316 322 L192 284 Z"/>
+                <path class="territory t-industry" data-name="Промышленный сектор «Ковчег»" data-owner="Meridian Works" data-area="236 чанков" data-type="Промышленность" d="M402 171 L575 154 L646 247 L556 337 L413 298 Z"/>
+                <path class="territory t-event" data-name="Красная зона" data-owner="Системное событие" data-area="117 чанков" data-type="Опасная зона" d="M626 313 L756 266 L825 349 L742 431 L622 403 Z"/>
+                <path class="territory t-free" data-name="Свободный сектор" data-owner="—" data-area="301 чанк" data-type="Незанятая территория" d="M95 323 L241 309 L288 411 L191 462 L76 414 Z"/>
+              </g>
+              <g data-svg-layer="rails"><path class="rail" d="M137 367 C253 348 335 307 450 279 C566 250 651 292 781 349"/><path class="road" d="M257 214 C368 257 448 234 531 205"/></g>
+              <g data-svg-layer="industry"><circle class="map-dot" cx="486" cy="248" r="6"/><circle class="map-dot" cx="527" cy="274" r="4"/><text class="map-label" x="474" y="231">FACTORY-01</text></g>
+              <g data-svg-layer="events"><circle cx="721" cy="348" r="24" fill="none" stroke="#ff4d2e" stroke-width="2" opacity=".7"/><circle cx="721" cy="348" r="8" fill="#ff4d2e" opacity=".65"/><text class="map-label" x="692" y="389">EVENT</text></g>
+              <text class="map-label" x="220" y="237">NORTH HUB</text><text class="map-label" x="452" y="266">ARK</text><text class="map-label" x="670" y="362">RED ZONE</text>
+            </svg>
+            <div class="demo">ДЕМО-РЕЖИМ // позже карта будет получать данные сервера автоматически</div>
+          </div>
+          <aside class="map-info" id="mapInfo"><div class="owner">MERIDIAN MAP // SELECT AREA</div><h3>Выбери территорию</h3><p class="sub" style="font-size:14px;margin:7px 0 0">Нажми на выделенную область карты, чтобы посмотреть сведения.</p><dl><dt>Владелец</dt><dd>—</dd><dt>Площадь</dt><dd>—</dd><dt>Тип</dt><dd>—</dd></dl></aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="updates"><div class="wrap"><div class="eyebrow">03 / Обновления</div><h2>Последние изменения</h2><div class="updates">
+      <article class="update"><time>dev-current</time><div><h3>Project Meridian получает собственный сайт</h3><p>Главная страница, карта мира, история обновлений, установка и FAQ собраны в одном публичном хабе.</p></div></article>
+      <article class="update"><time>lighting</time><div><h3>Свет и тревога</h3><p>Промышленное освещение, аварийные лампы и сирена доведены до рабочего состояния для сборки.</p></div></article>
+      <article class="update"><time>launcher</time><div><h3>Meridian Launcher</h3><p>Лаунчер и сайт остаются отдельными: сайт информирует, лаунчер отвечает за доставку и проверку файлов сборки.</p></div></article>
+    </div></div></section>
+
+    <section id="install"><div class="wrap"><div class="eyebrow">04 / Установка</div><h2>Три шага до запуска</h2><p class="sub">Игроку не нужно вручную добавлять и удалять моды после каждого обновления.</p><div class="install">
+      <article class="step"><h3>Скачать</h3><p>Загрузи Meridian Launcher со страницы актуального релиза.</p></article>
+      <article class="step"><h3>Запустить</h3><p>Лаунчер проверит установленную сборку и подготовит нужные файлы.</p></article>
+      <article class="step"><h3>Играть</h3><p>При обновлении должны скачиваться только изменения, а устаревшие файлы — удаляться автоматически.</p></article>
+    </div><div class="actions"><a class="btn primary" href="https://github.com/koshgamer/KoshPack-DEV/releases/tag/dev-current" target="_blank" rel="noopener">⇩ Открыть dev-current</a></div></div></section>
+
+    <section id="faq"><div class="wrap"><div class="eyebrow">05 / FAQ</div><h2>Частые вопросы</h2>
+      <details><summary>Нужно вручную ставить или удалять моды?</summary><p>Нет. Цель Meridian Launcher — управлять составом сборки централизованно.</p></details>
+      <details><summary>Нужно каждый раз скачивать всю сборку заново?</summary><p>Нет. Архитектура рассчитана на загрузку изменённых файлов и удаление устаревших.</p></details>
+      <details><summary>Сайт и лаунчер будут одной программой?</summary><p>Нет. Сайт остаётся отдельным публичным хабом, а лаунчер — отдельным приложением.</p></details>
+      <details><summary>Карта уже показывает реальный сервер?</summary><p>Пока нет — сейчас это демонстрационный слой. Позже его можно подключить к BlueMap и серверным данным о территориях, железных дорогах, промышленности и событиях.</p></details>
+    </div></section>
+  </main>
+  <footer><div class="wrap foot"><span>Project Meridian — Industrial Minecraft Project</span><span>MERIDIAN_SYS // ONLINE</span></div></footer>
+  <script>
+    const menuBtn=document.getElementById('menuBtn'),nav=document.getElementById('navLinks');
+    menuBtn?.addEventListener('click',()=>nav.classList.toggle('open'));
+    nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
+    document.querySelectorAll('.territory').forEach(el=>el.addEventListener('click',()=>{
+      const box=document.getElementById('mapInfo');
+      box.innerHTML=`<div class="owner">MERIDIAN MAP // AREA DATA</div><h3>${el.dataset.name}</h3><p class="sub" style="font-size:14px;margin:7px 0 0">Демонстрационная карточка территории.</p><dl><dt>Владелец</dt><dd>${el.dataset.owner}</dd><dt>Площадь</dt><dd>${el.dataset.area}</dd><dt>Тип</dt><dd>${el.dataset.type}</dd></dl>`;
+    }));
+    document.querySelectorAll('.layer').forEach(btn=>btn.addEventListener('click',()=>{
+      btn.classList.toggle('on'); const g=document.querySelector(`[data-svg-layer="${btn.dataset.layer}"]`); if(g) g.style.display=btn.classList.contains('on')?'':'none';
+    }));
+  </script>
+</body>
+</html>
