@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha44-fighter-v2-pixel",
+    "version": "alpha45-shooter-v1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 634832,
     "sha256": "d0fec3d7c5a1c681102bc9bb0a6304b54ec870c720903d91b0b198d66c5b4160",
-    "note": "Fighter alpha44 v2: pixel-art textures, stronger II-III progression, master IV geometry"
+    "note": "Shooter alpha45 v1: mobile firearm class I-IV, pixel-art rig, 48-stand aggregate test"
   }
 }
