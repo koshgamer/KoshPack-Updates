@@ -69,6 +69,13 @@ jobs:
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
 
+      - name: Publish DEV manifest as release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp launcher/dev-manifest.json dist/dev-manifest.json
+          gh release upload armor-dev-current dist/dev-manifest.json --clobber --repo "$GITHUB_REPOSITORY"
+
       - name: Commit DEV manifest
         run: |
           git config user.name "Project Meridian CI"
