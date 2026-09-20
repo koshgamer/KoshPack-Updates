@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.3"
+APP_VERSION = "0.2.4"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -338,16 +338,16 @@ def _armor_jar_name(name: str) -> bool:
 
 def find_local_dev_armor() -> Path | None:
     candidates: list[Path] = []
-    roots = [
+    shallow_roots = [
         Path.home() / "Downloads",
         Path.home() / "Загрузки",
     ]
     if getattr(sys, "frozen", False):
-        roots.append(Path(sys.executable).resolve().parent)
+        shallow_roots.append(Path(sys.executable).resolve().parent)
     else:
-        roots.append(Path(__file__).resolve().parent)
+        shallow_roots.append(Path(__file__).resolve().parent)
 
-    for root in roots:
+    for root in shallow_roots:
         if not root.is_dir():
             continue
         try:
@@ -357,9 +357,53 @@ def find_local_dev_armor() -> Path | None:
         except OSError:
             pass
 
+    # Also reuse armor builds that were already tested through PrismLauncher.
+    appdata = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
+    prism_instances = appdata / "PrismLauncher" / "instances"
+    if prism_instances.is_dir():
+        try:
+            for mods_dir in prism_instances.glob("*/minecraft/mods"):
+                if not mods_dir.is_dir():
+                    continue
+                for item in mods_dir.iterdir():
+                    if item.is_file() and _armor_jar_name(item.name) and item.name != DEV_ARMOR_TARGET:
+                        candidates.append(item)
+            for mods_dir in prism_instances.glob("*/.minecraft/mods"):
+                if not mods_dir.is_dir():
+                    continue
+                for item in mods_dir.iterdir():
+                    if item.is_file() and _armor_jar_name(item.name) and item.name != DEV_ARMOR_TARGET:
+                        candidates.append(item)
+        except OSError:
+            pass
+
     if not candidates:
         return None
-    return max(candidates, key=lambda p: p.stat().st_mtime)
+
+    def score(path: Path) -> tuple[int, float]:
+        name = path.name.lower()
+        alpha = 0
+        marker = "alpha"
+        pos = name.rfind(marker)
+        if pos >= 0:
+            digits = []
+            for ch in name[pos + len(marker):]:
+                if ch.isdigit():
+                    digits.append(ch)
+                elif digits:
+                    break
+            if digits:
+                try:
+                    alpha = int("".join(digits))
+                except ValueError:
+                    alpha = 0
+        try:
+            mtime = path.stat().st_mtime
+        except OSError:
+            mtime = 0.0
+        return alpha, mtime
+
+    return max(candidates, key=score)
 
 
 def restore_stable_armor() -> int:
@@ -996,7 +1040,7 @@ class MeridianLauncher(tk.Tk):
         self.dev_radio.pack(side="left", padx=(18, 0))
         self.channel_hint = tk.Label(
             left,
-            text="DEV подхватывает свежий KoshPack_Armor_*.jar из «Загрузок».",
+            text="DEV ищет свежую броню в сети, «Загрузках» и PrismLauncher.",
             bg=C_PANEL,
             fg=C_MUTED,
             font=("Segoe UI", 8),
@@ -1576,7 +1620,7 @@ class MeridianLauncher(tk.Tk):
             name = str(self.state_data.get("dev_armor_name") or "").strip()
             self.pack_value.set(f"DEV // {name}" if name else "DEV // БРОНЯ")
             self.channel_hint.configure(
-                text="DEV: кнопка ниже поставит свежую броню из сети или папки «Загрузки».",
+                text="DEV: кнопка ниже проверит сеть, «Загрузки» и PrismLauncher.",
                 fg=C_TELEMETRY,
             )
             self.channel_update_btn.configure(text="↻  ОБНОВИТЬ DEV-БРОНЮ")
@@ -1608,7 +1652,7 @@ class MeridianLauncher(tk.Tk):
             return
 
         self._emit("status", "Ищу свежую DEV-броню…")
-        self._emit("detail", "Сначала проверяю DEV-канал, затем папку «Загрузки».")
+        self._emit("detail", "Проверяю DEV-канал, «Загрузки» и PrismLauncher.")
 
         def progress(done: int, total: int) -> None:
             pct = (done / total * 100.0) if total else 0.0
@@ -1624,8 +1668,8 @@ class MeridianLauncher(tk.Tk):
 
         if source is None:
             raise RuntimeError(
-                "DEV-броня пока не найдена. Скачай присланный мной KoshPack_Armor_*.jar — "
-                "лаунчер сам найдёт его в папке «Загрузки», затем снова нажми «Обновить сборку»."
+                "DEV-броня не найдена ни в DEV-канале, ни в «Загрузках», ни в PrismLauncher. "
+                "Когда я опубликую новую броню в DEV-канал, кнопка начнёт скачивать её автоматически."
             )
 
         source_digest = sha256_file(source)
