@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "current",
-  "launcherMinVersion": "0.2.5",
+  "launcherMinVersion": "0.2.6",
   "pack": "KoshPack",
   "packVersion": "dev-current",
   "minecraft": "1.21.1",
@@ -13,9 +13,9 @@
     "sha256": "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
   },
   "launcher": {
-    "version": "0.2.5",
+    "version": "0.2.6",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-current/Project-Meridian-Launcher.exe",
-    "sha256": "22c0db739a64b1cbeaa6f9fb41b18b70cb06db908557fdf1bd631898c20fbc72",
-    "size": 18538423
+    "sha256": "b5ed3344a3a6deff133976e2149c53206dac9cda5915e20d1861b9cb7cd188ab",
+    "size": 18538694
   }
 }
