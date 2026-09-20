@@ -58,12 +58,12 @@ jobs:
           data["minecraft"]="1.21.1"
           data["neoforge"]="21.1.248"
           data["armor"]={
-              "version":"alpha45-shooter-v1",
+              "version":"alpha46-shooter-v2-polish",
               "file":"KoshPack_Armor_DEV.jar",
               "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
               "size":int(os.environ["SIZE"]),
               "sha256":os.environ["SHA256"],
-              "note":"Shooter alpha45 v1: mobile firearm class I-IV, pixel-art rig, 48-stand aggregate test"
+              "note":"Shooter alpha46 v2: stronger I-II separation, polished III-IV gear, pixel-art textures"
           }
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
