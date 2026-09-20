@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha42-diver-tierfix",
+    "version": "alpha43-fighter-v1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 556058,
-    "sha256": "dc679ebf03c8d77a6308962c2be7092a1556479ef7655693e1caf8729b0ca2e2",
-    "note": "Diver alpha42: cuffs moved outward and I-IV progression strengthened"
+    "size": 602403,
+    "sha256": "a39ef2acc5911592c5f06a1850fc70661e0d2da70e45aa725e7332b618522dab",
+    "note": "Fighter alpha43 v1: new heavy assault profession I-IV"
   }
 }
