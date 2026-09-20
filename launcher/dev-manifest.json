@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha47-researcher-v1",
+    "version": "alpha48-role-separation-v1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 771634,
     "sha256": "db6436cec4f0323e4fd646144c6ca2076e1403d5c7d720bc76015a4a8b4bf6e3",
-    "note": "Researcher alpha47 v1: expedition science class I-IV, sensors, samples, field terminal, 52-stand aggregate"
+    "note": "alpha48 role separation: Fighter heavy assault, Shooter slim marksman, Researcher field-lab silhouette; 52-stand aggregate"
   }
 }
