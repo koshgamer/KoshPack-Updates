@@ -27,11 +27,12 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.5"
+APP_VERSION = "0.2.6"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
 DEV_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev-manifest.json"
+DEV_MANIFEST_RELEASE_URL = "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/dev-manifest.json"
 DEV_MANIFEST_API_URL = "https://api.github.com/repos/koshgamer/KoshPack-Updates/contents/launcher/dev-manifest.json?ref=main"
 DEV_ARMOR_TARGET = "koshpack-armor-specialties-DEV.jar"
 PACK_ASSET_NAME = "minecraft.zip"
@@ -464,21 +465,43 @@ def apply_dev_armor(source: Path) -> tuple[str, str]:
 
 
 def get_dev_manifest() -> dict[str, Any]:
-    """Read DEV manifest through the GitHub API to avoid stale raw CDN responses."""
-    payload = request_json(DEV_MANIFEST_API_URL)
-    encoded = str(payload.get("content") or "").replace("\\n", "")
-    if not encoded:
-        # Last-resort compatibility path.
-        return request_json(DEV_MANIFEST_URL + f"?nocache={int(time.time())}")
-    try:
-        decoded = base64.b64decode(encoded).decode("utf-8")
-        manifest = json.loads(decoded)
-    except Exception as e:
-        raise RuntimeError(f"Не удалось прочитать DEV-манифест: {e}") from e
-    if not isinstance(manifest, dict):
-        raise RuntimeError("DEV-манифест имеет неверный формат.")
-    return manifest
+    """Read DEV manifest without depending on api.github.com."""
+    errors: list[str] = []
 
+    try:
+        manifest = request_json(
+            DEV_MANIFEST_RELEASE_URL + f"?nocache={int(time.time())}",
+            timeout=30,
+        )
+        if isinstance(manifest, dict) and (manifest.get("armor") or {}).get("sha256"):
+            return manifest
+        errors.append("release manifest пустой")
+    except Exception as e:
+        errors.append(f"release: {type(e).__name__}: {e}")
+
+    try:
+        manifest = request_json(
+            DEV_MANIFEST_URL + f"?nocache={int(time.time())}",
+            timeout=30,
+        )
+        if isinstance(manifest, dict) and (manifest.get("armor") or {}).get("sha256"):
+            return manifest
+        errors.append("raw manifest пустой")
+    except Exception as e:
+        errors.append(f"raw: {type(e).__name__}: {e}")
+
+    try:
+        payload = request_json(DEV_MANIFEST_API_URL, timeout=20)
+        encoded = str(payload.get("content") or "").replace("\\n", "")
+        if encoded:
+            decoded = base64.b64decode(encoded).decode("utf-8")
+            manifest = json.loads(decoded)
+            if isinstance(manifest, dict) and (manifest.get("armor") or {}).get("sha256"):
+                return manifest
+    except Exception as e:
+        errors.append(f"api: {type(e).__name__}: {e}")
+
+    raise RuntimeError("Не удалось получить DEV-манифест. " + " | ".join(errors))
 
 def download_dev_armor_from_manifest(on_progress: Callable[[int, int], None]) -> tuple[Path, str]:
     manifest = get_dev_manifest()
