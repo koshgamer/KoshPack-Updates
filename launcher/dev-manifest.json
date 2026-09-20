@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha43-fighter-v1",
+    "version": "alpha44-fighter-v2-pixel",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 602403,
     "sha256": "a39ef2acc5911592c5f06a1850fc70661e0d2da70e45aa725e7332b618522dab",
-    "note": "Fighter alpha43 v1: new heavy assault profession I-IV"
+    "note": "Fighter alpha44 v2: pixel-art textures, stronger II-III progression, master IV geometry"
   }
 }
