@@ -27,10 +27,12 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.1"
+APP_VERSION = "0.2.2"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
+DEV_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev-manifest.json"
+DEV_ARMOR_TARGET = "koshpack-armor-specialties-DEV.jar"
 PACK_ASSET_NAME = "minecraft.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
 MC_VERSION = "1.21.1"
@@ -124,6 +126,10 @@ def load_state() -> dict[str, Any]:
         "msa_uuid": "",
         "msa_username": "",
         "ram_gb": 8,
+        "channel": "stable",
+        "dev_armor_digest": "",
+        "dev_armor_name": "",
+        "dev_armor_source": "",
         "pack_digest": "",
         "pack_identity": "",
         "managed_files": [],
@@ -320,6 +326,119 @@ def download_file(url: str, dest: Path, expected_size: int, on_progress: Callabl
         f"Скачивание оборвалось после {max_attempts} попыток. "
         f"Лаунчер сохранит .part и попробует докачать файл при следующем запуске. Последняя ошибка: {last_error}"
     )
+
+
+def _armor_jar_name(name: str) -> bool:
+    low = name.lower()
+    return low.endswith(".jar") and (
+        low.startswith("koshpack_armor_")
+        or low.startswith("koshpack-armor-specialties")
+    )
+
+
+def find_local_dev_armor() -> Path | None:
+    candidates: list[Path] = []
+    roots = [
+        Path.home() / "Downloads",
+        Path.home() / "Загрузки",
+    ]
+    if getattr(sys, "frozen", False):
+        roots.append(Path(sys.executable).resolve().parent)
+    else:
+        roots.append(Path(__file__).resolve().parent)
+
+    for root in roots:
+        if not root.is_dir():
+            continue
+        try:
+            for item in root.iterdir():
+                if item.is_file() and _armor_jar_name(item.name) and item.name != DEV_ARMOR_TARGET:
+                    candidates.append(item)
+        except OSError:
+            pass
+
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: p.stat().st_mtime)
+
+
+def restore_stable_armor() -> int:
+    mods = INSTANCE_DIR / "mods"
+    if not mods.is_dir():
+        return 0
+
+    changed = 0
+    dev_target = mods / DEV_ARMOR_TARGET
+    if dev_target.exists():
+        try:
+            dev_target.unlink()
+            changed += 1
+        except OSError:
+            pass
+
+    for backup in list(mods.glob("*.meridian-stable-bak")):
+        original = Path(str(backup)[: -len(".meridian-stable-bak")])
+        try:
+            if original.exists():
+                backup.unlink()
+            else:
+                backup.replace(original)
+            changed += 1
+        except OSError:
+            pass
+    return changed
+
+
+def apply_dev_armor(source: Path) -> tuple[str, str]:
+    if not source.is_file():
+        raise RuntimeError(f"DEV JAR не найден: {source}")
+
+    mods = INSTANCE_DIR / "mods"
+    mods.mkdir(parents=True, exist_ok=True)
+    restore_stable_armor()
+
+    # Hide the stable copy of this mod while DEV is active.
+    for jar in list(mods.glob("*.jar")):
+        if jar.name == DEV_ARMOR_TARGET:
+            continue
+        if _armor_jar_name(jar.name):
+            backup = Path(str(jar) + ".meridian-stable-bak")
+            try:
+                if backup.exists():
+                    backup.unlink()
+                jar.replace(backup)
+            except OSError as e:
+                raise RuntimeError(f"Не удалось временно отключить {jar.name}: {e}") from e
+
+    target = mods / DEV_ARMOR_TARGET
+    shutil.copy2(source, target)
+    digest = sha256_file(target)
+    return target.name, digest
+
+
+def download_dev_armor_from_manifest(on_progress: Callable[[int, int], None]) -> Path | None:
+    try:
+        manifest = request_json(DEV_MANIFEST_URL)
+    except Exception:
+        return None
+
+    armor = manifest.get("armor") or {}
+    url = str(armor.get("url") or "")
+    sha256 = str(armor.get("sha256") or "").lower()
+    size = int(armor.get("size") or 0)
+    if not url or not sha256:
+        return None
+
+    target = CACHE_DIR / f"armor-dev-{sha256[:16]}.jar"
+    if target.is_file() and sha256_file(target) == sha256:
+        return target
+    target.unlink(missing_ok=True)
+    download_file(url, target, size, on_progress)
+    actual = sha256_file(target)
+    if actual != sha256:
+        target.unlink(missing_ok=True)
+        raise RuntimeError("SHA-256 DEV-брони не совпал. Файл удалён.")
+    return target
 
 
 def format_bytes(value: float | int) -> str:
@@ -597,6 +716,7 @@ class MeridianLauncher(tk.Tk):
         self.email_var = tk.StringVar(value=str(self.state_data.get("email", "")))
         self.auth_var = tk.StringVar(value=str(self.state_data.get("auth_mode", "offline")))
         self.ram_var = tk.IntVar(value=int(self.state_data.get("ram_gb", 8)))
+        self.channel_var = tk.StringVar(value=str(self.state_data.get("channel", "stable")))
         self.status_var = tk.StringVar(value="Система готова")
         self.detail_var = tk.StringVar(value=f"Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}")
         self.progress_var = tk.StringVar(value="MERIDIAN_SYS // IDLE")
@@ -752,7 +872,7 @@ class MeridianLauncher(tk.Tk):
 
         self.skin_label = tk.Label(
             profile,
-            text="◇\n⊕\n◇",
+            text="NO\nSKIN",
             bg=C_FIELD,
             fg=C_AMBER,
             font=("Consolas", 18, "bold"),
@@ -841,8 +961,52 @@ class MeridianLauncher(tk.Tk):
         self.login_btn = self._button(left, "ПОДКЛЮЧИТЬ MICROSOFT", self._login_microsoft, accent=False)
         self.login_btn.pack(fill="x", padx=22, pady=(10, 0))
 
-        tk.Label(left, text="02 / ПАМЯТЬ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
-            anchor="w", padx=22, pady=(22, 8)
+        tk.Label(left, text="02 / КАНАЛ СБОРКИ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
+            anchor="w", padx=22, pady=(18, 7)
+        )
+        channel_row = tk.Frame(left, bg=C_PANEL)
+        channel_row.pack(fill="x", padx=22)
+        self.stable_radio = tk.Radiobutton(
+            channel_row,
+            text="STABLE",
+            variable=self.channel_var,
+            value="stable",
+            command=self._channel_changed,
+            bg=C_PANEL,
+            fg=C_INK,
+            activebackground=C_PANEL,
+            activeforeground=C_COPPER,
+            selectcolor=C_FIELD,
+            font=("Consolas", 9, "bold"),
+        )
+        self.stable_radio.pack(side="left")
+        self.dev_radio = tk.Radiobutton(
+            channel_row,
+            text="DEV / БРОНЯ",
+            variable=self.channel_var,
+            value="dev",
+            command=self._channel_changed,
+            bg=C_PANEL,
+            fg=C_TELEMETRY,
+            activebackground=C_PANEL,
+            activeforeground=C_TELEMETRY,
+            selectcolor=C_FIELD,
+            font=("Consolas", 9, "bold"),
+        )
+        self.dev_radio.pack(side="left", padx=(18, 0))
+        self.channel_hint = tk.Label(
+            left,
+            text="DEV подхватывает свежий KoshPack_Armor_*.jar из «Загрузок».",
+            bg=C_PANEL,
+            fg=C_MUTED,
+            font=("Segoe UI", 8),
+            justify="left",
+            wraplength=275,
+        )
+        self.channel_hint.pack(anchor="w", padx=22, pady=(3, 0))
+
+        tk.Label(left, text="03 / ПАМЯТЬ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
+            anchor="w", padx=22, pady=(15, 6)
         )
         ram_line = tk.Frame(left, bg=C_PANEL)
         ram_line.pack(fill="x", padx=22)
@@ -1053,7 +1217,7 @@ class MeridianLauncher(tk.Tk):
     def _set_skin_placeholder(self) -> None:
         self.skin_photo = None
         try:
-            self.skin_label.configure(image="", text="◇\n⊕\n◇", fg=C_AMBER)
+            self.skin_label.configure(image="", text="NO\nSKIN", fg=C_MUTED)
         except tk.TclError:
             pass
 
@@ -1129,6 +1293,8 @@ class MeridianLauncher(tk.Tk):
                 self._set_skin_image(str(value))
             elif kind == "pack_value":
                 self.pack_value.set(str(value))
+            elif kind == "channel_ui":
+                self._update_channel_ui()
             elif kind == "busy":
                 self._set_busy(bool(value))
             elif kind == "play_text":
@@ -1398,6 +1564,84 @@ class MeridianLauncher(tk.Tk):
             self._emit("progress_text", code)
             self._emit("log", "PortableMC auth: " + " | ".join(parts))
 
+    def _update_channel_ui(self) -> None:
+        channel = self.channel_var.get()
+        if channel == "dev":
+            name = str(self.state_data.get("dev_armor_name") or "").strip()
+            self.pack_value.set(f"DEV // {name}" if name else "DEV // БРОНЯ")
+            self.channel_hint.configure(
+                text="DEV: «Обновить сборку» поставит свежую броню из сети или папки «Загрузки».",
+                fg=C_TELEMETRY,
+            )
+        else:
+            self.pack_value.set("KoshPack // current")
+            self.channel_hint.configure(
+                text="STABLE: обычная сборка без тестовых версий брони.",
+                fg=C_MUTED,
+            )
+
+    def _channel_changed(self) -> None:
+        self.state_data["channel"] = self.channel_var.get()
+        atomic_write_json(STATE_FILE, self.state_data)
+        if self.channel_var.get() == "stable":
+            restored = restore_stable_armor()
+            if restored:
+                self._log("DEV-броня отключена. Стабильная версия восстановлена.")
+        self._update_channel_ui()
+        self.status_var.set("DEV-канал выбран" if self.channel_var.get() == "dev" else "STABLE-канал выбран")
+        self.detail_var.set(
+            "Нажми «Обновить сборку», чтобы применить тестовую броню."
+            if self.channel_var.get() == "dev"
+            else f"Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}"
+        )
+
+    def _ensure_dev_armor(self) -> None:
+        if self.channel_var.get() != "dev":
+            return
+
+        self._emit("status", "Ищу свежую DEV-броню…")
+        self._emit("detail", "Сначала проверяю DEV-канал, затем папку «Загрузки».")
+
+        def progress(done: int, total: int) -> None:
+            pct = (done / total * 100.0) if total else 0.0
+            self._emit("progress", pct)
+            if total:
+                self._emit("progress_text", f"DEV броня • {format_bytes(done)} / {format_bytes(total)}")
+
+        source = download_dev_armor_from_manifest(progress)
+        source_kind = "DEV-канал"
+        if source is None:
+            source = find_local_dev_armor()
+            source_kind = "Загрузки"
+
+        if source is None:
+            raise RuntimeError(
+                "DEV-броня пока не найдена. Скачай присланный мной KoshPack_Armor_*.jar — "
+                "лаунчер сам найдёт его в папке «Загрузки», затем снова нажми «Обновить сборку»."
+            )
+
+        source_digest = sha256_file(source)
+        current_digest = str(self.state_data.get("dev_armor_digest") or "")
+        target = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
+        if current_digest == source_digest and target.is_file() and sha256_file(target) == source_digest:
+            self._emit("status", "DEV-броня уже актуальна")
+            self._emit("detail", f"{source.name} • {source_kind}")
+            self._emit("pack_value", f"DEV // {source.name}")
+            self._emit("log", f"DEV JAR уже установлен: {source.name}")
+            return
+
+        self._emit("status", "Устанавливаю DEV-броню…")
+        installed_name, digest = apply_dev_armor(source)
+        self.state_data["dev_armor_digest"] = digest
+        self.state_data["dev_armor_name"] = source.name
+        self.state_data["dev_armor_source"] = source_kind
+        atomic_write_json(STATE_FILE, self.state_data)
+        self._emit("progress", 100)
+        self._emit("status", "DEV-броня установлена")
+        self._emit("detail", f"{source.name} • источник: {source_kind}")
+        self._emit("pack_value", f"DEV // {source.name}")
+        self._emit("log", f"DEV JAR установлен как {installed_name}: {source.name}")
+
     def _set_busy(self, busy: bool) -> None:
         self.busy = busy
         self.play_btn.configure(state="disabled" if busy else "normal")
@@ -1407,6 +1651,7 @@ class MeridianLauncher(tk.Tk):
         self.state_data["email"] = self.email_var.get().strip()
         self.state_data["auth_mode"] = self.auth_var.get()
         self.state_data["ram_gb"] = max(4, min(16, int(self.ram_var.get())))
+        self.state_data["channel"] = self.channel_var.get()
         atomic_write_json(STATE_FILE, self.state_data)
 
     def _start_thread(self, target: Callable[[], None]) -> None:
@@ -1434,9 +1679,12 @@ class MeridianLauncher(tk.Tk):
 
     def _initial_check(self) -> None:
         self._sync_auth_fields()
+        self._update_channel_ui()
         self._start_thread(lambda: self._check_update_only())
 
     def _check_update_only(self) -> None:
+        if self.channel_var.get() == "stable":
+            restore_stable_armor()
         self._emit("status", "Проверяю локальный пакет…")
         local_pack = bundled_pack_path()
         if local_pack is not None and not any(INSTANCE_DIR.iterdir()):
@@ -1461,10 +1709,19 @@ class MeridianLauncher(tk.Tk):
 
         current = self.state_data.get("pack_identity") == asset["identity"] and INSTANCE_DIR.exists()
         if current:
-            self._emit("status", "Сборка установлена")
-            self._emit("detail", f"{asset['release_name']} • {MC_VERSION} • NeoForge")
-            self._emit("pack_value", str(asset["release_name"]))
-            self._emit("log", "Обновлений сборки не найдено.")
+            if self.channel_var.get() == "dev":
+                local_dev = find_local_dev_armor()
+                self._emit("status", "DEV-канал готов")
+                self._emit(
+                    "detail",
+                    f"Найдено: {local_dev.name}" if local_dev else "Нажми «Обновить сборку» для проверки DEV-брони",
+                )
+                self._emit("pack_value", f"DEV // {local_dev.name}" if local_dev else "DEV // БРОНЯ")
+            else:
+                self._emit("status", "Сборка установлена")
+                self._emit("detail", f"{asset['release_name']} • {MC_VERSION} • NeoForge")
+                self._emit("pack_value", str(asset["release_name"]))
+            self._emit("log", "Обновлений базовой сборки не найдено.")
         else:
             self._emit("status", "Доступно обновление")
             self._emit("detail", f"{asset['release_name']} • {asset['updated_at'] or 'новый архив'}")
@@ -1555,7 +1812,7 @@ class MeridianLauncher(tk.Tk):
         self._emit("status", "Сборка готова")
         self._emit("detail", f"{asset['release_name']} • {len(managed)} файлов под управлением лаунчера")
         self._emit("play_text", "ИГРАТЬ")
-        self.pack_value.set(str(asset["release_name"]))
+        self._emit("pack_value", str(asset["release_name"]) if self.channel_var.get() == "stable" else "DEV // БРОНЯ")
         self._emit("log", "KoshPack установлен/обновлён.")
 
     def _install_local_pack(self) -> None:
@@ -1603,10 +1860,22 @@ class MeridianLauncher(tk.Tk):
         self._start_thread(job)
 
     def _update_pack(self) -> None:
-        self._start_thread(lambda: self._ensure_pack(force=False))
+        def job() -> None:
+            if self.channel_var.get() == "stable":
+                restore_stable_armor()
+                self._ensure_pack(force=False)
+            else:
+                self._ensure_pack(force=False)
+                self._ensure_dev_armor()
+        self._start_thread(job)
 
     def _repair_pack(self) -> None:
-        self._start_thread(lambda: self._ensure_pack(force=True))
+        def job() -> None:
+            restore_stable_armor()
+            self._ensure_pack(force=True)
+            if self.channel_var.get() == "dev":
+                self._ensure_dev_armor()
+        self._start_thread(job)
 
     def _login_microsoft(self) -> None:
         self._open_auth_dialog()
@@ -1637,21 +1906,24 @@ class MeridianLauncher(tk.Tk):
                 messagebox.showwarning(APP_NAME, "Укажи игровой ник.")
                 return
         else:
-            email = self.email_var.get().strip()
-            if not email or "@" not in email:
-                messagebox.showwarning(APP_NAME, "Укажи e-mail Microsoft-аккаунта.")
-                return
+            pass
 
         def job() -> None:
             try:
-                self._ensure_pack(force=False)
+                if self.channel_var.get() == "stable":
+                    restore_stable_armor()
+                    self._ensure_pack(force=False)
+                else:
+                    self._ensure_pack(force=False)
+                    self._ensure_dev_armor()
             except Exception as e:
                 if any(INSTANCE_DIR.iterdir()):
                     self._emit("log", f"Автообновление недоступно, запускаю установленную сборку: {type(e).__name__}: {e}")
                 else:
                     raise
             self._emit("status", "Готовлю Minecraft…")
-            self._emit("detail", f"{MC_VERSION} • NeoForge {NEOFORGE_VERSION} • RAM {self.ram_var.get()} ГБ")
+            channel_label = "DEV / БРОНЯ" if self.channel_var.get() == "dev" else "STABLE"
+            self._emit("detail", f"{channel_label} • {MC_VERSION} • NeoForge {NEOFORGE_VERSION} • RAM {self.ram_var.get()} ГБ")
             self._emit("log", "PortableMC проверит Minecraft, библиотеки, NeoForge и Java.")
 
             ram = max(4, min(16, int(self.ram_var.get())))
