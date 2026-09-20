@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.2"
+APP_VERSION = "0.2.3"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -1005,8 +1005,15 @@ class MeridianLauncher(tk.Tk):
         )
         self.channel_hint.pack(anchor="w", padx=22, pady=(3, 0))
 
+        self.channel_update_btn = self._button(
+            left,
+            "↻  ОБНОВИТЬ DEV-БРОНЮ",
+            self._update_pack,
+        )
+        self.channel_update_btn.pack(fill="x", padx=22, pady=(8, 0))
+
         tk.Label(left, text="03 / ПАМЯТЬ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
-            anchor="w", padx=22, pady=(15, 6)
+            anchor="w", padx=22, pady=(12, 4)
         )
         ram_line = tk.Frame(left, bg=C_PANEL)
         ram_line.pack(fill="x", padx=22)
@@ -1024,13 +1031,12 @@ class MeridianLauncher(tk.Tk):
         tk.Label(ram_line, text="ГБ", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 9, "bold")).pack(side="left")
 
         tools = tk.Frame(left, bg=C_PANEL)
-        tools.pack(fill="x", padx=22, pady=(18, 20))
-        self._button(tools, "↻  ОБНОВИТЬ СБОРКУ", self._update_pack).pack(fill="x")
+        tools.pack(fill="x", padx=22, pady=(10, 12))
         row = tk.Frame(tools, bg=C_PANEL)
-        row.pack(fill="x", pady=(8, 0))
+        row.pack(fill="x")
         self._button(row, "ПАПКА", self._open_game_folder).pack(side="left", fill="x", expand=True)
         self._button(row, "ЛОГИ", self._open_logs).pack(side="left", fill="x", expand=True, padx=(8, 0))
-        self._button(tools, "ПРОВЕРИТЬ / ПОЧИНИТЬ", self._repair_pack).pack(fill="x", pady=(8, 0))
+        self._button(tools, "ПРОВЕРИТЬ / ПОЧИНИТЬ", self._repair_pack).pack(fill="x", pady=(7, 0))
 
         # Dashboard
         right = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
@@ -1570,15 +1576,17 @@ class MeridianLauncher(tk.Tk):
             name = str(self.state_data.get("dev_armor_name") or "").strip()
             self.pack_value.set(f"DEV // {name}" if name else "DEV // БРОНЯ")
             self.channel_hint.configure(
-                text="DEV: «Обновить сборку» поставит свежую броню из сети или папки «Загрузки».",
+                text="DEV: кнопка ниже поставит свежую броню из сети или папки «Загрузки».",
                 fg=C_TELEMETRY,
             )
+            self.channel_update_btn.configure(text="↻  ОБНОВИТЬ DEV-БРОНЮ")
         else:
             self.pack_value.set("KoshPack // current")
             self.channel_hint.configure(
                 text="STABLE: обычная сборка без тестовых версий брони.",
                 fg=C_MUTED,
             )
+            self.channel_update_btn.configure(text="↻  ОБНОВИТЬ STABLE")
 
     def _channel_changed(self) -> None:
         self.state_data["channel"] = self.channel_var.get()
