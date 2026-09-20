@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.7"
+APP_VERSION = "0.2.8"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -482,46 +482,93 @@ def validate_dev_armor_jar(path: Path) -> None:
         raise RuntimeError("В DEV JAR отсутствуют обязательные файлы: " + ", ".join(missing))
 
 
-def download_dev_armor_remote(on_progress: Callable[[int, int], None]) -> tuple[Path, str]:
-    """Download the current DEV armor directly, without a manifest/API dependency."""
-    errors: list[str] = []
+def _download_raw_b64_dev(
+    target: Path,
+    on_progress: Callable[[int, int], None],
+    attempts: int = 4,
+) -> None:
+    """Download the raw base64 mirror in chunks with retries."""
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            req = urllib.request.Request(
+                DEV_ARMOR_B64_URL + f"?nocache={int(time.time())}-{attempt}",
+                headers={
+                    "User-Agent": USER_AGENT,
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache",
+                    "Connection": "close",
+                },
+            )
+            chunks: list[bytes] = []
+            received = 0
+            with urllib.request.urlopen(req, timeout=45) as response:
+                total_encoded = int(response.headers.get("Content-Length") or 0)
+                while True:
+                    chunk = response.read(256 * 1024)
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    received += len(chunk)
+                    # Approximate decoded progress. Exact size is known after decode.
+                    if total_encoded:
+                        on_progress(received, total_encoded)
+
+            encoded = b"".join(chunks)
+            raw = base64.b64decode(encoded)
+            target.write_bytes(raw)
+            on_progress(len(raw), len(raw))
+            return
+        except (urllib.error.URLError, ConnectionResetError, TimeoutError, OSError, ValueError) as e:
+            last_error = e
+            target.unlink(missing_ok=True)
+            if attempt < attempts:
+                time.sleep(min(2 * attempt, 6))
+
+    raise RuntimeError(f"raw-зеркало не ответило после {attempts} попыток: {last_error}")
+
+
+def download_dev_armor_remote(
+    on_progress: Callable[[int, int], None],
+    on_retry: Callable[[str], None] | None = None,
+) -> tuple[Path, str]:
+    """Download current DEV armor with automatic retries and two remote routes."""
     target = CACHE_DIR / "KoshPack_Armor_REMOTE.jar"
+    errors: list[str] = []
 
-    # Primary path: direct GitHub Release asset. The file is tiny, so download
-    # it fresh on every explicit DEV update and compare SHA locally.
-    try:
-        url = DEV_ARMOR_DIRECT_URL + f"?nocache={int(time.time())}"
-        target.unlink(missing_ok=True)
-        download_file(url, target, 0, on_progress)
-        validate_dev_armor_jar(target)
-        return target, "REMOTE DEV"
-    except Exception as e:
-        target.unlink(missing_ok=True)
-        errors.append(f"release: {type(e).__name__}: {e}")
+    # Two full rounds: Release asset first, then raw mirror. A transient network
+    # timeout should heal inside the same launcher session.
+    for round_no in range(1, 3):
+        if on_retry:
+            on_retry(f"Попытка DEV {round_no}/2 • GitHub Release")
 
-    # Secondary path: public raw base64 mirror. This avoids redirects to the
-    # release CDN on networks where that route is blocked.
-    try:
-        req = urllib.request.Request(
-            DEV_ARMOR_B64_URL + f"?nocache={int(time.time())}",
-            headers={
-                "User-Agent": USER_AGENT,
-                "Cache-Control": "no-cache",
-                "Pragma": "no-cache",
-            },
-        )
-        with urllib.request.urlopen(req, timeout=30) as response:
-            encoded = response.read()
-        raw = base64.b64decode(encoded)
-        target.write_bytes(raw)
-        on_progress(len(raw), len(raw))
-        validate_dev_armor_jar(target)
-        return target, "REMOTE DEV"
-    except Exception as e:
-        target.unlink(missing_ok=True)
-        errors.append(f"raw: {type(e).__name__}: {e}")
+        try:
+            target.unlink(missing_ok=True)
+            url = DEV_ARMOR_DIRECT_URL + f"?nocache={int(time.time())}-{round_no}"
+            download_file(url, target, 0, on_progress)
+            validate_dev_armor_jar(target)
+            return target, "REMOTE DEV"
+        except Exception as e:
+            target.unlink(missing_ok=True)
+            errors.append(f"release#{round_no}: {type(e).__name__}: {e}")
 
-    raise RuntimeError("Удалённый DEV-канал недоступен. " + " | ".join(errors))
+        if on_retry:
+            on_retry(f"Попытка DEV {round_no}/2 • резервное зеркало")
+
+        try:
+            _download_raw_b64_dev(target, on_progress, attempts=3)
+            validate_dev_armor_jar(target)
+            return target, "REMOTE DEV"
+        except Exception as e:
+            target.unlink(missing_ok=True)
+            errors.append(f"raw#{round_no}: {type(e).__name__}: {e}")
+
+        if round_no < 2:
+            if on_retry:
+                on_retry("Сеть не ответила • повторяю автоматически через 2 сек.")
+            time.sleep(2)
+
+    raise RuntimeError("Удалённый DEV-канал не ответил. " + " | ".join(errors))
 
 def format_bytes(value: float | int) -> str:
     size = float(max(0, value))
@@ -1701,20 +1748,48 @@ class MeridianLauncher(tk.Tk):
         source: Path | None = None
         source_kind = "DEV-канал"
         remote_version = ""
+
+        def retry_note(message: str) -> None:
+            self._emit("status", "Обновляю DEV-броню…")
+            self._emit("detail", message)
+            self._emit("log", message)
+
         try:
-            source, remote_version = download_dev_armor_remote(progress)
+            source, remote_version = download_dev_armor_remote(progress, retry_note)
             source_kind = "удалённый DEV"
             self._emit("log", f"DEV-канал: свежий удалённый JAR скачан ({source.name}).")
         except Exception as e:
-            self._emit("log", f"DEV-канал недоступен: {type(e).__name__}: {e}")
-            self._emit("detail", "DEV-сеть недоступна • ищу резервный локальный JAR")
+            self._emit("log", f"DEV-сеть: {type(e).__name__}: {e}")
+
+            # Never downgrade an already installed DEV build just because the
+            # network hiccupped. Keep it and let the same button retry.
+            installed = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
+            if installed.is_file():
+                try:
+                    validate_dev_armor_jar(installed)
+                    digest = sha256_file(installed)
+                    label = str(self.state_data.get("dev_armor_name") or f"remote-{digest[:8]}")
+                    self._emit("progress_indeterminate", False)
+                    self._emit("status", "Сеть не ответила • DEV сохранена")
+                    self._emit("detail", "Текущая DEV-броня не изменена. Можно сразу нажать «Обновить DEV-броню» ещё раз.")
+                    self._emit("progress_text", "Повторный запуск лаунчера не нужен")
+                    self._emit("pack_value", f"DEV // {label}")
+                    self._emit("log", f"Оставлена установленная DEV: {label}. Перезапуск лаунчера не требуется.")
+                    return
+                except Exception:
+                    pass
+
+            self._emit("detail", "Удалённая DEV недоступна • ищу локальный резерв")
             source = find_local_dev_armor()
             source_kind = "локальный резерв"
 
         if source is None:
-            raise RuntimeError(
-                "Не удалось получить DEV-броню из сети, и локального резервного JAR тоже нет."
-            )
+            self._emit("progress_indeterminate", False)
+            self._emit("status", "DEV не обновилась")
+            self._emit("detail", "Сеть не ответила. Нажми «Обновить DEV-броню» ещё раз — перезапуск не нужен.")
+            self._emit("progress_text", "Готово к повторной попытке")
+            self._emit("log", "DEV не обновилась; кнопка готова к повторной попытке без перезапуска.")
+            return
 
         source_digest = sha256_file(source)
         current_digest = str(self.state_data.get("dev_armor_digest") or "")
@@ -1742,7 +1817,14 @@ class MeridianLauncher(tk.Tk):
 
     def _set_busy(self, busy: bool) -> None:
         self.busy = busy
-        self.play_btn.configure(state="disabled" if busy else "normal")
+        state = "disabled" if busy else "normal"
+        self.play_btn.configure(state=state)
+        if hasattr(self, "channel_update_btn"):
+            self.channel_update_btn.configure(state=state)
+        if hasattr(self, "stable_radio"):
+            self.stable_radio.configure(state=state)
+        if hasattr(self, "dev_radio"):
+            self.dev_radio.configure(state=state)
 
     def _save_preferences(self) -> None:
         self.state_data["username"] = self.username_var.get().strip() or "Player"
@@ -1771,6 +1853,7 @@ class MeridianLauncher(tk.Tk):
                 self._emit("error", str(e))
                 self._emit("log", f"Ошибка: {type(e).__name__}: {e}")
             finally:
+                self._emit("progress_indeterminate", False)
                 self._emit("busy", False)
 
         threading.Thread(target=runner, daemon=True).start()
