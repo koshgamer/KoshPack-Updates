@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha41-diver-v2",
+    "version": "alpha42-diver-tierfix",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 555234,
     "sha256": "9f2f3ab8e7a8e10bd1e7158ad045652f2c3d136099f9b2035d5b3dfb33053b25",
-    "note": "Diver v2: enlarged lower cuffs and detailed I-IV textures"
+    "note": "Diver alpha42: cuffs moved outward and I-IV progression strengthened"
   }
 }
