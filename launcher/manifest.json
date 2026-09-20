@@ -5,7 +5,7 @@
   "pack": "KoshPack",
   "packVersion": "dev-current",
   "minecraft": "1.21.1",
-  "neoforge": "21.1",
+  "neoforge": "21.1.248",
   "package": {
     "file": "minecraft.zip",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/current/minecraft.zip",
