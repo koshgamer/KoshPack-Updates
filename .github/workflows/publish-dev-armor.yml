@@ -58,12 +58,12 @@ jobs:
           data["minecraft"]="1.21.1"
           data["neoforge"]="21.1.248"
           data["armor"]={
-              "version":"alpha43-fighter-v1",
+              "version":"alpha44-fighter-v2-pixel",
               "file":"KoshPack_Armor_DEV.jar",
               "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
               "size":int(os.environ["SIZE"]),
               "sha256":os.environ["SHA256"],
-              "note":"Fighter alpha43 v1: new heavy assault profession I-IV"
+              "note":"Fighter alpha44 v2: pixel-art textures, stronger II-III progression, master IV geometry"
           }
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
