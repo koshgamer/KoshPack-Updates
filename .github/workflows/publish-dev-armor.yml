@@ -58,12 +58,12 @@ jobs:
           data["minecraft"]="1.21.1"
           data["neoforge"]="21.1.248"
           data["armor"]={
-              "version":"alpha42-diver-tierfix",
+              "version":"alpha43-fighter-v1",
               "file":"KoshPack_Armor_DEV.jar",
               "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
               "size":int(os.environ["SIZE"]),
               "sha256":os.environ["SHA256"],
-              "note":"Diver alpha42: cuffs moved outward and I-IV progression strengthened"
+              "note":"Fighter alpha43 v1: new heavy assault profession I-IV"
           }
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
