@@ -27,11 +27,12 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.4"
+APP_VERSION = "0.2.5"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
 DEV_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev-manifest.json"
+DEV_MANIFEST_API_URL = "https://api.github.com/repos/koshgamer/KoshPack-Updates/contents/launcher/dev-manifest.json?ref=main"
 DEV_ARMOR_TARGET = "koshpack-armor-specialties-DEV.jar"
 PACK_ASSET_NAME = "minecraft.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
@@ -151,6 +152,8 @@ def request_json(url: str, timeout: int = 30) -> dict[str, Any]:
             "User-Agent": USER_AGENT,
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
         },
     )
     with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -460,29 +463,45 @@ def apply_dev_armor(source: Path) -> tuple[str, str]:
     return target.name, digest
 
 
-def download_dev_armor_from_manifest(on_progress: Callable[[int, int], None]) -> Path | None:
+def get_dev_manifest() -> dict[str, Any]:
+    """Read DEV manifest through the GitHub API to avoid stale raw CDN responses."""
+    payload = request_json(DEV_MANIFEST_API_URL)
+    encoded = str(payload.get("content") or "").replace("\\n", "")
+    if not encoded:
+        # Last-resort compatibility path.
+        return request_json(DEV_MANIFEST_URL + f"?nocache={int(time.time())}")
     try:
-        manifest = request_json(DEV_MANIFEST_URL)
-    except Exception:
-        return None
+        decoded = base64.b64decode(encoded).decode("utf-8")
+        manifest = json.loads(decoded)
+    except Exception as e:
+        raise RuntimeError(f"Не удалось прочитать DEV-манифест: {e}") from e
+    if not isinstance(manifest, dict):
+        raise RuntimeError("DEV-манифест имеет неверный формат.")
+    return manifest
 
+
+def download_dev_armor_from_manifest(on_progress: Callable[[int, int], None]) -> tuple[Path, str]:
+    manifest = get_dev_manifest()
     armor = manifest.get("armor") or {}
+    version = str(armor.get("version") or "dev-current")
     url = str(armor.get("url") or "")
     sha256 = str(armor.get("sha256") or "").lower()
     size = int(armor.get("size") or 0)
     if not url or not sha256:
-        return None
+        raise RuntimeError("DEV-канал доступен, но в нём пока не опубликован JAR.")
 
-    target = CACHE_DIR / f"armor-dev-{sha256[:16]}.jar"
+    safe_version = "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in version)
+    target = CACHE_DIR / f"KoshPack_Armor_{safe_version}.jar"
     if target.is_file() and sha256_file(target) == sha256:
-        return target
+        return target, version
     target.unlink(missing_ok=True)
+
     download_file(url, target, size, on_progress)
     actual = sha256_file(target)
     if actual != sha256:
         target.unlink(missing_ok=True)
         raise RuntimeError("SHA-256 DEV-брони не совпал. Файл удалён.")
-    return target
+    return target, version
 
 
 def format_bytes(value: float | int) -> str:
@@ -1660,39 +1679,46 @@ class MeridianLauncher(tk.Tk):
             if total:
                 self._emit("progress_text", f"DEV броня • {format_bytes(done)} / {format_bytes(total)}")
 
-        source = download_dev_armor_from_manifest(progress)
+        source: Path | None = None
         source_kind = "DEV-канал"
-        if source is None:
+        remote_version = ""
+        try:
+            source, remote_version = download_dev_armor_from_manifest(progress)
+            self._emit("log", f"DEV-канал: найдена версия {remote_version} ({source.name}).")
+        except Exception as e:
+            self._emit("log", f"DEV-канал недоступен: {type(e).__name__}: {e}")
+            self._emit("detail", "DEV-сеть недоступна • ищу резервный локальный JAR")
             source = find_local_dev_armor()
-            source_kind = "Загрузки"
+            source_kind = "локальный резерв"
 
         if source is None:
             raise RuntimeError(
-                "DEV-броня не найдена ни в DEV-канале, ни в «Загрузках», ни в PrismLauncher. "
-                "Когда я опубликую новую броню в DEV-канал, кнопка начнёт скачивать её автоматически."
+                "Не удалось получить DEV-броню из сети, и локального резервного JAR тоже нет."
             )
 
         source_digest = sha256_file(source)
         current_digest = str(self.state_data.get("dev_armor_digest") or "")
         target = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
         if current_digest == source_digest and target.is_file() and sha256_file(target) == source_digest:
+            label = remote_version or source.name
             self._emit("status", "DEV-броня уже актуальна")
-            self._emit("detail", f"{source.name} • {source_kind}")
-            self._emit("pack_value", f"DEV // {source.name}")
-            self._emit("log", f"DEV JAR уже установлен: {source.name}")
+            self._emit("detail", f"{label} • {source_kind}")
+            self._emit("pack_value", f"DEV // {label}")
+            self._emit("log", f"DEV JAR уже установлен: {label}")
             return
 
         self._emit("status", "Устанавливаю DEV-броню…")
         installed_name, digest = apply_dev_armor(source)
+        display_name = remote_version or source.name
         self.state_data["dev_armor_digest"] = digest
-        self.state_data["dev_armor_name"] = source.name
+        self.state_data["dev_armor_name"] = display_name
         self.state_data["dev_armor_source"] = source_kind
         atomic_write_json(STATE_FILE, self.state_data)
         self._emit("progress", 100)
         self._emit("status", "DEV-броня установлена")
-        self._emit("detail", f"{source.name} • источник: {source_kind}")
-        self._emit("pack_value", f"DEV // {source.name}")
-        self._emit("log", f"DEV JAR установлен как {installed_name}: {source.name}")
+        self._emit("detail", f"{display_name} • источник: {source_kind}")
+        self._emit("pack_value", f"DEV // {display_name}")
+        self._emit("log", f"DEV JAR установлен как {installed_name}: {display_name}")
 
     def _set_busy(self, busy: bool) -> None:
         self.busy = busy
