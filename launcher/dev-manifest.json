@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha45-shooter-v1",
+    "version": "alpha46-shooter-v2-polish",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 702018,
     "sha256": "2ed3039d8824d9986185ed4015c2423105f195ebe81ad91c6dd4e5d5bb34827e",
-    "note": "Shooter alpha45 v1: mobile firearm class I-IV, pixel-art rig, 48-stand aggregate test"
+    "note": "Shooter alpha46 v2: stronger I-II separation, polished III-IV gear, pixel-art textures"
   }
 }
