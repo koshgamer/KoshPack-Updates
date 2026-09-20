@@ -2,14 +2,15 @@
   "schema": 1,
   "channel": "dev-armor",
   "label": "DEV / БРОНЯ",
-  "launcherMinVersion": "0.2.2",
+  "launcherMinVersion": "0.2.3",
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "local-fallback",
-    "url": "",
-    "size": 0,
-    "sha256": "",
-    "note": "Remote DEV artifact not published yet. Launcher falls back to the newest KoshPack_Armor_*.jar in Downloads."
+    "version": "alpha41-diver-v2",
+    "file": "KoshPack_Armor_DEV.jar",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
+    "size": 555234,
+    "sha256": "9f2f3ab8e7a8e10bd1e7158ad045652f2c3d136099f9b2035d5b3dfb33053b25",
+    "note": "Diver v2: enlarged lower cuffs and detailed I-IV textures"
   }
 }
