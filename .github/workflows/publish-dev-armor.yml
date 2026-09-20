@@ -1,0 +1,79 @@
+name: Publish DEV Armor
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "launcher/dev/*.jar.b64"
+      - ".github/workflows/publish-dev-armor.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decode DEV armor
+        run: |
+          mkdir -p dist
+          base64 -d launcher/dev/KoshPack_Armor_alpha41_diver_v2.jar.b64 > dist/KoshPack_Armor_DEV.jar
+          echo "SHA256=$(sha256sum dist/KoshPack_Armor_DEV.jar | awk '{print $1}')" >> "$GITHUB_ENV"
+          echo "SIZE=$(stat -c%s dist/KoshPack_Armor_DEV.jar)" >> "$GITHUB_ENV"
+
+      - name: Verify expected build
+        run: |
+          test "$SHA256" = "9f2f3ab8e7a8e10bd1e7158ad045652f2c3d136099f9b2035d5b3dfb33053b25"
+          test "$SIZE" = "555234"
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/client/DiverModelGeometry.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_armor_test.mcfunction'
+
+      - name: Publish DEV release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="armor-dev-current"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/KoshPack_Armor_DEV.jar --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" dist/KoshPack_Armor_DEV.jar --repo "$GITHUB_REPOSITORY" --title "Project Meridian DEV Armor" --notes "Автоматический DEV-канал тестовой брони Project Meridian." --latest=false
+          fi
+
+      - name: Update DEV manifest
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path("launcher/dev-manifest.json")
+          data=json.loads(p.read_text(encoding="utf-8"))
+          data["schema"]=1
+          data["channel"]="dev-armor"
+          data["label"]="DEV / БРОНЯ"
+          data["launcherMinVersion"]="0.2.3"
+          data["minecraft"]="1.21.1"
+          data["neoforge"]="21.1.248"
+          data["armor"]={
+              "version":"alpha41-diver-v2",
+              "file":"KoshPack_Armor_DEV.jar",
+              "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
+              "size":int(os.environ["SIZE"]),
+              "sha256":os.environ["SHA256"],
+              "note":"Diver v2: enlarged lower cuffs and detailed I-IV textures"
+          }
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+
+      - name: Commit DEV manifest
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "armor: publish alpha41 Diver v2 DEV manifest"
+          git push
