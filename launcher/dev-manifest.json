@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "channel": "dev-armor",
+  "label": "DEV / БРОНЯ",
+  "launcherMinVersion": "0.2.2",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "armor": {
+    "version": "local-fallback",
+    "url": "",
+    "size": 0,
+    "sha256": "",
+    "note": "Remote DEV artifact not published yet. Launcher falls back to the newest KoshPack_Armor_*.jar in Downloads."
+  }
+}
