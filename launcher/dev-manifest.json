@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha49-shooter-progression-v3",
+    "version": "alpha50-archer-v1-leather-ranger",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 864733,
-    "sha256": "1b696a0ebb95136065adb0b95e41bb8d21a0d48a0eadadfde279b7f9d36025d3",
-    "note": "alpha49 Shooter progression v3: Builder-grade I-IV silhouette progression; stronger Tier II/III/IV head, torso, leg and boot geometry"
+    "size": 933388,
+    "sha256": "f2526415a706a87136bc2dc3a4f6203468e0a9b06c129fd943aa87e689f68c60",
+    "note": "alpha50 Archer v1: leather forest ranger with hood, quiver from Tier I, cape/mantle progression and Builder-grade I-IV silhouette changes"
   }
 }
