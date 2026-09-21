@@ -3,14 +3,14 @@
   "channel": "current",
   "launcherMinVersion": "0.2.8",
   "pack": "KoshPack",
-  "packVersion": "dev-current-2026-09-21-meridian-holograms",
+  "packVersion": "dev-current",
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "package": {
     "file": "minecraft.zip",
-    "url": "https://github.com/koshgamer/KoshPack-DEV/releases/download/dev-current/minecraft.zip",
-    "size": 726403491,
-    "sha256": "6e98242f58a34792564579251ebb941541f0d377caeba555eebc4f29718eb71e"
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/current/minecraft.zip",
+    "size": 723665481,
+    "sha256": "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
   },
   "launcher": {
     "version": "0.2.9",
