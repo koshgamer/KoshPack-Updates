@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha48-role-separation-v1",
+    "version": "alpha49-shooter-progression-v3",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 863244,
     "sha256": "8e477ee6cb47f0fc622ca28e250b47e009a922683b5dd26eab483e8eb2d1289e",
-    "note": "alpha48 role separation: Fighter heavy assault, Shooter slim marksman, Researcher field-lab silhouette; 52-stand aggregate"
+    "note": "alpha49 Shooter progression v3: Builder-grade I-IV silhouette progression; stronger Tier II/III/IV head, torso, leg and boot geometry"
   }
 }
