@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.8"
+APP_VERSION = "0.2.9"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -268,9 +268,15 @@ def bundled_pack_path() -> Path | None:
     return _reconstruct_chunked_pack(base_dir)
 
 
-def download_file(url: str, dest: Path, expected_size: int, on_progress: Callable[[int, int], None]) -> None:
+def download_file(
+    url: str,
+    dest: Path,
+    expected_size: int,
+    on_progress: Callable[[int, int], None],
+    timeout: int = 90,
+    max_attempts: int = 5,
+) -> None:
     tmp = dest.with_suffix(dest.suffix + ".part")
-    max_attempts = 5
     last_error: Exception | None = None
 
     for attempt in range(1, max_attempts + 1):
@@ -285,7 +291,7 @@ def download_file(url: str, dest: Path, expected_size: int, on_progress: Callabl
 
         req = urllib.request.Request(url, headers=headers)
         try:
-            with urllib.request.urlopen(req, timeout=90) as response:
+            with urllib.request.urlopen(req, timeout=timeout) as response:
                 status = getattr(response, "status", response.getcode())
                 content_range = response.headers.get("Content-Range") or ""
                 content_length = int(response.headers.get("Content-Length") or 0)
@@ -485,7 +491,7 @@ def validate_dev_armor_jar(path: Path) -> None:
 def _download_raw_b64_dev(
     target: Path,
     on_progress: Callable[[int, int], None],
-    attempts: int = 4,
+    attempts: int = 2,
 ) -> None:
     """Download the raw base64 mirror in chunks with retries."""
     last_error: Exception | None = None
@@ -502,7 +508,7 @@ def _download_raw_b64_dev(
             )
             chunks: list[bytes] = []
             received = 0
-            with urllib.request.urlopen(req, timeout=45) as response:
+            with urllib.request.urlopen(req, timeout=15) as response:
                 total_encoded = int(response.headers.get("Content-Length") or 0)
                 while True:
                     chunk = response.read(256 * 1024)
@@ -523,50 +529,87 @@ def _download_raw_b64_dev(
             last_error = e
             target.unlink(missing_ok=True)
             if attempt < attempts:
-                time.sleep(min(2 * attempt, 6))
+                time.sleep(min(2 * attempt, 3))
 
     raise RuntimeError(f"raw-зеркало не ответило после {attempts} попыток: {last_error}")
+
+
+def get_dev_armor_manifest() -> dict[str, Any]:
+    """Fetch the tiny DEV manifest before downloading the armor JAR."""
+    errors: list[str] = []
+    urls = (
+        DEV_MANIFEST_URL + f"?nocache={int(time.time())}",
+        DEV_MANIFEST_RELEASE_URL + f"?nocache={int(time.time())}",
+    )
+    for url in urls:
+        try:
+            data = request_json(url, timeout=12)
+            armor = data.get("armor") or {}
+            version = str(armor.get("version") or "").strip()
+            sha256 = str(armor.get("sha256") or "").strip().lower()
+            file_url = str(armor.get("url") or DEV_ARMOR_DIRECT_URL).strip()
+            size = int(armor.get("size") or 0)
+            if not version or len(sha256) != 64:
+                raise RuntimeError("DEV manifest не содержит корректную version/sha256")
+            return {
+                "version": version,
+                "sha256": sha256,
+                "url": file_url,
+                "size": size,
+            }
+        except Exception as e:
+            errors.append(f"{type(e).__name__}: {e}")
+    raise RuntimeError("Не удалось получить DEV manifest: " + " | ".join(errors))
 
 
 def download_dev_armor_remote(
     on_progress: Callable[[int, int], None],
     on_retry: Callable[[str], None] | None = None,
+    manifest: dict[str, Any] | None = None,
 ) -> tuple[Path, str]:
-    """Download current DEV armor with automatic retries and two remote routes."""
+    """Download the current DEV armor quickly and verify it against the manifest."""
     target = CACHE_DIR / "KoshPack_Armor_REMOTE.jar"
+    info = manifest or get_dev_armor_manifest()
+    expected = str(info["sha256"]).lower()
+    version = str(info["version"])
+    size = int(info.get("size") or 0)
     errors: list[str] = []
 
-    # Two full rounds: Release asset first, then raw mirror. A transient network
-    # timeout should heal inside the same launcher session.
-    for round_no in range(1, 3):
-        if on_retry:
-            on_retry(f"Попытка DEV {round_no}/2 • GitHub Release")
-
+    if target.is_file():
         try:
-            target.unlink(missing_ok=True)
-            url = DEV_ARMOR_DIRECT_URL + f"?nocache={int(time.time())}-{round_no}"
-            download_file(url, target, 0, on_progress)
-            validate_dev_armor_jar(target)
-            return target, "REMOTE DEV"
-        except Exception as e:
-            target.unlink(missing_ok=True)
-            errors.append(f"release#{round_no}: {type(e).__name__}: {e}")
+            if sha256_file(target) == expected:
+                validate_dev_armor_jar(target)
+                return target, version
+        except Exception:
+            pass
+        target.unlink(missing_ok=True)
 
-        if on_retry:
-            on_retry(f"Попытка DEV {round_no}/2 • резервное зеркало")
+    # raw.githubusercontent is usually much faster for the small DEV payload
+    # than waiting on a Release redirect/CDN, so use it first.
+    if on_retry:
+        on_retry(f"{version} • резервное зеркало")
+    try:
+        _download_raw_b64_dev(target, on_progress, attempts=2)
+        validate_dev_armor_jar(target)
+        if sha256_file(target) != expected:
+            raise RuntimeError("SHA-256 резервного DEV JAR не совпал с manifest")
+        return target, version
+    except Exception as e:
+        target.unlink(missing_ok=True)
+        errors.append(f"raw: {type(e).__name__}: {e}")
 
-        try:
-            _download_raw_b64_dev(target, on_progress, attempts=3)
-            validate_dev_armor_jar(target)
-            return target, "REMOTE DEV"
-        except Exception as e:
-            target.unlink(missing_ok=True)
-            errors.append(f"raw#{round_no}: {type(e).__name__}: {e}")
-
-        if round_no < 2:
-            if on_retry:
-                on_retry("Сеть не ответила • повторяю автоматически через 2 сек.")
-            time.sleep(2)
+    if on_retry:
+        on_retry(f"{version} • GitHub Release")
+    try:
+        url = str(info.get("url") or DEV_ARMOR_DIRECT_URL) + f"?nocache={int(time.time())}"
+        download_file(url, target, size, on_progress, timeout=20, max_attempts=2)
+        validate_dev_armor_jar(target)
+        if sha256_file(target) != expected:
+            raise RuntimeError("SHA-256 DEV JAR не совпал с manifest")
+        return target, version
+    except Exception as e:
+        target.unlink(missing_ok=True)
+        errors.append(f"release: {type(e).__name__}: {e}")
 
     raise RuntimeError("Удалённый DEV-канал не ответил. " + " | ".join(errors))
 
@@ -1748,6 +1791,7 @@ class MeridianLauncher(tk.Tk):
         source: Path | None = None
         source_kind = "DEV-канал"
         remote_version = ""
+        manifest: dict[str, Any] | None = None
 
         def retry_note(message: str) -> None:
             self._emit("status", "Обновляю DEV-броню…")
@@ -1755,9 +1799,33 @@ class MeridianLauncher(tk.Tk):
             self._emit("log", message)
 
         try:
-            source, remote_version = download_dev_armor_remote(progress, retry_note)
+            manifest = get_dev_armor_manifest()
+            remote_version = str(manifest["version"])
+            expected_digest = str(manifest["sha256"])
+            installed = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
+
+            if installed.is_file():
+                try:
+                    installed_digest = sha256_file(installed)
+                    if installed_digest == expected_digest:
+                        validate_dev_armor_jar(installed)
+                        self.state_data["dev_armor_digest"] = installed_digest
+                        self.state_data["dev_armor_name"] = remote_version
+                        self.state_data["dev_armor_source"] = "удалённый DEV"
+                        atomic_write_json(STATE_FILE, self.state_data)
+                        self._emit("progress_indeterminate", False)
+                        self._emit("progress", 100)
+                        self._emit("status", "DEV-броня уже актуальна")
+                        self._emit("detail", f"{remote_version} • скачивание не требуется")
+                        self._emit("pack_value", f"DEV // {remote_version}")
+                        self._emit("log", f"DEV JAR уже актуален: {remote_version}")
+                        return
+                except Exception:
+                    pass
+
+            source, remote_version = download_dev_armor_remote(progress, retry_note, manifest)
             source_kind = "удалённый DEV"
-            self._emit("log", f"DEV-канал: свежий удалённый JAR скачан ({source.name}).")
+            self._emit("log", f"DEV-канал: свежий удалённый JAR скачан ({remote_version}).")
         except Exception as e:
             self._emit("log", f"DEV-сеть: {type(e).__name__}: {e}")
 
@@ -1795,7 +1863,7 @@ class MeridianLauncher(tk.Tk):
         current_digest = str(self.state_data.get("dev_armor_digest") or "")
         target = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
         if current_digest == source_digest and target.is_file() and sha256_file(target) == source_digest:
-            label = (f"remote-{source_digest[:8]}" if source_kind == "удалённый DEV" else (remote_version or source.name))
+            label = (remote_version or f"remote-{source_digest[:8]}") if source_kind == "удалённый DEV" else (remote_version or source.name)
             self._emit("status", "DEV-броня уже актуальна")
             self._emit("detail", f"{label} • {source_kind}")
             self._emit("pack_value", f"DEV // {label}")
@@ -1804,7 +1872,7 @@ class MeridianLauncher(tk.Tk):
 
         self._emit("status", "Устанавливаю DEV-броню…")
         installed_name, digest = apply_dev_armor(source)
-        display_name = (f"remote-{digest[:8]}" if source_kind == "удалённый DEV" else (remote_version or source.name))
+        display_name = (remote_version or f"remote-{digest[:8]}") if source_kind == "удалённый DEV" else (remote_version or source.name)
         self.state_data["dev_armor_digest"] = digest
         self.state_data["dev_armor_name"] = display_name
         self.state_data["dev_armor_source"] = source_kind
