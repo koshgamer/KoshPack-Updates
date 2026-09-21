@@ -15,6 +15,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      DEV_VERSION: "alpha49-shooter-progression-v3"
+      DEV_NOTE: "alpha49 Shooter progression v3: Builder-grade I-IV silhouette progression; stronger Tier II/III/IV head, torso, leg and boot geometry"
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -58,12 +61,12 @@ jobs:
           data["minecraft"]="1.21.1"
           data["neoforge"]="21.1.248"
           data["armor"]={
-              "version":"alpha48-role-separation-v1",
+              "version":os.environ["DEV_VERSION"],
               "file":"KoshPack_Armor_DEV.jar",
               "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
               "size":int(os.environ["SIZE"]),
               "sha256":os.environ["SHA256"],
-              "note":"alpha48 role separation: Fighter heavy assault, Shooter slim marksman, Researcher field-lab silhouette; 52-stand aggregate"
+              "note":os.environ["DEV_NOTE"]
           }
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
@@ -81,5 +84,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add launcher/dev-manifest.json
           git diff --cached --quiet && exit 0
-          git commit -m "armor: publish alpha41 Diver v2 DEV manifest"
+          git commit -m "armor: publish $DEV_VERSION DEV manifest"
           git push
