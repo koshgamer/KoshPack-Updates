@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.9"
+APP_VERSION = "0.2.10"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -148,19 +148,35 @@ def load_state() -> dict[str, Any]:
     return defaults
 
 
-def request_json(url: str, timeout: int = 30) -> dict[str, Any]:
-    req = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-        },
+def request_json(url: str, timeout: int = 45, max_attempts: int = 5) -> dict[str, Any]:
+    last_error: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as e:
+            last_error = e
+            if e.code not in (408, 429, 500, 502, 503, 504) or attempt >= max_attempts:
+                raise
+        except (urllib.error.URLError, ConnectionResetError, TimeoutError, OSError) as e:
+            last_error = e
+            if attempt >= max_attempts:
+                break
+        time.sleep(min(2 ** attempt, 10))
+    raise RuntimeError(
+        f"GitHub не ответил после {max_attempts} попыток. "
+        f"Попробуй ещё раз через несколько секунд. Последняя ошибка: {last_error}"
     )
-    with urllib.request.urlopen(req, timeout=timeout) as response:
-        return json.load(response)
 
 
 def get_release_asset() -> dict[str, Any]:
@@ -273,8 +289,8 @@ def download_file(
     dest: Path,
     expected_size: int,
     on_progress: Callable[[int, int], None],
-    timeout: int = 90,
-    max_attempts: int = 5,
+    timeout: int = 180,
+    max_attempts: int = 8,
 ) -> None:
     tmp = dest.with_suffix(dest.suffix + ".part")
     last_error: Exception | None = None
