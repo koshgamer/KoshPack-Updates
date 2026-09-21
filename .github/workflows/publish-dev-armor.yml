@@ -16,8 +16,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      DEV_VERSION: "alpha49-shooter-progression-v3"
-      DEV_NOTE: "alpha49 Shooter progression v3: Builder-grade I-IV silhouette progression; stronger Tier II/III/IV head, torso, leg and boot geometry"
+      DEV_VERSION: "alpha50-archer-v1-leather-ranger"
+      DEV_NOTE: "alpha50 Archer v1: leather forest ranger with hood, quiver from Tier I, cape/mantle progression and Builder-grade I-IV silhouette changes"
     timeout-minutes: 10
     steps:
       - name: Checkout
