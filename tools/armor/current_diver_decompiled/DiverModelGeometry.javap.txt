@@ -1,0 +1,912 @@
+Compiled from "DiverModelGeometry.java"
+final class ru.koshpack.forgebridge.armor.client.DiverModelGeometry {
+  private ru.koshpack.forgebridge.armor.client.DiverModelGeometry();
+    Code:
+       0: aload_0
+       1: invokespecial #9                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  static net.minecraft.client.model.geom.builders.LayerDefinition create(net.minecraft.world.entity.EquipmentSlot, int);
+    Code:
+       0: new           #13                 // class net/minecraft/client/model/geom/builders/CubeDeformation
+       3: dup
+       4: fconst_0
+       5: invokespecial #16                 // Method net/minecraft/client/model/geom/builders/CubeDeformation."<init>":(F)V
+       8: fconst_0
+       9: invokestatic  #22                 // Method net/minecraft/client/model/HumanoidModel.createMesh:(Lnet/minecraft/client/model/geom/builders/CubeDeformation;F)Lnet/minecraft/client/model/geom/builders/MeshDefinition;
+      12: astore_2
+      13: aload_2
+      14: invokevirtual #28                 // Method net/minecraft/client/model/geom/builders/MeshDefinition.getRoot:()Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      17: astore_3
+      18: aload_3
+      19: ldc           #30                 // String head
+      21: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      24: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      27: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      30: astore        4
+      32: aload_3
+      33: ldc           #49                 // String hat
+      35: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      38: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      41: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      44: pop
+      45: aload_3
+      46: ldc           #51                 // String body
+      48: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      51: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      54: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      57: astore        5
+      59: aload_3
+      60: ldc           #53                 // String right_arm
+      62: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      65: ldc           #54                 // float -5.0f
+      67: fconst_2
+      68: fconst_0
+      69: invokestatic  #58                 // Method net/minecraft/client/model/geom/PartPose.offset:(FFF)Lnet/minecraft/client/model/geom/PartPose;
+      72: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      75: astore        6
+      77: aload_3
+      78: ldc           #60                 // String left_arm
+      80: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      83: ldc           #61                 // float 5.0f
+      85: fconst_2
+      86: fconst_0
+      87: invokestatic  #58                 // Method net/minecraft/client/model/geom/PartPose.offset:(FFF)Lnet/minecraft/client/model/geom/PartPose;
+      90: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      93: astore        7
+      95: aload_3
+      96: ldc           #63                 // String right_leg
+      98: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     101: ldc           #64                 // float -1.9f
+     103: ldc           #65                 // float 12.0f
+     105: fconst_0
+     106: invokestatic  #58                 // Method net/minecraft/client/model/geom/PartPose.offset:(FFF)Lnet/minecraft/client/model/geom/PartPose;
+     109: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     112: astore        8
+     114: aload_3
+     115: ldc           #67                 // String left_leg
+     117: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     120: ldc           #68                 // float 1.9f
+     122: ldc           #65                 // float 12.0f
+     124: fconst_0
+     125: invokestatic  #58                 // Method net/minecraft/client/model/geom/PartPose.offset:(FFF)Lnet/minecraft/client/model/geom/PartPose;
+     128: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     131: astore        9
+     133: aload_0
+     134: getstatic     #74                 // Field net/minecraft/world/entity/EquipmentSlot.HEAD:Lnet/minecraft/world/entity/EquipmentSlot;
+     137: if_acmpne     146
+     140: aload         4
+     142: iload_1
+     143: invokestatic  #78                 // Method addHead:(Lnet/minecraft/client/model/geom/builders/PartDefinition;I)V
+     146: aload_0
+     147: getstatic     #81                 // Field net/minecraft/world/entity/EquipmentSlot.CHEST:Lnet/minecraft/world/entity/EquipmentSlot;
+     150: if_acmpne     163
+     153: aload         5
+     155: aload         6
+     157: aload         7
+     159: iload_1
+     160: invokestatic  #85                 // Method addChest:(Lnet/minecraft/client/model/geom/builders/PartDefinition;Lnet/minecraft/client/model/geom/builders/PartDefinition;Lnet/minecraft/client/model/geom/builders/PartDefinition;I)V
+     163: aload_0
+     164: getstatic     #88                 // Field net/minecraft/world/entity/EquipmentSlot.LEGS:Lnet/minecraft/world/entity/EquipmentSlot;
+     167: if_acmpne     180
+     170: aload         5
+     172: aload         8
+     174: aload         9
+     176: iload_1
+     177: invokestatic  #91                 // Method addLegs:(Lnet/minecraft/client/model/geom/builders/PartDefinition;Lnet/minecraft/client/model/geom/builders/PartDefinition;Lnet/minecraft/client/model/geom/builders/PartDefinition;I)V
+     180: aload_0
+     181: getstatic     #94                 // Field net/minecraft/world/entity/EquipmentSlot.FEET:Lnet/minecraft/world/entity/EquipmentSlot;
+     184: if_acmpne     195
+     187: aload         8
+     189: aload         9
+     191: iload_1
+     192: invokestatic  #98                 // Method addBoots:(Lnet/minecraft/client/model/geom/builders/PartDefinition;Lnet/minecraft/client/model/geom/builders/PartDefinition;I)V
+     195: aload_2
+     196: bipush        64
+     198: bipush        64
+     200: invokestatic  #103                // Method net/minecraft/client/model/geom/builders/LayerDefinition.create:(Lnet/minecraft/client/model/geom/builders/MeshDefinition;II)Lnet/minecraft/client/model/geom/builders/LayerDefinition;
+     203: areturn
+
+  private static net.minecraft.client.model.geom.builders.CubeListBuilder box(int, int, float, float, float, float, float, float, float);
+    Code:
+       0: invokestatic  #35                 // Method net/minecraft/client/model/geom/builders/CubeListBuilder.create:()Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+       3: iload_0
+       4: iload_1
+       5: invokevirtual #109                // Method net/minecraft/client/model/geom/builders/CubeListBuilder.texOffs:(II)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+       8: fload_2
+       9: fload_3
+      10: fload         4
+      12: fload         5
+      14: fload         6
+      16: fload         7
+      18: new           #13                 // class net/minecraft/client/model/geom/builders/CubeDeformation
+      21: dup
+      22: fload         8
+      24: invokespecial #16                 // Method net/minecraft/client/model/geom/builders/CubeDeformation."<init>":(F)V
+      27: invokevirtual #113                // Method net/minecraft/client/model/geom/builders/CubeListBuilder.addBox:(FFFFFFLnet/minecraft/client/model/geom/builders/CubeDeformation;)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      30: areturn
+
+  private static void addHead(net.minecraft.client.model.geom.builders.PartDefinition, int);
+    Code:
+       0: aload_0
+       1: ldc           #115                // String helmet_shell
+       3: iconst_0
+       4: iconst_0
+       5: ldc           #116                // float -4.0f
+       7: ldc           #117                // float -8.0f
+       9: ldc           #116                // float -4.0f
+      11: ldc           #118                // float 8.0f
+      13: ldc           #118                // float 8.0f
+      15: ldc           #118                // float 8.0f
+      17: ldc           #119                // float 0.8f
+      19: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      22: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      25: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      28: pop
+      29: aload_0
+      30: ldc           #123                // String viewport_frame
+      32: iconst_0
+      33: bipush        18
+      35: ldc           #124                // float -3.5f
+      37: ldc           #125                // float -6.8f
+      39: ldc           #126                // float -4.96f
+      41: ldc           #127                // float 7.0f
+      43: ldc           #128                // float 5.2f
+      45: ldc           #129                // float 0.45f
+      47: fconst_0
+      48: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      51: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      54: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      57: pop
+      58: aload_0
+      59: ldc           #131                // String viewport_left
+      61: bipush        18
+      63: bipush        18
+      65: ldc           #132                // float -3.0f
+      67: ldc           #133                // float -6.35f
+      69: ldc           #134                // float -5.24f
+      71: ldc           #135                // float 2.7f
+      73: ldc           #136                // float 4.25f
+      75: ldc           #137                // float 0.18f
+      77: fconst_0
+      78: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      81: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      84: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      87: pop
+      88: aload_0
+      89: ldc           #139                // String viewport_right
+      91: bipush        32
+      93: bipush        18
+      95: ldc           #140                // float 0.3f
+      97: ldc           #133                // float -6.35f
+      99: ldc           #134                // float -5.24f
+     101: ldc           #135                // float 2.7f
+     103: ldc           #136                // float 4.25f
+     105: ldc           #137                // float 0.18f
+     107: fconst_0
+     108: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     111: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     114: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     117: pop
+     118: aload_0
+     119: ldc           #142                // String viewport_bridge
+     121: bipush        46
+     123: bipush        18
+     125: ldc           #143                // float -0.3f
+     127: ldc           #144                // float -6.55f
+     129: ldc           #145                // float -5.28f
+     131: ldc           #146                // float 0.6f
+     133: ldc           #147                // float 4.65f
+     135: ldc           #148                // float 0.24f
+     137: fconst_0
+     138: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     141: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     144: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     147: pop
+     148: aload_0
+     149: ldc           #150                // String rear_service_hatch
+     151: iconst_0
+     152: bipush        26
+     154: ldc           #151                // float -2.5f
+     156: ldc           #152                // float -5.9f
+     158: ldc           #153                // float 4.83f
+     160: ldc           #61                 // float 5.0f
+     162: ldc           #154                // float 3.8f
+     164: ldc           #155                // float 0.28f
+     166: fconst_0
+     167: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     170: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     173: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     176: pop
+     177: iload_1
+     178: iconst_2
+     179: if_icmplt     275
+     182: aload_0
+     183: ldc           #157                // String side_coupler_r
+     185: bipush        22
+     187: bipush        26
+     189: ldc           #158                // float -5.22f
+     191: ldc           #152                // float -5.9f
+     193: ldc           #159                // float -1.6f
+     195: ldc           #160                // float 0.55f
+     197: ldc           #161                // float 3.2f
+     199: ldc           #161                // float 3.2f
+     201: ldc           #162                // float 0.03f
+     203: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     206: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     209: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     212: pop
+     213: aload_0
+     214: ldc           #164                // String side_coupler_l
+     216: bipush        30
+     218: bipush        26
+     220: ldc           #165                // float 4.67f
+     222: ldc           #152                // float -5.9f
+     224: ldc           #159                // float -1.6f
+     226: ldc           #160                // float 0.55f
+     228: ldc           #161                // float 3.2f
+     230: ldc           #161                // float 3.2f
+     232: ldc           #162                // float 0.03f
+     234: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     237: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     240: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     243: pop
+     244: aload_0
+     245: ldc           #167                // String top_cap
+     247: bipush        38
+     249: bipush        26
+     251: ldc           #168                // float -2.45f
+     253: ldc           #169                // float -9.1f
+     255: ldc           #170                // float -2.55f
+     257: ldc           #171                // float 4.9f
+     259: ldc           #160                // float 0.55f
+     261: ldc           #172                // float 5.1f
+     263: ldc           #173                // float 0.02f
+     265: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     268: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     271: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     274: pop
+     275: iload_1
+     276: iconst_3
+     277: if_icmplt     372
+     280: aload_0
+     281: ldc           #175                // String brow_guard
+     283: iconst_0
+     284: bipush        34
+     286: ldc           #176                // float -3.95f
+     288: ldc           #177                // float -7.5f
+     290: ldc           #178                // float -5.34f
+     292: ldc           #179                // float 7.9f
+     294: ldc           #180                // float 0.65f
+     296: ldc           #181                // float 0.62f
+     298: ldc           #173                // float 0.02f
+     300: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     303: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     306: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     309: pop
+     310: aload_0
+     311: ldc           #183                // String lamp_r
+     313: bipush        18
+     315: bipush        34
+     317: ldc           #184                // float -5.18f
+     319: ldc           #185                // float -7.15f
+     321: ldc           #170                // float -2.55f
+     323: ldc           #160                // float 0.55f
+     325: ldc           #186                // float 1.8f
+     327: ldc           #187                // float 1.65f
+     329: ldc           #173                // float 0.02f
+     331: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     334: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     337: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     340: pop
+     341: aload_0
+     342: ldc           #189                // String lamp_l
+     344: bipush        24
+     346: bipush        34
+     348: ldc           #190                // float 4.63f
+     350: ldc           #185                // float -7.15f
+     352: ldc           #170                // float -2.55f
+     354: ldc           #160                // float 0.55f
+     356: ldc           #186                // float 1.8f
+     358: ldc           #187                // float 1.65f
+     360: ldc           #173                // float 0.02f
+     362: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     365: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     368: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     371: pop
+     372: iload_1
+     373: iconst_4
+     374: if_icmplt     501
+     377: aload_0
+     378: ldc           #192                // String top_handle_front
+     380: bipush        30
+     382: bipush        34
+     384: ldc           #151                // float -2.5f
+     386: ldc           #193                // float -9.5f
+     388: ldc           #194                // float -2.4f
+     390: ldc           #61                 // float 5.0f
+     392: ldc           #160                // float 0.55f
+     394: ldc           #160                // float 0.55f
+     396: ldc           #162                // float 0.03f
+     398: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     401: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     404: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     407: pop
+     408: aload_0
+     409: ldc           #196                // String top_handle_back
+     411: bipush        40
+     413: bipush        34
+     415: ldc           #151                // float -2.5f
+     417: ldc           #193                // float -9.5f
+     419: ldc           #197                // float 1.85f
+     421: ldc           #61                 // float 5.0f
+     423: ldc           #160                // float 0.55f
+     425: ldc           #160                // float 0.55f
+     427: ldc           #162                // float 0.03f
+     429: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     432: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     435: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     438: pop
+     439: aload_0
+     440: ldc           #199                // String top_handle_left
+     442: bipush        50
+     444: bipush        34
+     446: ldc           #151                // float -2.5f
+     448: ldc           #193                // float -9.5f
+     450: ldc           #200                // float -1.95f
+     452: ldc           #160                // float 0.55f
+     454: ldc           #160                // float 0.55f
+     456: ldc           #201                // float 4.35f
+     458: ldc           #162                // float 0.03f
+     460: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     463: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     466: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     469: pop
+     470: aload_0
+     471: ldc           #203                // String top_handle_right
+     473: bipush        56
+     475: bipush        34
+     477: ldc           #204                // float 1.95f
+     479: ldc           #193                // float -9.5f
+     481: ldc           #200                // float -1.95f
+     483: ldc           #160                // float 0.55f
+     485: ldc           #160                // float 0.55f
+     487: ldc           #201                // float 4.35f
+     489: ldc           #162                // float 0.03f
+     491: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     494: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     497: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     500: pop
+     501: return
+
+  private static void addChest(net.minecraft.client.model.geom.builders.PartDefinition, net.minecraft.client.model.geom.builders.PartDefinition, net.minecraft.client.model.geom.builders.PartDefinition, int);
+    Code:
+       0: aload_0
+       1: ldc           #206                // String body_shell
+       3: iconst_0
+       4: iconst_0
+       5: ldc           #116                // float -4.0f
+       7: fconst_0
+       8: ldc           #207                // float -2.0f
+      10: ldc           #118                // float 8.0f
+      12: ldc           #65                 // float 12.0f
+      14: ldc           #208                // float 4.0f
+      16: ldc           #209                // float 0.34f
+      18: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      21: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      24: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      27: pop
+      28: aload_1
+      29: ldc           #211                // String right_sleeve
+      31: bipush        24
+      33: iconst_0
+      34: ldc           #132                // float -3.0f
+      36: ldc           #207                // float -2.0f
+      38: ldc           #207                // float -2.0f
+      40: ldc           #208                // float 4.0f
+      42: ldc           #65                 // float 12.0f
+      44: ldc           #208                // float 4.0f
+      46: ldc           #155                // float 0.28f
+      48: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      51: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      54: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      57: pop
+      58: aload_2
+      59: ldc           #213                // String left_sleeve
+      61: bipush        40
+      63: iconst_0
+      64: ldc           #214                // float -1.0f
+      66: ldc           #207                // float -2.0f
+      68: ldc           #207                // float -2.0f
+      70: ldc           #208                // float 4.0f
+      72: ldc           #65                 // float 12.0f
+      74: ldc           #208                // float 4.0f
+      76: ldc           #155                // float 0.28f
+      78: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      81: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      84: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      87: pop
+      88: aload_0
+      89: ldc           #216                // String neck_lock
+      91: iconst_0
+      92: bipush        20
+      94: ldc           #217                // float -3.75f
+      96: ldc           #218                // float -0.4f
+      98: ldc           #219                // float -2.35f
+     100: ldc           #220                // float 7.5f
+     102: ldc           #221                // float 1.15f
+     104: ldc           #222                // float 4.7f
+     106: fconst_0
+     107: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     110: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     113: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     116: pop
+     117: aload_0
+     118: ldc           #224                // String front_harness
+     120: bipush        26
+     122: bipush        20
+     124: ldc           #225                // float -3.15f
+     126: ldc           #226                // float 1.1f
+     128: ldc           #227                // float -2.48f
+     130: ldc           #228                // float 6.3f
+     132: ldc           #229                // float 7.2f
+     134: ldc           #148                // float 0.24f
+     136: fconst_0
+     137: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     140: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     143: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     146: pop
+     147: aload_0
+     148: ldc           #231                // String air_tank
+     150: iconst_0
+     151: bipush        30
+     153: ldc           #232                // float -2.65f
+     155: ldc           #226                // float 1.1f
+     157: ldc           #233                // float 2.36f
+     159: ldc           #234                // float 5.3f
+     161: ldc           #235                // float 7.8f
+     163: ldc           #236                // float 1.5f
+     165: fconst_0
+     166: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     169: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     172: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     175: pop
+     176: aload_1
+     177: ldc           #238                // String right_cuff
+     179: bipush        22
+     181: bipush        30
+     183: ldc           #239                // float -3.52f
+     185: ldc           #240                // float 5.55f
+     187: ldc           #227                // float -2.48f
+     189: ldc           #241                // float 4.95f
+     191: ldc           #242                // float 3.75f
+     193: ldc           #243                // float 4.96f
+     195: ldc           #244                // float 0.08f
+     197: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     200: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     203: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     206: pop
+     207: aload_2
+     208: ldc           #246                // String left_cuff
+     210: bipush        42
+     212: bipush        30
+     214: ldc           #247                // float -1.43f
+     216: ldc           #240                // float 5.55f
+     218: ldc           #227                // float -2.48f
+     220: ldc           #241                // float 4.95f
+     222: ldc           #242                // float 3.75f
+     224: ldc           #243                // float 4.96f
+     226: ldc           #244                // float 0.08f
+     228: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     231: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     234: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     237: pop
+     238: iload_3
+     239: iconst_2
+     240: if_icmplt     343
+     243: aload_1
+     244: ldc           #249                // String right_shoulder_guard
+     246: iconst_0
+     247: bipush        42
+     249: ldc           #239                // float -3.52f
+     251: ldc           #170                // float -2.55f
+     253: ldc           #250                // float -2.52f
+     255: ldc           #251                // float 5.04f
+     257: ldc           #252                // float 1.3f
+     259: ldc           #251                // float 5.04f
+     261: ldc           #253                // float 0.04f
+     263: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     266: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     269: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     272: pop
+     273: aload_2
+     274: ldc           #255                // String left_shoulder_guard
+     276: bipush        20
+     278: bipush        42
+     280: ldc_w         #256                // float -1.52f
+     283: ldc           #170                // float -2.55f
+     285: ldc           #250                // float -2.52f
+     287: ldc           #251                // float 5.04f
+     289: ldc           #252                // float 1.3f
+     291: ldc           #251                // float 5.04f
+     293: ldc           #253                // float 0.04f
+     295: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     298: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     301: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     304: pop
+     305: aload_0
+     306: ldc_w         #258                // String regulator
+     309: bipush        40
+     311: bipush        42
+     313: ldc_w         #259                // float -1.2f
+     316: ldc_w         #260                // float 2.05f
+     319: ldc_w         #261                // float -2.92f
+     322: ldc_w         #262                // float 2.4f
+     325: ldc_w         #263                // float 2.35f
+     328: ldc_w         #264                // float 0.58f
+     331: ldc           #162                // float 0.03f
+     333: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     336: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     339: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     342: pop
+     343: iload_3
+     344: iconst_3
+     345: if_icmplt     456
+     348: aload_0
+     349: ldc_w         #266                // String tank_left
+     352: iconst_0
+     353: bipush        50
+     355: ldc_w         #267                // float -3.78f
+     358: ldc           #252                // float 1.3f
+     360: ldc_w         #262                // float 2.4f
+     363: ldc           #68                 // float 1.9f
+     365: ldc_w         #268                // float 6.8f
+     368: ldc_w         #269                // float 1.62f
+     371: ldc           #173                // float 0.02f
+     373: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     376: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     379: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     382: pop
+     383: aload_0
+     384: ldc_w         #271                // String tank_right
+     387: bipush        10
+     389: bipush        50
+     391: ldc_w         #272                // float 1.88f
+     394: ldc           #252                // float 1.3f
+     396: ldc_w         #262                // float 2.4f
+     399: ldc           #68                 // float 1.9f
+     401: ldc_w         #268                // float 6.8f
+     404: ldc_w         #269                // float 1.62f
+     407: ldc           #173                // float 0.02f
+     409: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     412: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     415: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     418: pop
+     419: aload_0
+     420: ldc_w         #274                // String chest_plate
+     423: bipush        20
+     425: bipush        50
+     427: ldc_w         #275                // float -3.08f
+     430: ldc_w         #276                // float 1.75f
+     433: ldc_w         #261                // float -2.92f
+     436: ldc_w         #277                // float 6.16f
+     439: ldc           #240                // float 5.55f
+     441: ldc_w         #264                // float 0.58f
+     444: ldc           #173                // float 0.02f
+     446: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     449: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     452: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     455: pop
+     456: iload_3
+     457: iconst_4
+     458: if_icmplt     498
+     461: aload_0
+     462: ldc_w         #279                // String lower_weight_belt
+     465: bipush        44
+     467: bipush        50
+     469: ldc_w         #280                // float -4.02f
+     472: ldc_w         #281                // float 8.2f
+     475: ldc_w         #282                // float -2.78f
+     478: ldc_w         #283                // float 8.04f
+     481: ldc           #204                // float 1.95f
+     483: ldc_w         #284                // float 5.56f
+     486: ldc           #253                // float 0.04f
+     488: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     491: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     494: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     497: pop
+     498: return
+
+  private static void addLegs(net.minecraft.client.model.geom.builders.PartDefinition, net.minecraft.client.model.geom.builders.PartDefinition, net.minecraft.client.model.geom.builders.PartDefinition, int);
+    Code:
+       0: aload_0
+       1: ldc_w         #286                // String waist_shell
+       4: iconst_0
+       5: iconst_0
+       6: ldc           #116                // float -4.0f
+       8: ldc           #118                // float 8.0f
+      10: ldc           #207                // float -2.0f
+      12: ldc           #118                // float 8.0f
+      14: ldc           #208                // float 4.0f
+      16: ldc           #208                // float 4.0f
+      18: ldc_w         #287                // float 0.25f
+      21: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      24: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      27: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      30: pop
+      31: aload_1
+      32: ldc_w         #289                // String right_leg_shell
+      35: bipush        24
+      37: iconst_0
+      38: ldc           #207                // float -2.0f
+      40: fconst_0
+      41: ldc           #207                // float -2.0f
+      43: ldc           #208                // float 4.0f
+      45: ldc           #65                 // float 12.0f
+      47: ldc           #208                // float 4.0f
+      49: ldc_w         #290                // float 0.26f
+      52: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      55: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      58: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      61: pop
+      62: aload_2
+      63: ldc_w         #292                // String left_leg_shell
+      66: bipush        40
+      68: iconst_0
+      69: ldc           #207                // float -2.0f
+      71: fconst_0
+      72: ldc           #207                // float -2.0f
+      74: ldc           #208                // float 4.0f
+      76: ldc           #65                 // float 12.0f
+      78: ldc           #208                // float 4.0f
+      80: ldc_w         #290                // float 0.26f
+      83: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      86: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      89: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      92: pop
+      93: aload_1
+      94: ldc_w         #294                // String right_knee
+      97: iconst_0
+      98: bipush        22
+     100: ldc_w         #295                // float -2.2f
+     103: ldc_w         #296                // float 4.15f
+     106: ldc_w         #297                // float -2.38f
+     109: ldc_w         #298                // float 4.4f
+     112: ldc_w         #299                // float 2.1f
+     115: ldc_w         #300                // float 0.38f
+     118: fconst_0
+     119: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     122: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     125: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     128: pop
+     129: aload_2
+     130: ldc_w         #302                // String left_knee
+     133: bipush        12
+     135: bipush        22
+     137: ldc_w         #295                // float -2.2f
+     140: ldc_w         #296                // float 4.15f
+     143: ldc_w         #297                // float -2.38f
+     146: ldc_w         #298                // float 4.4f
+     149: ldc_w         #299                // float 2.1f
+     152: ldc_w         #300                // float 0.38f
+     155: fconst_0
+     156: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     159: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     162: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     165: pop
+     166: iload_3
+     167: iconst_2
+     168: if_icmplt     242
+     171: aload_1
+     172: ldc_w         #304                // String right_thigh_weight
+     175: bipush        24
+     177: bipush        22
+     179: ldc           #227                // float -2.48f
+     181: ldc           #226                // float 1.1f
+     183: ldc_w         #272                // float 1.88f
+     186: ldc           #180                // float 0.65f
+     188: ldc_w         #305                // float 3.65f
+     191: ldc_w         #306                // float 1.0f
+     194: ldc           #173                // float 0.02f
+     196: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     199: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     202: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     205: pop
+     206: aload_2
+     207: ldc_w         #308                // String left_thigh_weight
+     210: bipush        30
+     212: bipush        22
+     214: ldc_w         #309                // float 1.83f
+     217: ldc           #226                // float 1.1f
+     219: ldc_w         #272                // float 1.88f
+     222: ldc           #180                // float 0.65f
+     224: ldc_w         #305                // float 3.65f
+     227: ldc_w         #306                // float 1.0f
+     230: ldc           #173                // float 0.02f
+     232: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     235: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     238: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     241: pop
+     242: iload_3
+     243: iconst_3
+     244: if_icmplt     321
+     247: aload_1
+     248: ldc_w         #311                // String right_shin_guard
+     251: bipush        36
+     253: bipush        22
+     255: ldc_w         #297                // float -2.38f
+     258: ldc_w         #312                // float 6.05f
+     261: ldc_w         #313                // float -2.6f
+     264: ldc_w         #314                // float 4.76f
+     267: ldc_w         #315                // float 3.85f
+     270: ldc           #181                // float 0.62f
+     272: ldc           #173                // float 0.02f
+     274: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     277: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     280: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     283: pop
+     284: aload_2
+     285: ldc_w         #317                // String left_shin_guard
+     288: bipush        50
+     290: bipush        22
+     292: ldc_w         #297                // float -2.38f
+     295: ldc_w         #312                // float 6.05f
+     298: ldc_w         #313                // float -2.6f
+     301: ldc_w         #314                // float 4.76f
+     304: ldc_w         #315                // float 3.85f
+     307: ldc           #181                // float 0.62f
+     309: ldc           #173                // float 0.02f
+     311: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     314: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     317: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     320: pop
+     321: iload_3
+     322: iconst_4
+     323: if_icmplt     363
+     326: aload_0
+     327: ldc_w         #319                // String front_apron
+     330: iconst_0
+     331: bipush        34
+     333: ldc_w         #261                // float -2.92f
+     336: ldc_w         #281                // float 8.2f
+     339: ldc_w         #320                // float -2.8f
+     342: ldc_w         #321                // float 5.84f
+     345: ldc_w         #296                // float 4.15f
+     348: ldc_w         #264                // float 0.58f
+     351: ldc           #162                // float 0.03f
+     353: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     356: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     359: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     362: pop
+     363: return
+
+  private static void addBoots(net.minecraft.client.model.geom.builders.PartDefinition, net.minecraft.client.model.geom.builders.PartDefinition, int);
+    Code:
+       0: aload_0
+       1: ldc_w         #323                // String right_boot
+       4: iconst_0
+       5: iconst_0
+       6: ldc           #207                // float -2.0f
+       8: ldc           #127                // float 7.0f
+      10: ldc           #207                // float -2.0f
+      12: ldc           #208                // float 4.0f
+      14: ldc           #61                 // float 5.0f
+      16: ldc           #208                // float 4.0f
+      18: ldc_w         #324                // float 0.46f
+      21: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      24: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      27: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      30: pop
+      31: aload_1
+      32: ldc_w         #326                // String left_boot
+      35: bipush        20
+      37: iconst_0
+      38: ldc           #207                // float -2.0f
+      40: ldc           #127                // float 7.0f
+      42: ldc           #207                // float -2.0f
+      44: ldc           #208                // float 4.0f
+      46: ldc           #61                 // float 5.0f
+      48: ldc           #208                // float 4.0f
+      50: ldc_w         #324                // float 0.46f
+      53: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      56: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      59: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      62: pop
+      63: aload_0
+      64: ldc_w         #328                // String right_sole
+      67: bipush        40
+      69: iconst_0
+      70: ldc           #168                // float -2.45f
+      72: ldc_w         #329                // float 11.1f
+      75: ldc_w         #330                // float -2.58f
+      78: ldc           #171                // float 4.9f
+      80: ldc_w         #331                // float 0.72f
+      83: ldc_w         #332                // float 5.15f
+      86: fconst_0
+      87: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+      90: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+      93: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+      96: pop
+      97: aload_1
+      98: ldc_w         #334                // String left_sole
+     101: bipush        40
+     103: bipush        8
+     105: ldc           #168                // float -2.45f
+     107: ldc_w         #329                // float 11.1f
+     110: ldc_w         #330                // float -2.58f
+     113: ldc           #171                // float 4.9f
+     115: ldc_w         #331                // float 0.72f
+     118: ldc_w         #332                // float 5.15f
+     121: fconst_0
+     122: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     125: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     128: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     131: pop
+     132: iload_2
+     133: iconst_2
+     134: if_icmplt     210
+     137: aload_0
+     138: ldc_w         #336                // String right_toe_weight
+     141: iconst_0
+     142: bipush        16
+     144: ldc_w         #337                // float -2.28f
+     147: ldc_w         #338                // float 8.95f
+     150: ldc_w         #339                // float -3.02f
+     153: ldc_w         #340                // float 4.56f
+     156: ldc           #197                // float 1.85f
+     158: ldc_w         #341                // float 0.78f
+     161: ldc           #173                // float 0.02f
+     163: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     166: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     169: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     172: pop
+     173: aload_1
+     174: ldc_w         #343                // String left_toe_weight
+     177: bipush        12
+     179: bipush        16
+     181: ldc_w         #337                // float -2.28f
+     184: ldc_w         #338                // float 8.95f
+     187: ldc_w         #339                // float -3.02f
+     190: ldc_w         #340                // float 4.56f
+     193: ldc           #197                // float 1.85f
+     195: ldc_w         #341                // float 0.78f
+     198: ldc           #173                // float 0.02f
+     200: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     203: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     206: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     209: pop
+     210: iload_2
+     211: iconst_3
+     212: if_icmplt     291
+     215: aload_0
+     216: ldc_w         #345                // String right_ankle_band
+     219: bipush        24
+     221: bipush        16
+     223: ldc_w         #346                // float -2.46f
+     226: ldc_w         #347                // float 6.82f
+     229: ldc_w         #346                // float -2.46f
+     232: ldc_w         #348                // float 4.92f
+     235: ldc_w         #349                // float 1.05f
+     238: ldc_w         #348                // float 4.92f
+     241: ldc           #162                // float 0.03f
+     243: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     246: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     249: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     252: pop
+     253: aload_1
+     254: ldc_w         #351                // String left_ankle_band
+     257: bipush        42
+     259: bipush        16
+     261: ldc_w         #346                // float -2.46f
+     264: ldc_w         #347                // float 6.82f
+     267: ldc_w         #346                // float -2.46f
+     270: ldc_w         #348                // float 4.92f
+     273: ldc_w         #349                // float 1.05f
+     276: ldc_w         #348                // float 4.92f
+     279: ldc           #162                // float 0.03f
+     281: invokestatic  #121                // Method box:(IIFFFFFFF)Lnet/minecraft/client/model/geom/builders/CubeListBuilder;
+     284: getstatic     #41                 // Field net/minecraft/client/model/geom/PartPose.ZERO:Lnet/minecraft/client/model/geom/PartPose;
+     287: invokevirtual #47                 // Method net/minecraft/client/model/geom/builders/PartDefinition.addOrReplaceChild:(Ljava/lang/String;Lnet/minecraft/client/model/geom/builders/CubeListBuilder;Lnet/minecraft/client/model/geom/PartPose;)Lnet/minecraft/client/model/geom/builders/PartDefinition;
+     290: pop
+     291: return
+}

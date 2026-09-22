@@ -1,0 +1,40 @@
+Compiled from "DiverArmorModel.java"
+public final class ru.koshpack.forgebridge.armor.client.DiverArmorModel extends net.minecraft.client.model.HumanoidModel<net.minecraft.world.entity.LivingEntity> {
+  private final net.minecraft.resources.ResourceLocation texture;
+
+  public ru.koshpack.forgebridge.armor.client.DiverArmorModel(net.minecraft.client.model.geom.ModelPart, net.minecraft.resources.ResourceLocation);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #1                  // Method net/minecraft/client/model/HumanoidModel."<init>":(Lnet/minecraft/client/model/geom/ModelPart;)V
+       5: aload_0
+       6: aload_2
+       7: putfield      #7                  // Field texture:Lnet/minecraft/resources/ResourceLocation;
+      10: return
+
+  public static net.minecraft.client.model.geom.builders.LayerDefinition createLayer(net.minecraft.world.entity.EquipmentSlot, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokestatic  #13                 // Method ru/koshpack/forgebridge/armor/client/DiverModelGeometry.create:(Lnet/minecraft/world/entity/EquipmentSlot;I)Lnet/minecraft/client/model/geom/builders/LayerDefinition;
+       5: areturn
+
+  public void renderToBuffer(com.mojang.blaze3d.vertex.PoseStack, com.mojang.blaze3d.vertex.VertexConsumer, int, int, int);
+    Code:
+       0: invokestatic  #19                 // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+       3: invokevirtual #25                 // Method net/minecraft/client/Minecraft.renderBuffers:()Lnet/minecraft/client/renderer/RenderBuffers;
+       6: invokevirtual #29                 // Method net/minecraft/client/renderer/RenderBuffers.bufferSource:()Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;
+       9: aload_0
+      10: getfield      #7                  // Field texture:Lnet/minecraft/resources/ResourceLocation;
+      13: invokestatic  #35                 // Method net/minecraft/client/renderer/RenderType.entityTranslucent:(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/RenderType;
+      16: invokevirtual #41                 // Method net/minecraft/client/renderer/MultiBufferSource$BufferSource.getBuffer:(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;
+      19: astore        6
+      21: aload_0
+      22: aload_1
+      23: aload         6
+      25: iload_3
+      26: iload         4
+      28: iload         5
+      30: invokespecial #47                 // Method net/minecraft/client/model/HumanoidModel.renderToBuffer:(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V
+      33: return
+}
