@@ -1,0 +1,57 @@
+name: Integrate Forge UI into Armor JAR
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "launcher/dev/forge-ui.jar.b64"
+      - "tools/armor/integrate_forge_ui.py"
+      - ".github/workflows/integrate-forge-ui-into-armor.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-forge-ui-armor
+  cancel-in-progress: true
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Integrate native Forge UI into armor JAR
+        run: python tools/armor/integrate_forge_ui.py
+
+      - name: Verify merged JAR
+        run: |
+          set -e
+          unzip -t dist/KoshPack_Armor_DEV.jar >/dev/null
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/KoshPackArmorMod.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgeui/KoshPackForgeUI.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgeui/client/ForgeBenchScreen.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgeui/forge/ForgeService.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpack_forge_ui/forge_modifiers.json'
+          unzip -p dist/KoshPack_Armor_DEV.jar META-INF/neoforge.mods.toml | grep -q 'koshpack_forge_ui'
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("launcher/dev-manifest.json").read_text(encoding="utf-8"))
+          assert m["launcherMinVersion"] == "0.2.13"
+          assert m["armor"]["version"] == "alpha55-all17-pilot-forge-ui-alpha1-integrated"
+          assert all(x.get("path") != "mods/KoshPack_Forge_UI_DEV.jar" for x in m.get("extras", []))
+          print("0.2.13-compatible integrated Forge UI manifest OK")
+          PY
+
+      - name: Commit integrated DEV payload
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev/current.jar.b64 launcher/dev-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "dev: integrate Forge UI into armor JAR for launcher 0.2.13"
+          git pull --rebase origin main
+          git push origin HEAD:main
