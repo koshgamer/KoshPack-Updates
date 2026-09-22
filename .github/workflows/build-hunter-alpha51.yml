@@ -1,0 +1,58 @@
+name: Build Hunter alpha51
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/armor/build_hunter_alpha51.py"
+      - ".github/workflows/build-hunter-alpha51.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-hunter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Patch current DEV armor with Hunter
+        run: python tools/armor/build_hunter_alpha51.py
+
+      - name: Verify patched JAR
+        run: |
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/client/HunterModelGeometry.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_researcher_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_archer_test.mcfunction'
+          javap -classpath dist/KoshPack_Armor_DEV.jar ru.koshpack.forgebridge.hunterarmor.HunterArmorAddon >/dev/null
+          test "$(stat -c%s dist/KoshPack_Armor_DEV.jar)" -gt 900000
+
+      - name: Publish DEV release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp launcher/dev-manifest.json dist/dev-manifest.json
+          gh release upload armor-dev-current dist/KoshPack_Armor_DEV.jar dist/dev-manifest.json --clobber --repo "$GITHUB_REPOSITORY"
+
+      - name: Commit alpha51 DEV payload
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev/current.jar.b64 launcher/dev-manifest.json .github/workflows/publish-dev-armor.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "armor: publish alpha51 Hunter tracker to DEV channel"
+          git push
