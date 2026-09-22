@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.13"
+APP_VERSION = "0.2.14"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -109,6 +109,7 @@ LAUNCH_LOG = LOG_DIR / "minecraft-launch.log"
 TOOLS_DIR = APP_ROOT / "tools"
 PMC_EXE = TOOLS_DIR / f"portablemc-{PMC_VERSION}.exe"
 DEV_EXTRA_BACKUP_DIR = APP_ROOT / "dev-extra-backup"
+DEV_EXTRA_TRACK_FILE = APP_ROOT / "dev-extra-paths.json"
 
 
 def ensure_dirs() -> None:
@@ -591,8 +592,9 @@ def get_dev_armor_manifest() -> dict[str, Any]:
                 extra_sha = str(entry.get("sha256") or "").strip().lower()
                 extra_size = int(entry.get("size") or 0)
                 parts = Path(rel).parts
+                allowed_prefix = rel.startswith("kubejs/") or rel.startswith("mods/")
                 if (
-                    not rel.startswith("kubejs/")
+                    not allowed_prefix
                     or Path(rel).is_absolute()
                     or ".." in parts
                     or not extra_url
@@ -620,7 +622,8 @@ def get_dev_armor_manifest() -> dict[str, Any]:
 def _dev_extra_target(rel: str) -> Path:
     normalized = rel.replace("\\", "/").strip()
     p = Path(normalized)
-    if not normalized.startswith("kubejs/") or p.is_absolute() or ".." in p.parts:
+    allowed = normalized.startswith("kubejs/") or normalized.startswith("mods/")
+    if not allowed or p.is_absolute() or ".." in p.parts:
         raise RuntimeError(f"Небезопасный путь DEV extra: {rel}")
     return INSTANCE_DIR / p
 
@@ -679,13 +682,29 @@ def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
         tmp.replace(target)
         installed.append(rel)
 
+    try:
+        atomic_write_json(DEV_EXTRA_TRACK_FILE, {"paths": installed})
+    except OSError:
+        pass
     return installed
 
 
 def restore_stable_dev_extras() -> list[str]:
-    """Remove DEV recipe scripts, restoring stable copies if they existed before DEV mode."""
+    """Remove DEV extras, restoring stable copies if they existed before DEV mode."""
     restored: list[str] = []
-    for rel in DEV_EXTRA_PATHS:
+    tracked: list[str] = list(DEV_EXTRA_PATHS)
+    try:
+        if DEV_EXTRA_TRACK_FILE.is_file():
+            data = json.loads(DEV_EXTRA_TRACK_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                for rel in data.get("paths", []):
+                    rel = str(rel)
+                    if rel not in tracked:
+                        tracked.append(rel)
+    except Exception:
+        pass
+
+    for rel in tracked:
         target = _dev_extra_target(rel)
         backup = DEV_EXTRA_BACKUP_DIR / rel
         if backup.is_file():
@@ -698,6 +717,10 @@ def restore_stable_dev_extras() -> list[str]:
         elif target.exists():
             target.unlink(missing_ok=True)
             restored.append(rel)
+    try:
+        DEV_EXTRA_TRACK_FILE.unlink(missing_ok=True)
+    except OSError:
+        pass
     try:
         for root, dirs, files in os.walk(DEV_EXTRA_BACKUP_DIR, topdown=False):
             for name in files:
