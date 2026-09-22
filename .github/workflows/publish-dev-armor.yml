@@ -16,8 +16,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      DEV_VERSION: "alpha50-archer-v1-leather-ranger"
-      DEV_NOTE: "alpha50 Archer v1: leather forest ranger with hood, quiver from Tier I, cape/mantle progression and Builder-grade I-IV silhouette changes"
+      DEV_VERSION: "alpha51-hunter-v1-tracker"
+      DEV_NOTE: "alpha51 Hunter v1: field tracker based on Researcher expedition silhouette, earth/leather palette, preserved Archer separation, four I-IV armor tiers"
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
         run: |
           test "$SIZE" -gt "100000"
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/client/DiverModelGeometry.class'
-          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_armor_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_armor_test.mcfunction'\n          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon.class'\n          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
 
       - name: Publish DEV release asset
         env:
