@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-ui-alpha1-integrated",
+    "version": "alpha55-all17-pilot-forge-ui-alpha2-integrated",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1206970,
-    "sha256": "7dfa365c986eefd098f42b9ea9262804549bf47f3ceb307077fc95e4c9c2bc3f",
-    "note": "Native Forge Bench UI alpha1 integrated into KoshPack_Armor_DEV.jar; launcher 0.2.13 remains sufficient. No standalone Forge UI JAR is required."
+    "sha256": "865bad75a4e1b2e7f82cf35e5f604b5329b0368a04cad864ed6974da6e41497c",
+    "note": "Native Forge Bench UI alpha2 integrated into KoshPack_Armor_DEV.jar: crisp direct rendering, clearer 420x300 layout and fixed Forge Bench model textures; launcher 0.2.13 remains sufficient."
   },
   "extras": [
     {
@@ -69,5 +69,5 @@
       "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
     }
   ],
-  "hotfixRevision": 9
+  "hotfixRevision": 10
 }
