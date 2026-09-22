@@ -9,8 +9,8 @@
     "version": "alpha55-all17-pilot-forge-ui-alpha2-integrated",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1206970,
-    "sha256": "865bad75a4e1b2e7f82cf35e5f604b5329b0368a04cad864ed6974da6e41497c",
+    "size": 1208173,
+    "sha256": "66f7910cff24885055e97366d839459d82fc8df85bab5d878c21b8c641859df2",
     "note": "Native Forge Bench UI alpha2 integrated into KoshPack_Armor_DEV.jar: crisp direct rendering, clearer 420x300 layout and fixed Forge Bench model textures; launcher 0.2.13 remains sufficient."
   },
   "extras": [
@@ -69,5 +69,5 @@
       "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
     }
   ],
-  "hotfixRevision": 10
+  "hotfixRevision": 11
 }
