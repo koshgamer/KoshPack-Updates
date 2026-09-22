@@ -1,0 +1,81 @@
+name: Build Pilot alpha55
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/armor/build_pilot_alpha55.py"
+      - ".github/workflows/build-pilot-alpha55.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: armor-alpha55-pilot
+  cancel-in-progress: true
+
+jobs:
+  build-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build alpha55 on top of current DEV armor
+        run: python tools/armor/build_pilot_alpha55.py
+
+      - name: Verify alpha55 payload
+        run: |
+          set -e
+          unzip -t dist/KoshPack_Armor_DEV.jar >/dev/null
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/pilothelmet/PilotHelmetAddon.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/client/PilotModelGeometry.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_pilot_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_diver_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_artillery_test.mcfunction'
+          javap -classpath dist/KoshPack_Armor_DEV.jar -c -p ru.koshpack.forgebridge.armor.KoshPackArmorMod | grep -q 'pilothelmet/PilotHelmetAddon'
+          test "$(stat -c%s dist/KoshPack_Armor_DEV.jar)" -gt 1100000
+          python - <<'PY'
+          import json, zipfile
+          from pathlib import Path
+          jar=Path("dist/KoshPack_Armor_DEV.jar")
+          m=json.loads(Path("launcher/dev-manifest.json").read_text(encoding="utf-8"))
+          assert m["armor"]["version"] == "alpha55-all17-pilot"
+          with zipfile.ZipFile(jar) as z:
+              names=z.namelist()
+              professions=[
+                  "miner","engineer","scout","builder","medic","farmer","blacksmith","fisher",
+                  "lumberjack","diver","fighter","archer","shooter","artillery","hunter","researcher","pilot"
+              ]
+              missing=[p for p in professions if not any(p in n.lower() for n in names)]
+              assert not missing, missing
+              combined=z.read("data/koshpackarmor/function/spawn_armor_test.mcfunction").decode("utf-8")
+              assert "koshpackpilothelmet:pilot_helmet_iv_test" in combined
+          print("All 17 professions present")
+          PY
+
+      - name: Publish DEV release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp launcher/dev-manifest.json dist/dev-manifest.json
+          if gh release view armor-dev-current --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload armor-dev-current dist/KoshPack_Armor_DEV.jar dist/dev-manifest.json --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create armor-dev-current dist/KoshPack_Armor_DEV.jar dist/dev-manifest.json --repo "$GITHUB_REPOSITORY" --title "Project Meridian DEV Armor" --notes "DEV armor channel" --latest=false
+          fi
+
+      - name: Commit alpha55 DEV payload
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev/current.jar.b64 launcher/dev-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "armor: publish alpha55 all 17 professions"
+          git push
