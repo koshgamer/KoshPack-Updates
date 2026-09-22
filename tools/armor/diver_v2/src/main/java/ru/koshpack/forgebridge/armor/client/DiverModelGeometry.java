@@ -92,7 +92,7 @@ final class DiverModelGeometry {
             head.addOrReplaceChild(
                     "snorkel_pipe_i",
                     box(32, 0, 3.85F, -7.85F, -3.15F, 0.52F, 6.5F, 0.52F, 0.02F),
-                    PartPose.rotation(0.0F, 0.0F, -0.08F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.08F));
             head.addOrReplaceChild(
                     "snorkel_top_i",
                     box(32, 8, 3.65F, -8.55F, -3.12F, 1.25F, 0.55F, 0.55F, 0.02F),
@@ -154,15 +154,15 @@ final class DiverModelGeometry {
             head.addOrReplaceChild(
                     "right_hose_stub_iii",
                     box(32, 24, -5.72F, -4.85F, -0.62F, 1.0F, 1.0F, 1.0F, 0.10F),
-                    PartPose.rotation(0.0F, 0.0F, -0.18F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.18F));
             head.addOrReplaceChild(
                     "left_hose_stub_iii",
                     box(36, 24, 4.72F, -4.85F, -0.62F, 1.0F, 1.0F, 1.0F, 0.10F),
-                    PartPose.rotation(0.0F, 0.0F, 0.18F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.18F));
             head.addOrReplaceChild(
                     "single_lamp_iii",
                     box(24, 32, -1.35F, -9.38F, -3.45F, 2.7F, 1.55F, 2.15F, 0.03F),
-                    PartPose.rotation(-0.16F, 0.0F, 0.0F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -0.16F, 0.0F, 0.0F));
             return;
         }
 
@@ -191,11 +191,11 @@ final class DiverModelGeometry {
         head.addOrReplaceChild(
                 "right_lamp_iv",
                 box(0, 40, -4.92F, -8.95F, -3.15F, 1.75F, 1.75F, 2.7F, 0.05F),
-                PartPose.rotation(-0.10F, 0.0F, -0.12F));
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -0.10F, 0.0F, -0.12F));
         head.addOrReplaceChild(
                 "left_lamp_iv",
                 box(8, 40, 3.17F, -8.95F, -3.15F, 1.75F, 1.75F, 2.7F, 0.05F),
-                PartPose.rotation(-0.10F, 0.0F, 0.12F));
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -0.10F, 0.0F, 0.12F));
 
         head.addOrReplaceChild(
                 "right_pressure_coupler_iv",
@@ -555,11 +555,11 @@ final class DiverModelGeometry {
             rightLeg.addOrReplaceChild(
                     "right_small_fin_ii",
                     box(40, 0, -2.15F, 10.65F, -4.25F, 4.3F, 1.0F, 3.0F, 0.04F),
-                    PartPose.rotation(0.06F, 0.0F, 0.0F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.06F, 0.0F, 0.0F));
             leftLeg.addOrReplaceChild(
                     "left_small_fin_ii",
                     box(40, 8, -2.15F, 10.65F, -4.25F, 4.3F, 1.0F, 3.0F, 0.04F),
-                    PartPose.rotation(0.06F, 0.0F, 0.0F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.06F, 0.0F, 0.0F));
             return;
         }
 
@@ -576,11 +576,11 @@ final class DiverModelGeometry {
             rightLeg.addOrReplaceChild(
                     "right_long_fin_iii",
                     box(40, 0, -2.15F, 10.55F, -6.0F, 4.3F, 1.25F, 5.0F, 0.06F),
-                    PartPose.rotation(0.08F, 0.0F, 0.0F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.08F, 0.0F, 0.0F));
             leftLeg.addOrReplaceChild(
                     "left_long_fin_iii",
                     box(40, 8, -2.15F, 10.55F, -6.0F, 4.3F, 1.25F, 5.0F, 0.06F),
-                    PartPose.rotation(0.08F, 0.0F, 0.0F));
+                    PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.08F, 0.0F, 0.0F));
             rightLeg.addOrReplaceChild(
                     "right_heel_weight_iii",
                     box(0, 16, -2.55F, 9.25F, 1.85F, 5.1F, 2.0F, 1.2F, 0.04F),
@@ -612,11 +612,11 @@ final class DiverModelGeometry {
         rightLeg.addOrReplaceChild(
                 "right_stabilizer_fin_iv",
                 box(0, 30, -2.65F, 10.1F, -6.4F, 5.3F, 1.2F, 3.6F, 0.05F),
-                PartPose.rotation(0.05F, 0.0F, 0.0F));
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.05F, 0.0F, 0.0F));
         leftLeg.addOrReplaceChild(
                 "left_stabilizer_fin_iv",
                 box(22, 30, -2.65F, 10.1F, -6.4F, 5.3F, 1.2F, 3.6F, 0.05F),
-                PartPose.rotation(0.05F, 0.0F, 0.0F));
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.05F, 0.0F, 0.0F));
 
         rightLeg.addOrReplaceChild(
                 "right_ankle_module_iv",
