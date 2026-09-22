@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-v0.4-catalog",
+    "version": "alpha55-all17-pilot-forge-v0.5-input",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55 armor + crafting + profession traits + unified forge v0.4; 24 armor treatments plus expanded weapon, ranged and tool catalog with compatibility/conflict filtering and runtime hooks"
+    "note": "alpha55 armor + crafting + profession traits + unified forge v0.5; Forge Bench opens empty and loads the target from the visible player inventory instead of requiring a held item"
   },
   "extras": [
     {
