@@ -1,0 +1,96 @@
+name: Build Diver alpha54
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/armor/diver_v2/**"
+      - "tools/armor/build_diver_alpha54.py"
+      - ".github/workflows/build-diver-alpha54.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-diver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14"
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check "Pillow==11.3.0"
+
+      - name: Compile donor-based Diver geometry
+        working-directory: tools/armor/diver_v2
+        run: gradle clean classes --stacktrace
+
+      - name: Patch current DEV armor
+        run: python tools/armor/build_diver_alpha54.py
+
+      - name: Verify alpha54 payload
+        run: |
+          set -e
+          unzip -t dist/KoshPack_Armor_DEV.jar >/dev/null
+
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/client/DiverModelGeometry.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_diver_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_artillery_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'META-INF/koshpack/diver-alpha54-donor.txt'
+
+          javap -classpath dist/KoshPack_Armor_DEV.jar -verbose             ru.koshpack.forgebridge.armor.client.DiverModelGeometry             | grep -q 'deep_sea_dome_iv'
+          javap -classpath dist/KoshPack_Armor_DEV.jar -verbose             ru.koshpack.forgebridge.armor.client.DiverModelGeometry             | grep -q 'tiny_tank_i'
+          javap -classpath dist/KoshPack_Armor_DEV.jar -verbose             ru.koshpack.forgebridge.armor.client.DiverModelGeometry             | grep -q 'right_long_fin_iii'
+
+          for TIER in i ii iii iv; do
+            for PIECE in helmet chestplate leggings boots; do
+              jar tf dist/KoshPack_Armor_DEV.jar                 | grep -q "assets/koshpackdiverhelmet/textures/models/armor/diver_${PIECE}_${TIER}.png"
+            done
+          done
+
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          jar = Path("dist/KoshPack_Armor_DEV.jar").read_bytes()
+          m = json.loads(Path("launcher/dev-manifest.json").read_text(encoding="utf-8"))
+          assert m["armor"]["version"] == "alpha54-diver-v2-donor-rebuild"
+          assert m["armor"]["size"] == len(jar)
+          assert m["armor"]["sha256"] == hashlib.sha256(jar).hexdigest()
+          print("manifest OK")
+          PY
+
+      - name: Publish alpha54 release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp launcher/dev-manifest.json dist/dev-manifest.json
+          gh release upload armor-dev-current             dist/KoshPack_Armor_DEV.jar             dist/dev-manifest.json             --clobber             --repo "$GITHUB_REPOSITORY"
+
+      - name: Commit alpha54 DEV payload
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev/current.jar.b64 launcher/dev-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "armor: publish alpha54 donor-based Diver rebuild"
+          git push
