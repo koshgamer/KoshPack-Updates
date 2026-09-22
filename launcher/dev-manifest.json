@@ -2,16 +2,16 @@
   "schema": 1,
   "channel": "dev-armor",
   "label": "DEV / БРОНЯ",
-  "launcherMinVersion": "0.2.13",
+  "launcherMinVersion": "0.2.14",
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-v0.5-input",
+    "version": "alpha55-all17-pilot-forge-ui-alpha1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55 armor + crafting + profession traits + unified forge v0.5; Forge Bench opens empty and loads the target from the visible player inventory instead of requiring a held item"
+    "note": "Native Forge Bench UI alpha1: custom 352x278 industrial screen, inventory item selection, sharpening slots/cards, server-side costs and safe item mutation."
   },
   "extras": [
     {
@@ -67,7 +67,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
       "size": 520,
       "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
+    },
+    {
+      "path": "mods/KoshPack_Forge_UI_DEV.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV.jar",
+      "size": 47420,
+      "sha256": "fbf91039a9d7770490cfe1b9b45b9809a7f2a6ae675c59cde7b6fafa69b981a8"
     }
   ],
-  "hotfixRevision": 6
+  "hotfixRevision": 7
 }
