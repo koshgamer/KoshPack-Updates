@@ -56,10 +56,10 @@ jobs:
 
           data["channel"] = "dev-armor"
           armor = data.setdefault("armor", {})
-          armor["version"] = "alpha55-all17-pilot-forge-v0.1"
+          armor["version"] = "alpha55-all17-pilot-forge-v0.2"
           armor["note"] = (
-              "alpha55 armor + crafting + profession traits + unified forge v0.1; "
-              "first live armor/weapon/tool sharpening slice through the Forge Bench"
+              "alpha55 armor + crafting + profession traits + unified forge v0.2; "
+              "lossless Forge Bench transaction fix: target stays in captured inventory until restore"
           )
           data["extras"] = entries
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
