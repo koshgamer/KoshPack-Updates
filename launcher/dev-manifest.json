@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha50-archer-v1-leather-ranger",
+    "version": "alpha51-hunter-v1-tracker",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 933388,
-    "sha256": "f2526415a706a87136bc2dc3a4f6203468e0a9b06c129fd943aa87e689f68c60",
-    "note": "alpha50 Archer v1: leather forest ranger with hood, quiver from Tier I, cape/mantle progression and Builder-grade I-IV silhouette changes"
+    "size": 1026229,
+    "sha256": "5d2562b4f23ce870f176d162040ead45074178a36dfcad90655ce338b8a5465c",
+    "note": "alpha51 Hunter v1: field tracker based on Researcher expedition silhouette, earth/leather palette, preserved Archer separation, four I-IV armor tiers"
   }
 }
