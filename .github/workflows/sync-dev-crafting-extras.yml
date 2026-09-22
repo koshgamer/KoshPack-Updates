@@ -55,12 +55,8 @@ jobs:
               })
 
           data["channel"] = "dev-armor"
-          armor = data.setdefault("armor", {})
-          armor["version"] = "alpha55-all17-pilot-forge-v0.5-input"
-          armor["note"] = (
-              "alpha55 armor + crafting + profession traits + unified forge v0.5; "
-              "Forge Bench opens empty and loads the target from the visible player inventory instead of requiring a held item"
-          )
+          # Do not overwrite armor version/note here: the integrated armor/GUI
+          # publisher owns those fields. This workflow only refreshes extras.
           data["extras"] = entries
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
           PY
