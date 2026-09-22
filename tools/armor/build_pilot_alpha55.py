@@ -122,11 +122,11 @@ def parse_cp(data: bytes):
 
 
 def u2(buf: bytes, p: int) -> int:
-    return struct.unpack(">H", buf[p:p+2])[0
+    return struct.unpack(">H", buf[p:p+2])[0]
 
 
 def u4(buf: bytes, p: int) -> int:
-    return struct.unpack(">I", buf[p:p+4])[0
+    return struct.unpack(">I", buf[p:p+4])[0]
 
 
 def patch_bootstrap(data: bytes, internal_name: str) -> bytes:
