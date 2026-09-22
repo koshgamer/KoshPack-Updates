@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha52-hunter-v2-registryfix",
+    "version": "alpha53-artillery-v1-crew",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1026249,
-    "sha256": "64709876a098e36843b63e5abef0dec648a75dc23bd98b6a2c60976a19870793",
-    "note": "alpha52 Hunter v2: fixes Hunter DeferredRegister bootstrap in KoshPackArmorMod; field tracker earth/leather palette with four I-IV armor tiers"
+    "size": 1143185,
+    "sha256": "319aa21fb7b46fa782387ade2f852cffa93907308c2e4028fe30aad1800f981c",
+    "note": "alpha53 Artillery v1: heavy artillery-crew armor I-IV, olive/graphite/metal palette; registered in KoshPackArmorMod DEV bootstrap"
   }
 }
