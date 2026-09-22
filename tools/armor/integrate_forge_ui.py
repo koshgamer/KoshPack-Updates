@@ -16,6 +16,7 @@ OUT_DIR = ROOT / "dist"
 OUT_JAR = OUT_DIR / "KoshPack_Armor_DEV.jar"
 
 VERSION = "alpha55-all17-pilot-forge-ui-alpha7-integrated"
+FORGE_UI_VERSION = "0.1.0-alpha7"
 NOTE = (
     "Native Forge Bench UI alpha7 integrated into KoshPack_Armor_DEV.jar: installed treatment icons are rendered after slot labels "
     "with a safe fallback, guaranteeing the treatment icon remains visible; launcher 0.2.13 remains sufficient."
@@ -68,6 +69,14 @@ def main() -> None:
     missing += [n for n in required_forge if n not in forge]
     if missing:
         raise SystemExit("Missing required integration files: " + ", ".join(missing))
+
+    forge_toml_text = forge["META-INF/neoforge.mods.toml"].decode("utf-8")
+    if f'version="{FORGE_UI_VERSION}"' not in forge_toml_text:
+        raise SystemExit(
+            "Stale Forge UI payload: expected "
+            + FORGE_UI_VERSION
+            + " in META-INF/neoforge.mods.toml"
+        )
 
     # Remove a previously integrated Forge UI payload to make this operation idempotent.
     prefixes = (
