@@ -1,4 +1,4 @@
-// KoshPack unified sharpening / modification bench v0.2.
+// KoshPack unified sharpening / modification bench v0.3.
 //
 // This is the first executable vertical slice for the FINAL shared system:
 // - one physical forge bench;
@@ -7,7 +7,7 @@
 // - free removal without material refund;
 // - armor, weapons and tools share the same data model.
 //
-// Runtime slice enabled in v0.2:
+// Runtime slice enabled in v0.3:
 // armor  -> Reinforcement I-IV
 // weapon -> Fine Honing I-IV
 // tool   -> Aggressive Geometry I-IV
@@ -15,6 +15,11 @@
 // More approved catalog entries are added on this base after live acceptance.
 
 var KOSH_FORGE_SESSIONS = {}
+
+var KOSH_FORGE_DATA_COMPONENTS = Java.loadClass('net.minecraft.core.component.DataComponents')
+var KOSH_FORGE_ITEM_LORE = Java.loadClass('net.minecraft.world.item.component.ItemLore')
+var KOSH_FORGE_ARRAY_LIST = Java.loadClass('java.util.ArrayList')
+var KOSH_FORGE_LORE_MARKER = '\u200B\u200C\u200D'
 
 var KOSH_ARMOR_NAMESPACES = {
   koshpackminerhelmet: true,
@@ -99,13 +104,24 @@ function koshForgeArmorTier(id) {
   return 4
 }
 
+function koshForgeArmorSlots(id, tier) {
+  var chest = id.indexOf('_chestplate_') >= 0
+  var legs = id.indexOf('_leggings_') >= 0
+
+  if (tier <= 1) return 1
+  if (tier === 2) return chest ? 2 : 1
+  if (tier === 3) return 2
+  return (chest || legs) ? 3 : 2
+}
+
 function koshForgeClassify(stack) {
   var id = koshForgeStackId(stack)
   if (!id || id === 'minecraft:air') return null
 
   var split = id.split(':')
   if (split.length === 2 && KOSH_ARMOR_NAMESPACES[split[0]]) {
-    return { category: 'armor', slots: 3, tier: koshForgeArmorTier(split[1]) }
+    var armorTier = koshForgeArmorTier(split[1])
+    return { category: 'armor', slots: koshForgeArmorSlots(split[1], armorTier), tier: armorTier }
   }
 
   if (
@@ -180,6 +196,90 @@ function koshForgeFindModLevel(stack, id) {
     if (s && s.id === id) return s.level
   }
   return 0
+}
+
+
+function koshForgeRoman(level) {
+  return ['','I','II','III','IV'][Math.max(0, Math.min(4, level))] || '?'
+}
+
+function koshForgeEffectText(id, level) {
+  if (id === 'reinforcement') {
+    return '−' + [0,2,3,4,5][Math.min(4, level)] + '% подходящего входящего урона'
+  }
+  if (id === 'fine_honing') {
+    return '+' + [0,4,8,12,16][Math.min(4, level)] + '% урона в ближнем бою'
+  }
+  if (id === 'aggressive_geometry') {
+    return level >= 3 ? 'Ускорение добычи II' : 'Ускорение добычи I'
+  }
+  return ''
+}
+
+function koshForgeManagedLoreSignature(stack, slots) {
+  var parts = [String(slots)]
+  for (var i = 0; i < slots; i++) {
+    var s = koshForgeReadSlot(stack, i)
+    parts.push(s ? (s.id + ':' + s.level) : '-')
+  }
+  return parts.join('|')
+}
+
+function koshForgeRefreshLore(stack, slots, force) {
+  if (!stack || slots <= 0) return false
+
+  var sig = koshForgeManagedLoreSignature(stack, slots)
+  var tag = koshForgeGetTag(stack)
+  if (!tag) return false
+
+  var oldSig = ''
+  try { oldSig = String(tag.getString('kosh_forge_lore_sig').orElse('')) } catch (e) {
+    try { oldSig = String(tag.getString('kosh_forge_lore_sig')) } catch (_e) {}
+  }
+  if (!force && oldSig === sig) return true
+
+  var lines = new KOSH_FORGE_ARRAY_LIST()
+
+  // Preserve lore from the base item or other mods, but replace only our own managed lines.
+  try {
+    var oldLore = stack.get(KOSH_FORGE_DATA_COMPONENTS.LORE)
+    if (oldLore) {
+      var iterator = oldLore.lines().iterator()
+      while (iterator.hasNext()) {
+        var line = iterator.next()
+        var plain = ''
+        try { plain = String(line.getString()) } catch (e) {}
+        if (plain.indexOf(KOSH_FORGE_LORE_MARKER) !== 0) lines.add(line)
+      }
+    }
+  } catch (e) {}
+
+  var glyphs = []
+  for (var i = 0; i < slots; i++) {
+    glyphs.push(koshForgeReadSlot(stack, i) ? '◆' : '◇')
+  }
+
+  lines.add(Text.yellow(KOSH_FORGE_LORE_MARKER + 'Заточки: [' + glyphs.join('] [') + ']'))
+
+  for (var j = 0; j < slots; j++) {
+    var slot = koshForgeReadSlot(stack, j)
+    if (!slot) continue
+    var mod = KOSH_FORGE_MODS[slot.id]
+    var modName = mod ? mod.name : slot.id
+    var effect = koshForgeEffectText(slot.id, slot.level)
+    var detail = '◆ Слот ' + (j + 1) + ': ' + modName + ' ' + koshForgeRoman(slot.level)
+    if (effect) detail += ' — ' + effect
+    lines.add(Text.aqua(KOSH_FORGE_LORE_MARKER + detail))
+  }
+
+  try {
+    stack.set(KOSH_FORGE_DATA_COMPONENTS.LORE, new KOSH_FORGE_ITEM_LORE(lines))
+    tag.putString('kosh_forge_lore_sig', sig)
+    stack.setCustomData(tag)
+    return true
+  } catch (e) {
+    return false
+  }
 }
 
 function koshForgeLevelCost(mod, nextLevel) {
@@ -315,6 +415,11 @@ function koshForgeFinalize(player, key, attempt) {
 
   // Closing the GUI without selecting an action is a pure no-op.
   if (!pending) {
+    var noOpInfo = koshForgeClassify(liveTarget)
+    if (noOpInfo && noOpInfo.category === 'armor') {
+      koshForgeRefreshLore(liveTarget, noOpInfo.slots, false)
+      koshForgeCommitTarget(player, session, liveTarget)
+    }
     delete KOSH_FORGE_SESSIONS[key]
     return
   }
@@ -325,6 +430,8 @@ function koshForgeFinalize(player, key, attempt) {
       koshForgeAbort(player, key, Text.red('Не удалось изменить данные предмета. Предмет оставлен без изменений.'))
       return
     }
+
+    koshForgeRefreshLore(removed, koshForgeClassify(removed).slots, true)
 
     if (!koshForgeCommitTarget(player, session, removed)) {
       koshForgeAbort(player, key, Text.red('Не удалось сохранить изменение. Предмет оставлен без изменений.'))
@@ -378,6 +485,8 @@ function koshForgeFinalize(player, key, attempt) {
     koshForgeAbort(player, key, Text.red('Не удалось записать заточку. Материалы не потрачены.'))
     return
   }
+
+  koshForgeRefreshLore(modified, info.slots, true)
 
   if (!koshForgePay(player, cost)) {
     koshForgeAbort(player, key, Text.red('Не удалось списать материалы. Предмет оставлен без изменений.'))
@@ -507,6 +616,32 @@ function koshForgeOpenMain(player, key) {
     }
   })
 }
+
+PlayerEvents.tick(event => {
+  var player = event.player
+  try {
+    if ((player.tickCount % 20) !== 0) return
+  } catch (e) {
+    return
+  }
+
+  var inv = player.inventory
+  if (!inv) return
+
+  for (var i = 0; i < inv.getSlots(); i++) {
+    var stack = inv.getStackInSlot(i)
+    var info = koshForgeClassify(stack)
+    if (!info) continue
+
+    var shouldManage = info.category === 'armor'
+    if (!shouldManage) {
+      var tag = koshForgeGetTag(stack)
+      try { shouldManage = tag && String(tag.getString('kosh_forge_version').orElse('')) === '1' } catch (e) {}
+    }
+
+    if (shouldManage) koshForgeRefreshLore(stack, info.slots, false)
+  }
+})
 
 BlockEvents.rightClicked('kubejs:forge_bench', event => {
   var player = event.player
