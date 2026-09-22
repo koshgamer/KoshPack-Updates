@@ -9,8 +9,8 @@
     "version": "alpha55-all17-pilot-forge-ui-alpha7-integrated",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1212421,
-    "sha256": "43d98e11d20c9076fa2e2b0ab107e9990a6c6ebba5253893ac5162972f6611b0",
+    "size": 1212661,
+    "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
     "note": "Native Forge Bench UI alpha7 integrated into KoshPack_Armor_DEV.jar: installed treatment icons are rendered after slot labels with a safe fallback, guaranteeing the treatment icon remains visible; launcher 0.2.13 remains sufficient."
   },
   "extras": [
@@ -75,5 +75,5 @@
       "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
     }
   ],
-  "hotfixRevision": 19
+  "hotfixRevision": 20
 }
