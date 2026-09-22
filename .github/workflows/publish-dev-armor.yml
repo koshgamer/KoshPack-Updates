@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "launcher/dev/*.jar.b64"
+      - "launcher/dev/current.jar.b64"
       - "launcher/dev-manifest.json"
       - ".github/workflows/publish-dev-armor.yml"
   workflow_dispatch:
