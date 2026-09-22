@@ -15,10 +15,10 @@ MANIFEST = ROOT / "launcher/dev-manifest.json"
 OUT_DIR = ROOT / "dist"
 OUT_JAR = OUT_DIR / "KoshPack_Armor_DEV.jar"
 
-VERSION = "alpha55-all17-pilot-forge-ui-alpha6-integrated"
+VERSION = "alpha55-all17-pilot-forge-ui-alpha7-integrated"
 NOTE = (
-    "Native Forge Bench UI alpha6 integrated into KoshPack_Armor_DEV.jar: fixed installed-treatment text overlapping the slot icon; "
-    "slot details now render beside the icon and show the full installed treatment on hover; launcher 0.2.13 remains sufficient."
+    "Native Forge Bench UI alpha7 integrated into KoshPack_Armor_DEV.jar: installed treatment icons are rendered after slot labels "
+    "with a safe fallback, guaranteeing the treatment icon remains visible; launcher 0.2.13 remains sufficient."
 )
 
 BEGIN = "# BEGIN KOSHPACK_FORGE_UI\n"
@@ -99,7 +99,7 @@ def main() -> None:
             del armor[name]
 
     armor["META-INF/koshpack/forge-ui-integrated.txt"] = (
-        "KoshPack Forge UI 0.1.0-alpha6\n"
+        "KoshPack Forge UI 0.1.0-alpha7\n"
         "Integrated into KoshPack_Armor_DEV.jar for Project Meridian Launcher 0.2.13 compatibility.\n"
     ).encode("utf-8")
 
