@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha51-hunter-v1-tracker",
+    "version": "alpha52-hunter-v2-registryfix",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1026229,
-    "sha256": "d51272bda4343121504cbbc664dbecc093db72a538215f2f5cb6628dc308f343",
-    "note": "alpha51 Hunter v1: field tracker based on Researcher expedition silhouette, earth/leather palette, preserved Archer separation, four I-IV armor tiers"
+    "size": 1026249,
+    "sha256": "64709876a098e36843b63e5abef0dec648a75dc23bd98b6a2c60976a19870793",
+    "note": "alpha52 Hunter v2: fixes Hunter DeferredRegister bootstrap in KoshPackArmorMod; field tracker earth/leather palette with four I-IV armor tiers"
   }
 }
