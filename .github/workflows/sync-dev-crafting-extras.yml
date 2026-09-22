@@ -56,10 +56,10 @@ jobs:
 
           data["channel"] = "dev-armor"
           armor = data.setdefault("armor", {})
-          armor["version"] = "alpha55-all17-pilot-forge-v0.3"
+          armor["version"] = "alpha55-all17-pilot-forge-v0.4-catalog"
           armor["note"] = (
-              "alpha55 armor + crafting + profession traits + unified forge v0.3; "
-              "Forge tooltip state is written into item lore and armor slot capacity matches tier/piece"
+              "alpha55 armor + crafting + profession traits + unified forge v0.4; "
+              "24 armor treatments plus expanded weapon, ranged and tool catalog with compatibility/conflict filtering and runtime hooks"
           )
           data["extras"] = entries
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
