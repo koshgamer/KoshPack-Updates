@@ -50,10 +50,10 @@ jobs:
 
           data["channel"] = "dev-armor"
           armor = data.setdefault("armor", {})
-          armor["version"] = "alpha55-all17-pilot-crafting-traits-v1"
+          armor["version"] = "alpha55-all17-pilot-crafting-traits-v1.1"
           armor["note"] = (
-              "alpha55 armor + crafting + traits-v1: all 17 professions now have "
-              "real full-set bonuses and drawbacks, with tier-scaled behavior"
+              "alpha55 armor + crafting + traits-v1.1: Rhino-compatible recipes and KubeJS 2101 beforeHurt; "
+              "all 17 professions keep real full-set bonuses and drawbacks"
           )
           data["extras"] = entries
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
