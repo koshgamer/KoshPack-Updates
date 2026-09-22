@@ -1,4 +1,4 @@
-// KoshPack unified sharpening / modification bench v0.4.
+// KoshPack unified sharpening / modification bench v0.5.
 //
 // This is the first executable vertical slice for the FINAL shared system:
 // - one physical forge bench;
@@ -2888,11 +2888,13 @@ function koshForgeCostText(cost) {
 }
 
 function koshForgeLiveTarget(player, session) {
+  if (session.sourceSlot == null || session.sourceSlot < 0 || !session.targetId) return null
+
   var inv = player.inventory
   if (!inv) return null
 
   var stack = null
-  try { stack = inv.getStackInSlot(session.selectedSlot) } catch (e) { return null }
+  try { stack = inv.getStackInSlot(session.sourceSlot) } catch (e) { return null }
   if (!stack) return null
 
   try { if (stack.empty) return null } catch (e) {}
@@ -2901,15 +2903,15 @@ function koshForgeLiveTarget(player, session) {
 }
 
 function koshForgeCommitTarget(player, session, stack) {
+  if (session.sourceSlot == null || session.sourceSlot < 0) return false
   try {
-    player.inventory.setStackInSlot(session.selectedSlot, stack)
+    player.inventory.setStackInSlot(session.sourceSlot, stack)
     try { player.sendInventoryUpdate() } catch (e) {}
     return true
   } catch (e) {
     return false
   }
 }
-
 function koshForgeAbort(player, key, message) {
   if (message) player.tell(message)
   delete KOSH_FORGE_SESSIONS[key]
@@ -2938,13 +2940,9 @@ function koshForgeFinalize(player, key, attempt) {
   session.finished = true
   var pending = session.pending
 
-  // Closing the GUI without selecting an action is a pure no-op.
+  // Closing the GUI without choosing an operation is a pure no-op.
+  // The selected item was only represented by a preview in the captured GUI.
   if (!pending) {
-    var noOpInfo = koshForgeClassify(liveTarget)
-    if (noOpInfo && noOpInfo.category === 'armor') {
-      koshForgeRefreshLore(liveTarget, noOpInfo.slots, false)
-      koshForgeCommitTarget(player, session, liveTarget)
-    }
     delete KOSH_FORGE_SESSIONS[key]
     return
   }
@@ -3061,44 +3059,126 @@ function koshForgeQueueFinalize(player, key) {
   })
 }
 
-function koshForgeOpenModifierPage(player, key, slotIndex) {
+function koshForgeGuiAir() {
+  return Item.of('minecraft:air')
+}
+
+function koshForgeGuiRestorePreview(gui, session) {
+  if (!session.preview || session.sourceSlot == null || session.sourceSlot < 0) return
+  try {
+    gui.capturedInventory.setItem(session.sourceSlot, session.preview.copy())
+  } catch (e) {}
+}
+
+function koshForgeGuiSelectInventoryItem(player, key, gui, click) {
   var session = KOSH_FORGE_SESSIONS[key]
   if (!session) return
+
+  var stack = null
+  var index = -1
+  try { stack = click.getItem() } catch (e) {}
+  try { index = Number(click.getIndex()) } catch (e) {}
+
+  if (!stack || index < 0) return
+  try { if (stack.empty) return } catch (e) {}
+
+  var info = koshForgeClassify(stack)
+  if (!info) {
+    player.tell(Text.red('В кузнице можно обрабатывать броню, оружие и инструменты.'))
+    return
+  }
+
+  // Return the previous visual preview to its original captured slot.
+  koshForgeGuiRestorePreview(gui, session)
+
+  var preview = stack.copy()
+  preview.count = 1
+
+  try { click.setItem(koshForgeGuiAir()) } catch (e) {}
+
+  session.preview = preview
+  session.sourceSlot = index
+  session.targetId = koshForgeStackId(preview)
+  session.pending = null
+  session.returnScheduled = false
+  session.finished = false
+
+  koshForgeOpenMain(player, key)
+}
+
+function koshForgeGuiUnloadTarget(player, key, gui) {
+  var session = KOSH_FORGE_SESSIONS[key]
+  if (!session || !session.preview) return
+
+  koshForgeGuiRestorePreview(gui, session)
+  session.preview = null
+  session.sourceSlot = -1
+  session.targetId = ''
+  session.pending = null
+  session.returnScheduled = false
+  session.finished = false
+
+  koshForgeOpenMain(player, key)
+}
+
+function koshForgeOpenModifierPage(player, key, slotIndex) {
+  var session = KOSH_FORGE_SESSIONS[key]
+  if (!session || !session.preview) {
+    koshForgeOpenMain(player, key)
+    return
+  }
+
   var info = koshForgeClassify(session.preview)
-  if (!info) return
+  if (!info) {
+    koshForgeOpenMain(player, key)
+    return
+  }
 
   player.openChestGUI(Text.of('Кузнечный стенд'), 6, function(gui) {
-    gui.playerSlots = false
+    gui.playerSlots = true
 
-    gui.button(4, 0, session.preview.copy(), Text.gold('Обрабатываемый предмет'), function(e) {
+    // Left: actual machine input slot. Clicking it unloads the preview back
+    // into the visually captured player inventory. The real inventory is never
+    // mutated until an operation succeeds after menu close.
+    gui.slot(1, 1, function(slot) {
+      slot.setItem(session.preview.copy())
+      slot.setLeftClicked(function(e) {
+        e.setHandled()
+        koshForgeGuiUnloadTarget(player, key, gui)
+      })
+    })
+
+    // Slot being edited.
+    var current = koshForgeReadSlot(session.preview, slotIndex)
+    var slotIcon = current && KOSH_FORGE_MODS[current.id] ? Item.of(KOSH_FORGE_MODS[current.id].icon) : Item.of('minecraft:gray_dye')
+    gui.button(1, 3, slotIcon, Text.aqua('Слот ' + (slotIndex + 1)), function(e) {
       e.setHandled()
     })
 
-    var current = koshForgeReadSlot(session.preview, slotIndex)
     if (current) {
       var cm = KOSH_FORGE_MODS[current.id]
-      var removeIcon = Item.of('minecraft:barrier')
-      gui.button(8, 5, removeIcon, Text.red('Снять: ' + (cm ? cm.name : current.id)), function(e) {
+      gui.button(1, 4, Item.of('minecraft:barrier'), Text.red('Снять: ' + (cm ? cm.name : current.id)), function(e) {
         session.pending = { kind: 'remove', slot: slotIndex }
         player.closeMenu()
       })
     }
 
+    // Center/right: filtered treatments for this exact item family.
     var candidates = []
     Object.keys(KOSH_FORGE_MODS).forEach(function(modId) {
       var mod = KOSH_FORGE_MODS[modId]
       if (koshForgeCompatible(mod, session.preview, info)) candidates.push(modId)
     })
 
-    for (var ci = 0; ci < candidates.length && ci < 28; ci++) {
+    for (var ci = 0; ci < candidates.length && ci < 24; ci++) {
       ;(function(modId, index) {
         var mod = KOSH_FORGE_MODS[modId]
         var installed = current && current.id === modId ? current.level : 0
         var next = installed + 1
         var label = mod.name + ' ' + (next <= mod.max ? koshForgeRoman(next) : 'MAX')
         var icon = Item.of(mod.icon)
-        var gx = 1 + (index % 7)
-        var gy = 1 + Math.floor(index / 7)
+        var gx = 3 + (index % 6)
+        var gy = 1 + Math.floor(index / 6)
 
         gui.button(gx, gy, icon, Text.aqua(label), function(e) {
           if (next > mod.max) {
@@ -3114,18 +3194,24 @@ function koshForgeOpenModifierPage(player, key, slotIndex) {
 
           var cost = koshForgeLevelCost(mod, next)
           var effect = koshForgeEffectText(modId, next)
+          player.tell(Text.gold(mod.name + ' ' + koshForgeRoman(next)))
           player.tell(Text.gray(mod.description))
           if (effect) player.tell(Text.aqua(effect))
           player.tell(Text.gray('Цена: ' + koshForgeCostText(cost)))
+
           session.pending = { kind: 'apply', slot: slotIndex, modId: modId }
           player.closeMenu()
         })
       })(candidates[ci], ci)
     }
 
-    gui.button(0, 5, Item.of('minecraft:arrow'), Text.yellow('Назад'), function(e) {
+    gui.button(0, 5, Item.of('minecraft:arrow'), Text.yellow('Назад к слотам'), function(e) {
       koshForgeOpenMain(player, key)
     })
+
+    gui.inventoryClicked = function(e) {
+      koshForgeGuiSelectInventoryItem(player, key, gui, e)
+    }
 
     gui.closed = function() {
       koshForgeQueueFinalize(player, key)
@@ -3136,39 +3222,68 @@ function koshForgeOpenModifierPage(player, key, slotIndex) {
 function koshForgeOpenMain(player, key) {
   var session = KOSH_FORGE_SESSIONS[key]
   if (!session) return
-  var info = koshForgeClassify(session.preview)
-  if (!info) return
 
   player.openChestGUI(Text.of('Кузнечный стенд'), 6, function(gui) {
-    gui.playerSlots = false
+    gui.playerSlots = true
 
-    gui.button(4, 0, session.preview.copy(), Text.gold('Обрабатываемый предмет'), function(e) {
-      e.setHandled()
-    })
+    if (!session.preview) {
+      // Empty machine: input is a clear visual target and the player's real
+      // inventory is visible below. Clicking an eligible item loads it.
+      gui.button(1, 1, Item.of('minecraft:hopper'), Text.yellow('Слот предмета — выбери вещь в инвентаре ниже'), function(e) {
+        e.setHandled()
+      })
 
-    for (var i = 0; i < info.slots; i++) {
-      ;(function(slotIndex) {
-        var current = koshForgeReadSlot(session.preview, slotIndex)
-        var icon
-        var name
+      gui.button(4, 2, Item.of('minecraft:smithing_table'), Text.gold('Положи предмет в кузницу'), function(e) {
+        player.tell(Text.gray('Нажми ЛКМ по броне, оружию или инструменту в своём инвентаре.'))
+      })
 
-        if (current && KOSH_FORGE_MODS[current.id]) {
-          icon = Item.of(KOSH_FORGE_MODS[current.id].icon)
-          name = 'Слот ' + (slotIndex + 1) + ': ' + KOSH_FORGE_MODS[current.id].name + ' ' + ['','I','II','III','IV'][current.level]
-        } else {
-          icon = Item.of('minecraft:gray_dye')
-          name = 'Слот ' + (slotIndex + 1) + ': свободен'
-        }
+      gui.button(4, 3, Item.of('minecraft:book'), Text.gray('После выбора появятся доступные слоты и заточки.'), function(e) {
+        e.setHandled()
+      })
+    } else {
+      var info = koshForgeClassify(session.preview)
 
-        gui.button(2 + slotIndex * 2, 2, icon, Text.aqua(name), function(e) {
-          koshForgeOpenModifierPage(player, key, slotIndex)
+      gui.slot(1, 1, function(slot) {
+        slot.setItem(session.preview.copy())
+        slot.setLeftClicked(function(e) {
+          e.setHandled()
+          koshForgeGuiUnloadTarget(player, key, gui)
         })
-      })(i)
+      })
+
+      gui.button(1, 2, Item.of('minecraft:barrier'), Text.red('Вернуть предмет'), function(e) {
+        koshForgeGuiUnloadTarget(player, key, gui)
+      })
+
+      for (var i = 0; i < info.slots; i++) {
+        ;(function(slotIndex) {
+          var current = koshForgeReadSlot(session.preview, slotIndex)
+          var icon
+          var name
+
+          if (current && KOSH_FORGE_MODS[current.id]) {
+            icon = Item.of(KOSH_FORGE_MODS[current.id].icon)
+            name = 'Слот ' + (slotIndex + 1) + ': ' + KOSH_FORGE_MODS[current.id].name + ' ' + koshForgeRoman(current.level)
+          } else {
+            icon = Item.of('minecraft:gray_dye')
+            name = 'Слот ' + (slotIndex + 1) + ': свободен'
+          }
+
+          gui.button(3 + slotIndex * 2, 2, icon, Text.aqua(name), function(e) {
+            koshForgeOpenModifierPage(player, key, slotIndex)
+          })
+        })(i)
+      }
+
+      gui.button(5, 4, Item.of('minecraft:book'), Text.gray('Выбери слот заточки. Предмет остаётся в твоём инвентаре до успешной обработки.'), function(e) {
+        e.setHandled()
+      })
     }
 
-    gui.button(4, 4, Item.of('minecraft:book'), Text.gray('ЛКМ по слоту — выбрать или улучшить. На следующем экране можно снять заточку.'), function(e) {
-      e.setHandled()
-    })
+    // Clicking an inventory item loads/switches the machine input.
+    gui.inventoryClicked = function(e) {
+      koshForgeGuiSelectInventoryItem(player, key, gui, e)
+    }
 
     gui.closed = function() {
       koshForgeQueueFinalize(player, key)
@@ -3206,33 +3321,18 @@ BlockEvents.rightClicked('kubejs:forge_bench', event => {
   var player = event.player
   if (!player || !player.isServerPlayer()) return
 
-  var held = player.mainHandItem
-  var info = koshForgeClassify(held)
-  if (!info) {
-    player.tell(Text.red('Возьми в основную руку броню, оружие или инструмент для обработки.'))
-    event.cancel()
-    return
-  }
-
   var key = koshForgePlayerKey(player)
   if (KOSH_FORGE_SESSIONS[key]) {
-    player.tell(Text.yellow('Предыдущая операция кузницы ещё не завершена.'))
-    event.cancel()
-    return
+    // A stale session should never trap the player out of the machine.
+    delete KOSH_FORGE_SESSIONS[key]
   }
 
-  var preview = held.copy()
-  preview.count = 1
-  var selected = player.selectedSlot
-
-  // Critical safety rule: never remove the target before opening CustomChestMenu.
-  // KubeJS itself captures/restores the inventory while the GUI is open.
-  // We keep only a preview and the original slot/id, then modify the live stack
-  // after inventory restoration.
+  // v0.5 opens empty. The target is selected from the visible player inventory,
+  // so the player no longer has to hold anything before using the bench.
   KOSH_FORGE_SESSIONS[key] = {
-    preview: preview,
-    targetId: koshForgeStackId(held),
-    selectedSlot: selected,
+    preview: null,
+    targetId: '',
+    sourceSlot: -1,
     pending: null,
     returnScheduled: false,
     finished: false
