@@ -2,7 +2,7 @@
   "schema": 1,
   "channel": "dev-armor",
   "label": "DEV / БРОНЯ",
-  "launcherMinVersion": "0.2.11",
+  "launcherMinVersion": "0.2.12",
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
