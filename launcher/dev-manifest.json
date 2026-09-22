@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-crafting-v1",
+    "version": "alpha55-all17-pilot-crafting-traits-v1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55 armor + crafting-v1: 17 profession families; Tier I workbench, Tier II-IV Foundry + sequential smithing"
+    "note": "alpha55 armor + crafting + traits-v1: all 17 professions now have real full-set bonuses and drawbacks, with tier-scaled behavior"
   },
   "extras": [
     {
@@ -25,6 +25,18 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_profession_armor_crafting.js",
       "size": 11167,
       "sha256": "34b35a5037de6798a4116400821ea06f0dd6827ec09432bc7d3022278979a6f5"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_profession_armor_traits.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_profession_armor_traits.js",
+      "size": 13090,
+      "sha256": "a9d01d07e6b1ea5eead07833a833df7663231f22bc60f47219995eebce53298d"
+    },
+    {
+      "path": "kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js",
+      "size": 5219,
+      "sha256": "19aba660f26c85d73f720170dbab78118a6732eb981482cf13a2939b98865412"
     }
   ]
 }
