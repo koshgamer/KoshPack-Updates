@@ -7,7 +7,10 @@ StartupEvents.registry('block', event => {
     .hardness(5.0)
     .resistance(6.0)
     .stoneSoundType()
-    .parentModel('minecraft:block/smithing_table')
+    .parentModel('koshpack_forge_ui:block/forge_bench')
+    .box(1, 0, 1, 15, 10, 15)
+    .box(0, 10, 0, 16, 14, 16)
+    .box(3, 14, 4, 13, 16, 12)
 })
 
 StartupEvents.registry('item', event => {
