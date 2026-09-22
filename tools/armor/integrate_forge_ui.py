@@ -15,10 +15,11 @@ MANIFEST = ROOT / "launcher/dev-manifest.json"
 OUT_DIR = ROOT / "dist"
 OUT_JAR = OUT_DIR / "KoshPack_Armor_DEV.jar"
 
-VERSION = "alpha55-all17-pilot-forge-ui-alpha2-integrated"
+VERSION = "alpha55-all17-pilot-forge-ui-alpha3-integrated"
 NOTE = (
-    "Native Forge Bench UI alpha2 integrated into KoshPack_Armor_DEV.jar: crisp direct rendering, "
-    "clearer 420x300 layout and fixed Forge Bench model textures; launcher 0.2.13 remains sufficient."
+    "Native Forge Bench UI alpha3 integrated into KoshPack_Armor_DEV.jar: larger 500x356 layout, "
+    "localized equipment types, wider treatment list, wrapped descriptions/costs and clearer inventory/status area; "
+    "launcher 0.2.13 remains sufficient."
 )
 
 BEGIN = "# BEGIN KOSHPACK_FORGE_UI\n"
@@ -99,7 +100,7 @@ def main() -> None:
             del armor[name]
 
     armor["META-INF/koshpack/forge-ui-integrated.txt"] = (
-        "KoshPack Forge UI 0.1.0-alpha2\n"
+        "KoshPack Forge UI 0.1.0-alpha3\n"
         "Integrated into KoshPack_Armor_DEV.jar for Project Meridian Launcher 0.2.13 compatibility.\n"
     ).encode("utf-8")
 
