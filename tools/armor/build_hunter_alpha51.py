@@ -227,9 +227,9 @@ def patch_koshpack_bootstrap(data: bytes) -> bytes:
                     raise ValueError("KoshPackArmorMod constructor does not end with return")
 
                 inject = (
-                    b"\\xbb" + struct.pack(">H", hunter_class_idx)
-                    + b"\\x59\\x2b\\xb7" + struct.pack(">H", hunter_ctor_idx)
-                    + b"\\x57"
+                    bytes([0xBB]) + struct.pack(">H", hunter_class_idx)
+                    + bytes([0x59, 0x2B, 0xB7]) + struct.pack(">H", hunter_ctor_idx)
+                    + bytes([0x57])
                 )
                 new_code = code[:-1] + inject + code[-1:]
                 info = (
