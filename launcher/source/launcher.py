@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.10"
+APP_VERSION = "0.2.11"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -37,6 +37,10 @@ DEV_MANIFEST_API_URL = "https://api.github.com/repos/koshgamer/KoshPack-Updates/
 DEV_ARMOR_TARGET = "koshpack-armor-specialties-DEV.jar"
 DEV_ARMOR_DIRECT_URL = "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar"
 DEV_ARMOR_B64_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/current.jar.b64"
+DEV_EXTRA_PATHS = (
+    "kubejs/startup_scripts/koshpack_profession_armor_components.js",
+    "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
+)
 PACK_ASSET_NAME = "minecraft.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
 MC_VERSION = "1.21.1"
@@ -97,6 +101,7 @@ STATE_FILE = APP_ROOT / "state.json"
 LAUNCH_LOG = LOG_DIR / "minecraft-launch.log"
 TOOLS_DIR = APP_ROOT / "tools"
 PMC_EXE = TOOLS_DIR / f"portablemc-{PMC_VERSION}.exe"
+DEV_EXTRA_BACKUP_DIR = APP_ROOT / "dev-extra-backup"
 
 
 def ensure_dirs() -> None:
@@ -567,15 +572,138 @@ def get_dev_armor_manifest() -> dict[str, Any]:
             size = int(armor.get("size") or 0)
             if not version or len(sha256) != 64:
                 raise RuntimeError("DEV manifest не содержит корректную version/sha256")
+            extras_raw = data.get("extras") or []
+            extras: list[dict[str, Any]] = []
+            if not isinstance(extras_raw, list):
+                raise RuntimeError("DEV manifest extras должен быть массивом")
+            for entry in extras_raw:
+                if not isinstance(entry, dict):
+                    raise RuntimeError("DEV manifest extras содержит некорректную запись")
+                rel = str(entry.get("path") or "").replace("\\", "/").strip()
+                extra_url = str(entry.get("url") or "").strip()
+                extra_sha = str(entry.get("sha256") or "").strip().lower()
+                extra_size = int(entry.get("size") or 0)
+                parts = Path(rel).parts
+                if (
+                    not rel.startswith("kubejs/")
+                    or Path(rel).is_absolute()
+                    or ".." in parts
+                    or not extra_url
+                    or len(extra_sha) != 64
+                ):
+                    raise RuntimeError(f"Некорректный DEV extra: {rel or '<без пути>'}")
+                extras.append({
+                    "path": rel,
+                    "url": extra_url,
+                    "sha256": extra_sha,
+                    "size": extra_size,
+                })
             return {
                 "version": version,
                 "sha256": sha256,
                 "url": file_url,
                 "size": size,
+                "extras": extras,
             }
         except Exception as e:
             errors.append(f"{type(e).__name__}: {e}")
     raise RuntimeError("Не удалось получить DEV manifest: " + " | ".join(errors))
+
+
+def _dev_extra_target(rel: str) -> Path:
+    normalized = rel.replace("\\", "/").strip()
+    p = Path(normalized)
+    if not normalized.startswith("kubejs/") or p.is_absolute() or ".." in p.parts:
+        raise RuntimeError(f"Небезопасный путь DEV extra: {rel}")
+    return INSTANCE_DIR / p
+
+
+def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
+    """Install checksum-pinned DEV KubeJS extras and preserve any stable copies."""
+    installed: list[str] = []
+    extras = manifest.get("extras") or []
+    for entry in extras:
+        rel = str(entry["path"]).replace("\\", "/")
+        expected = str(entry["sha256"]).lower()
+        url = str(entry["url"])
+        size = int(entry.get("size") or 0)
+        target = _dev_extra_target(rel)
+
+        if target.is_file():
+            try:
+                if sha256_file(target) == expected:
+                    installed.append(rel)
+                    continue
+            except OSError:
+                pass
+
+        backup = DEV_EXTRA_BACKUP_DIR / rel
+        if target.is_file() and not backup.exists():
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(target, backup)
+
+        cache = CACHE_DIR / f"dev-extra-{expected[:16]}-{Path(rel).name}"
+        if cache.is_file():
+            try:
+                if sha256_file(cache) != expected:
+                    cache.unlink(missing_ok=True)
+            except OSError:
+                cache.unlink(missing_ok=True)
+
+        if not cache.is_file():
+            sep = "&" if "?" in url else "?"
+            download_file(
+                url + f"{sep}nocache={int(time.time())}",
+                cache,
+                size,
+                lambda _done, _total: None,
+                timeout=15,
+                max_attempts=3,
+            )
+
+        actual = sha256_file(cache)
+        if actual != expected:
+            cache.unlink(missing_ok=True)
+            raise RuntimeError(f"SHA-256 DEV extra не совпал: {rel}")
+
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_suffix(target.suffix + ".devpart")
+        shutil.copy2(cache, tmp)
+        tmp.replace(target)
+        installed.append(rel)
+
+    return installed
+
+
+def restore_stable_dev_extras() -> list[str]:
+    """Remove DEV recipe scripts, restoring stable copies if they existed before DEV mode."""
+    restored: list[str] = []
+    for rel in DEV_EXTRA_PATHS:
+        target = _dev_extra_target(rel)
+        backup = DEV_EXTRA_BACKUP_DIR / rel
+        if backup.is_file():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            tmp = target.with_suffix(target.suffix + ".restorepart")
+            shutil.copy2(backup, tmp)
+            tmp.replace(target)
+            backup.unlink(missing_ok=True)
+            restored.append(rel)
+        elif target.exists():
+            target.unlink(missing_ok=True)
+            restored.append(rel)
+    try:
+        for root, dirs, files in os.walk(DEV_EXTRA_BACKUP_DIR, topdown=False):
+            for name in files:
+                pass
+            for name in dirs:
+                try:
+                    (Path(root) / name).rmdir()
+                except OSError:
+                    pass
+        DEV_EXTRA_BACKUP_DIR.rmdir()
+    except OSError:
+        pass
+    return restored
 
 
 def download_dev_armor_remote(
@@ -1764,7 +1892,7 @@ class MeridianLauncher(tk.Tk):
             name = str(self.state_data.get("dev_armor_name") or "").strip()
             self.pack_value.set(f"DEV // {name}" if name else "DEV // БРОНЯ")
             self.channel_hint.configure(
-                text="DEV: сначала скачивает удалённый JAR; локальная броня — только резерв.",
+                text="DEV: обновляет броню и связанные KubeJS-рецепты; локальная броня — резерв.",
                 fg=C_TELEMETRY,
             )
             self.channel_update_btn.configure(text="↻  ОБНОВИТЬ DEV-БРОНЮ")
@@ -1781,8 +1909,11 @@ class MeridianLauncher(tk.Tk):
         atomic_write_json(STATE_FILE, self.state_data)
         if self.channel_var.get() == "stable":
             restored = restore_stable_armor()
+            restored_extras = restore_stable_dev_extras()
             if restored:
                 self._log("DEV-броня отключена. Стабильная версия восстановлена.")
+            if restored_extras:
+                self._log("DEV-рецепты отключены; стабильные KubeJS-файлы восстановлены.")
         self._update_channel_ui()
         self.status_var.set("DEV-канал выбран" if self.channel_var.get() == "dev" else "STABLE-канал выбран")
         self.detail_var.set(
@@ -1818,6 +1949,9 @@ class MeridianLauncher(tk.Tk):
             manifest = get_dev_armor_manifest()
             remote_version = str(manifest["version"])
             expected_digest = str(manifest["sha256"])
+            extra_paths = install_dev_extras(manifest)
+            if extra_paths:
+                self._emit("log", f"DEV-рецепты проверены: {len(extra_paths)} файла.")
             installed = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
 
             if installed.is_file():
