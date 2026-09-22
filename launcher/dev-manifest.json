@@ -6,11 +6,25 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot",
+    "version": "alpha55-all17-pilot-crafting-v1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55: all 17 profession armor families are present in the DEV JAR; Pilot I-IV added on top of alpha54 without rolling back existing Diver/Hunter/Artillery work"
-  }
+    "note": "alpha55 armor + crafting-v1: 17 profession families; Tier I workbench, Tier II-IV Foundry + sequential smithing"
+  },
+  "extras": [
+    {
+      "path": "kubejs/startup_scripts/koshpack_profession_armor_components.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/startup_scripts/koshpack_profession_armor_components.js",
+      "size": 3750,
+      "sha256": "b33b0e7640071fe0587080a43cb6cbdad52f49d813c443ace4608e9766eed342"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_profession_armor_crafting.js",
+      "size": 11167,
+      "sha256": "34b35a5037de6798a4116400821ea06f0dd6827ec09432bc7d3022278979a6f5"
+    }
+  ]
 }
