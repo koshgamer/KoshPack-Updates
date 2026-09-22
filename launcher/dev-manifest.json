@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-crafting-traits-v1",
+    "version": "alpha55-all17-pilot-crafting-traits-v1.1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55 armor + crafting + traits-v1: all 17 professions now have real full-set bonuses and drawbacks, with tier-scaled behavior"
+    "note": "alpha55 armor + crafting + traits-v1.1: Rhino-compatible recipes and KubeJS 2101 beforeHurt; all 17 professions keep real full-set bonuses and drawbacks"
   },
   "extras": [
     {
