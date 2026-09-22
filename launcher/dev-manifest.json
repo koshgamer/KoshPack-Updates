@@ -10,7 +10,7 @@
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1206970,
-    "sha256": "62d70fb765b70d4003d5f8c480d90f94baaf886f9e59c39fecf26c9b99ad529c",
+    "sha256": "7dfa365c986eefd098f42b9ea9262804549bf47f3ceb307077fc95e4c9c2bc3f",
     "note": "Native Forge Bench UI alpha1 integrated into KoshPack_Armor_DEV.jar; launcher 0.2.13 remains sufficient. No standalone Forge UI JAR is required."
   },
   "extras": [
@@ -69,5 +69,5 @@
       "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
     }
   ],
-  "hotfixRevision": 8
+  "hotfixRevision": 9
 }
