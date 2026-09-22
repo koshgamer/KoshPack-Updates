@@ -1,4 +1,4 @@
-// KoshPack unified sharpening / modification bench v0.1.
+// KoshPack unified sharpening / modification bench v0.2.
 //
 // This is the first executable vertical slice for the FINAL shared system:
 // - one physical forge bench;
@@ -7,7 +7,7 @@
 // - free removal without material refund;
 // - armor, weapons and tools share the same data model.
 //
-// Runtime slice enabled in v0.1:
+// Runtime slice enabled in v0.2:
 // armor  -> Reinforcement I-IV
 // weapon -> Fine Honing I-IV
 // tool   -> Aggressive Geometry I-IV
@@ -262,93 +262,137 @@ function koshForgeCostText(cost) {
   return parts.join(' • ')
 }
 
-function koshForgeReturnTarget(player, session) {
-  var target = session.target
-  if (!target) return
+function koshForgeLiveTarget(player, session) {
+  var inv = player.inventory
+  if (!inv) return null
 
-  var slot = session.selectedSlot
-  var current = player.inventory.getStackInSlot(slot)
-  try {
-    if (current.empty) {
-      player.inventory.setStackInSlot(slot, target)
-      session.target = null
-      return
-    }
-  } catch (e) {}
+  var stack = null
+  try { stack = inv.getStackInSlot(session.selectedSlot) } catch (e) { return null }
+  if (!stack) return null
 
-  player.give(target)
-  session.target = null
+  try { if (stack.empty) return null } catch (e) {}
+  if (koshForgeStackId(stack) !== session.targetId) return null
+  return stack
 }
 
-function koshForgeFinalize(player, key) {
+function koshForgeCommitTarget(player, session, stack) {
+  try {
+    player.inventory.setStackInSlot(session.selectedSlot, stack)
+    try { player.sendInventoryUpdate() } catch (e) {}
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+function koshForgeAbort(player, key, message) {
+  if (message) player.tell(message)
+  delete KOSH_FORGE_SESSIONS[key]
+}
+
+function koshForgeFinalize(player, key, attempt) {
   var session = KOSH_FORGE_SESSIONS[key]
   if (!session || session.finished) return
-  session.finished = true
 
+  // CustomChestMenu temporarily captures the real player inventory.
+  // Never touch the target or payment until that inventory has been restored.
+  var liveTarget = koshForgeLiveTarget(player, session)
+  if (!liveTarget) {
+    if (attempt < 20) {
+      player.server.scheduleInTicks(1, function() {
+        koshForgeFinalize(player, key, attempt + 1)
+      })
+      return
+    }
+
+    // Fail closed: the bench never removed the item, so aborting cannot delete it.
+    koshForgeAbort(player, key, Text.red('Кузница не дождалась восстановления инвентаря. Предмет не изменён.'))
+    return
+  }
+
+  session.finished = true
   var pending = session.pending
+
+  // Closing the GUI without selecting an action is a pure no-op.
   if (!pending) {
-    koshForgeReturnTarget(player, session)
     delete KOSH_FORGE_SESSIONS[key]
     return
   }
 
   if (pending.kind === 'remove') {
-    koshForgeWriteSlot(session.target, pending.slot, '', 0)
+    var removed = liveTarget.copy()
+    if (!koshForgeWriteSlot(removed, pending.slot, '', 0)) {
+      koshForgeAbort(player, key, Text.red('Не удалось изменить данные предмета. Предмет оставлен без изменений.'))
+      return
+    }
+
+    if (!koshForgeCommitTarget(player, session, removed)) {
+      koshForgeAbort(player, key, Text.red('Не удалось сохранить изменение. Предмет оставлен без изменений.'))
+      return
+    }
+
     player.tell(Text.yellow('Заточка снята. Материалы не возвращены.'))
-    koshForgeReturnTarget(player, session)
     delete KOSH_FORGE_SESSIONS[key]
     return
   }
 
   var mod = KOSH_FORGE_MODS[pending.modId]
-  var info = koshForgeClassify(session.target)
+  var info = koshForgeClassify(liveTarget)
   if (!mod || !info || mod.category !== info.category) {
-    player.tell(Text.red('Эта модификация несовместима с предметом.'))
-    koshForgeReturnTarget(player, session)
-    delete KOSH_FORGE_SESSIONS[key]
+    koshForgeAbort(player, key, Text.red('Эта модификация несовместима с предметом.'))
     return
   }
 
-  var current = koshForgeReadSlot(session.target, pending.slot)
+  var current = koshForgeReadSlot(liveTarget, pending.slot)
   var nextLevel = current && current.id === pending.modId ? current.level + 1 : 1
 
   if (nextLevel > mod.max) {
-    player.tell(Text.yellow('У этой заточки уже максимальный уровень.'))
-    koshForgeReturnTarget(player, session)
-    delete KOSH_FORGE_SESSIONS[key]
+    koshForgeAbort(player, key, Text.yellow('У этой заточки уже максимальный уровень.'))
     return
   }
 
   if (info.category === 'armor' && nextLevel > info.tier) {
-    player.tell(Text.red('Уровень заточки не может быть выше уровня этой брони.'))
-    koshForgeReturnTarget(player, session)
-    delete KOSH_FORGE_SESSIONS[key]
+    koshForgeAbort(player, key, Text.red('Уровень заточки не может быть выше уровня этой брони.'))
     return
   }
 
   for (var i = 0; i < info.slots; i++) {
     if (i === pending.slot) continue
-    var other = koshForgeReadSlot(session.target, i)
+    var other = koshForgeReadSlot(liveTarget, i)
     if (other && other.id === pending.modId) {
-      player.tell(Text.red('Одинаковая заточка не может занимать два слота.'))
-      koshForgeReturnTarget(player, session)
-      delete KOSH_FORGE_SESSIONS[key]
+      koshForgeAbort(player, key, Text.red('Одинаковая заточка не может занимать два слота.'))
       return
     }
   }
 
   var cost = koshForgeLevelCost(mod, nextLevel)
-  if (!koshForgePay(player, cost)) {
-    player.tell(Text.red('Не хватает материалов: ' + koshForgeCostText(cost)))
-    koshForgeReturnTarget(player, session)
-    delete KOSH_FORGE_SESSIONS[key]
+  if (!koshForgeCanPay(player, cost)) {
+    koshForgeAbort(player, key, Text.red('Не хватает материалов: ' + koshForgeCostText(cost)))
     return
   }
 
-  koshForgeWriteSlot(session.target, pending.slot, pending.modId, nextLevel)
-  player.tell(Text.green(mod.name + ' ' + ['','I','II','III','IV'][nextLevel] + ' установлена.'))
+  // Prepare the result BEFORE payment. If custom_data cannot be written,
+  // the player loses neither materials nor the target item.
+  var modified = liveTarget.copy()
+  if (!koshForgeWriteSlot(modified, pending.slot, pending.modId, nextLevel)) {
+    koshForgeAbort(player, key, Text.red('Не удалось записать заточку. Материалы не потрачены.'))
+    return
+  }
 
-  koshForgeReturnTarget(player, session)
+  if (!koshForgePay(player, cost)) {
+    koshForgeAbort(player, key, Text.red('Не удалось списать материалы. Предмет оставлен без изменений.'))
+    return
+  }
+
+  if (!koshForgeCommitTarget(player, session, modified)) {
+    // This path should not occur after a successful inventory-restore probe.
+    // Do not silently lose the item: give the prepared copy back.
+    try { player.give(modified) } catch (e) {}
+    koshForgeAbort(player, key, Text.red('Не удалось вернуть предмет в исходный слот; обработанный предмет выдан в инвентарь.'))
+    return
+  }
+
+  player.tell(Text.green(mod.name + ' ' + ['','I','II','III','IV'][nextLevel] + ' установлена.'))
   delete KOSH_FORGE_SESSIONS[key]
 }
 
@@ -357,25 +401,27 @@ function koshForgeQueueFinalize(player, key) {
   if (!session || session.returnScheduled) return
   session.returnScheduled = true
 
-  player.server.scheduleInTicks(1, function() {
-    koshForgeFinalize(player, key)
+  // Two ticks is the normal path; finalize also retries until the captured
+  // inventory has actually been restored.
+  player.server.scheduleInTicks(2, function() {
+    koshForgeFinalize(player, key, 0)
   })
 }
 
 function koshForgeOpenModifierPage(player, key, slotIndex) {
   var session = KOSH_FORGE_SESSIONS[key]
   if (!session) return
-  var info = koshForgeClassify(session.target)
+  var info = koshForgeClassify(session.preview)
   if (!info) return
 
   player.openChestGUI(Text.of('Кузнечный стенд'), 6, function(gui) {
     gui.playerSlots = false
 
-    gui.button(4, 0, session.target.copy(), Text.gold('Обрабатываемый предмет'), function(e) {
+    gui.button(4, 0, session.preview.copy(), Text.gold('Обрабатываемый предмет'), function(e) {
       e.setHandled()
     })
 
-    var current = koshForgeReadSlot(session.target, slotIndex)
+    var current = koshForgeReadSlot(session.preview, slotIndex)
     if (current) {
       var cm = KOSH_FORGE_MODS[current.id]
       var removeIcon = Item.of('minecraft:barrier')
@@ -422,19 +468,19 @@ function koshForgeOpenModifierPage(player, key, slotIndex) {
 function koshForgeOpenMain(player, key) {
   var session = KOSH_FORGE_SESSIONS[key]
   if (!session) return
-  var info = koshForgeClassify(session.target)
+  var info = koshForgeClassify(session.preview)
   if (!info) return
 
   player.openChestGUI(Text.of('Кузнечный стенд'), 6, function(gui) {
     gui.playerSlots = false
 
-    gui.button(4, 0, session.target.copy(), Text.gold('Обрабатываемый предмет'), function(e) {
+    gui.button(4, 0, session.preview.copy(), Text.gold('Обрабатываемый предмет'), function(e) {
       e.setHandled()
     })
 
     for (var i = 0; i < info.slots; i++) {
       ;(function(slotIndex) {
-        var current = koshForgeReadSlot(session.target, slotIndex)
+        var current = koshForgeReadSlot(session.preview, slotIndex)
         var icon
         var name
 
@@ -481,18 +527,17 @@ BlockEvents.rightClicked('kubejs:forge_bench', event => {
     return
   }
 
-  var target = held.copy()
-  target.count = 1
+  var preview = held.copy()
+  preview.count = 1
   var selected = player.selectedSlot
 
-  if (held.count > 1) {
-    held.count = held.count - 1
-  } else {
-    player.mainHandItem = Item.empty
-  }
-
+  // Critical safety rule: never remove the target before opening CustomChestMenu.
+  // KubeJS itself captures/restores the inventory while the GUI is open.
+  // We keep only a preview and the original slot/id, then modify the live stack
+  // after inventory restoration.
   KOSH_FORGE_SESSIONS[key] = {
-    target: target,
+    preview: preview,
+    targetId: koshForgeStackId(held),
     selectedSlot: selected,
     pending: null,
     returnScheduled: false,
