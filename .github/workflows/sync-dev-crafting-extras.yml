@@ -1,4 +1,5 @@
 name: Sync DEV crafting extras manifest
+# forge-v0.1-final-sync
 
 on:
   push:
