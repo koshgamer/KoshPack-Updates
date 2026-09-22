@@ -41,7 +41,7 @@ jobs:
           from pathlib import Path
           m=json.loads(Path("launcher/dev-manifest.json").read_text(encoding="utf-8"))
           assert m["launcherMinVersion"] == "0.2.13"
-          assert m["armor"]["version"] == "alpha55-all17-pilot-forge-ui-alpha2-integrated"
+          assert m["armor"]["version"] == "alpha55-all17-pilot-forge-ui-alpha3-integrated"
           assert all(x.get("path") != "mods/KoshPack_Forge_UI_DEV.jar" for x in m.get("extras", []))
           print("0.2.13-compatible integrated Forge UI manifest OK")
           PY
