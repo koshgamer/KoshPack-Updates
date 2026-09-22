@@ -2,7 +2,7 @@
   "schema": 1,
   "channel": "dev-armor",
   "label": "DEV / БРОНЯ",
-  "launcherMinVersion": "0.2.12",
+  "launcherMinVersion": "0.2.13",
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
@@ -69,5 +69,5 @@
       "sha256": "bce6ea1da4112275a4f725210501f6ee586162266db4ffb3b2bfa3dbda4d2a84"
     }
   ],
-  "hotfixRevision": 1
+  "hotfixRevision": 2
 }
