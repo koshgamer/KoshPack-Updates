@@ -197,20 +197,20 @@ ServerEvents.recipes(event => {
     event.shapeless(moduleId(prof, 'i'), prof.moduleI)
       .id(`kubejs:armor/modules/${prof.id}_i`)
 
-    event.shapeless(moduleId(prof, 'ii'), [moduleId(prof, 'i'), ...prof.moduleII])
+    event.shapeless(moduleId(prof, 'ii'), [moduleId(prof, 'i')].concat(prof.moduleII))
       .id(`kubejs:armor/modules/${prof.id}_ii`)
 
-    event.shapeless(moduleId(prof, 'iii'), [moduleId(prof, 'ii'), ...prof.moduleIII])
+    event.shapeless(moduleId(prof, 'iii'), [moduleId(prof, 'ii')].concat(prof.moduleIII))
       .id(`kubejs:armor/modules/${prof.id}_iii`)
 
-    event.shapeless(moduleId(prof, 'iv'), [moduleId(prof, 'iii'), ...prof.moduleIV])
+    event.shapeless(moduleId(prof, 'iv'), [moduleId(prof, 'iii')].concat(prof.moduleIV))
       .id(`kubejs:armor/modules/${prof.id}_iv`)
 
     // Tier I: deliberately cheap workbench assembly; no Foundry required yet.
     ARMOR_PIECES.forEach(piece => {
       event.shapeless(
         armorId(prof, piece.id, 'i'),
-        [moduleId(prof, 'i'), ...piece.tier1Extra]
+        [moduleId(prof, 'i')].concat(piece.tier1Extra)
       ).id(`kubejs:armor/assembly/${prof.id}/${piece.id}_i`)
     })
 
