@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha54-diver-v2-donor-rebuild",
+    "version": "alpha55-all17-pilot",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1141379,
-    "sha256": "e78dfa2388103f0e142ad337c45f7219262da8339b26714b11e2a122b4de2d54",
-    "note": "alpha54 Diver v2 donor rebuild: Public Domain Scuba Diving Suit geometry adapted into four strongly separated KoshPack tiers: improvised I, equipped II, professional SCUBA III, elite deep-sea IV"
+    "size": 1186428,
+    "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
+    "note": "alpha55: all 17 profession armor families are present in the DEV JAR; Pilot I-IV added on top of alpha54 without rolling back existing Diver/Hunter/Artillery work"
   }
 }
