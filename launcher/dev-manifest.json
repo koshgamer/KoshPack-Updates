@@ -6,11 +6,11 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha53-artillery-v1-crew",
+    "version": "alpha54-diver-v2-donor-rebuild",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1143185,
-    "sha256": "319aa21fb7b46fa782387ade2f852cffa93907308c2e4028fe30aad1800f981c",
-    "note": "alpha53 Artillery v1: heavy artillery-crew armor I-IV, olive/graphite/metal palette; registered in KoshPackArmorMod DEV bootstrap"
+    "size": 1141713,
+    "sha256": "3ae60d96f32439b89d359d1c2c87cee94b21cc7866beb44b0ffbabbf8aab81d4",
+    "note": "alpha54 Diver v2 donor rebuild: Public Domain Scuba Diving Suit geometry adapted into four strongly separated KoshPack tiers: improvised I, equipped II, professional SCUBA III, elite deep-sea IV"
   }
 }
