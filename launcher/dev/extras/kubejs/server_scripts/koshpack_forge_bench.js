@@ -3318,6 +3318,8 @@ PlayerEvents.tick(event => {
 })
 
 BlockEvents.rightClicked('kubejs:forge_bench', event => {
+  if (Platform.isLoaded('koshpack_forge_ui')) return
+
   var player = event.player
   if (!player || !player.isServerPlayer()) return
 
