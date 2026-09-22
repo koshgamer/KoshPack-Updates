@@ -9,8 +9,8 @@
     "version": "alpha55-all17-pilot-forge-ui-alpha4-integrated",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1211142,
-    "sha256": "c84b287e125497640f648e153bdec448931772c8887ffe841ac730e05b7445f3",
+    "size": 1212424,
+    "sha256": "91b2d5e6a9d15b257b3c837544477909936f18e469dda32b961b1b2433473d79",
     "note": "Native Forge Bench UI alpha4 integrated into KoshPack_Armor_DEV.jar: vertical material checklist with icons, owned/required counts and red shortages, compact lower hint area, wider treatment rows and no redundant hover tooltip; launcher 0.2.13 remains sufficient."
   },
   "extras": [
@@ -75,5 +75,5 @@
       "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
     }
   ],
-  "hotfixRevision": 14
+  "hotfixRevision": 15
 }
