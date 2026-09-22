@@ -16,8 +16,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      DEV_VERSION: "alpha52-hunter-v2-registryfix"
-      DEV_NOTE: "alpha52 Hunter v2: fixes Hunter DeferredRegister bootstrap in KoshPackArmorMod; field tracker earth/leather palette with four I-IV armor tiers"
+      DEV_VERSION: "alpha53-artillery-v1-crew"
+      DEV_NOTE: "alpha53 Artillery v1: heavy artillery-crew armor I-IV, olive/graphite/metal palette; registered in KoshPackArmorMod DEV bootstrap"
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -37,6 +37,8 @@ jobs:
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_armor_test.mcfunction'
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon.class'
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/artilleryarmor/ArtilleryArmorAddon.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_artillery_test.mcfunction'
 
       - name: Publish DEV release asset
         env:
