@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-v0.2",
+    "version": "alpha55-all17-pilot-forge-v0.3",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55 armor + crafting + profession traits + unified forge v0.2; lossless Forge Bench transaction fix: target stays in captured inventory until restore"
+    "note": "alpha55 armor + crafting + profession traits + unified forge v0.3; Forge tooltip state is written into item lore and armor slot capacity matches tier/piece"
   },
   "extras": [
     {
@@ -65,8 +65,8 @@
     {
       "path": "kubejs/client_scripts/koshpack_forge_tooltips.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
-      "size": 1176,
-      "sha256": "bce6ea1da4112275a4f725210501f6ee586162266db4ffb3b2bfa3dbda4d2a84"
+      "size": 520,
+      "sha256": "c473b17da6b881bd4a03f86307dfc32d840f61353483f79d23377c217d453cf4"
     }
   ],
   "hotfixRevision": 3
