@@ -16,8 +16,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      DEV_VERSION: "alpha51-hunter-v1-tracker"
-      DEV_NOTE: "alpha51 Hunter v1: field tracker based on Researcher expedition silhouette, earth/leather palette, preserved Archer separation, four I-IV armor tiers"
+      DEV_VERSION: "alpha52-hunter-v2-registryfix"
+      DEV_NOTE: "alpha52 Hunter v2: fixes Hunter DeferredRegister bootstrap in KoshPackArmorMod; field tracker earth/leather palette with four I-IV armor tiers"
     timeout-minutes: 10
     steps:
       - name: Checkout
