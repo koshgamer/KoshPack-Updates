@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-crafting-traits-v1.1",
+    "version": "alpha55-all17-pilot-forge-v0.1",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1186428,
     "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
-    "note": "alpha55 armor + crafting + traits-v1.1: Rhino-compatible recipes and KubeJS 2101 beforeHurt; all 17 professions keep real full-set bonuses and drawbacks"
+    "note": "alpha55 armor + crafting + profession traits + unified forge v0.1; first live armor/weapon/tool sharpening slice through the Forge Bench"
   },
   "extras": [
     {
@@ -37,6 +37,36 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js",
       "size": 5219,
       "sha256": "19aba660f26c85d73f720170dbab78118a6732eb981482cf13a2939b98865412"
+    },
+    {
+      "path": "kubejs/startup_scripts/koshpack_forge_bench.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/startup_scripts/koshpack_forge_bench.js",
+      "size": 1027,
+      "sha256": "73479643587f8df5bb91ed3bc7d1fa2678416f434c6fd05f192928e85df795af"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_forge_bench_recipes.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_bench_recipes.js",
+      "size": 934,
+      "sha256": "f28c9a43f7125618f3e3e773c7cc38a53952ad1a0ed02fedb8c161ac301f70ee"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_forge_bench.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_bench.js",
+      "size": 15836,
+      "sha256": "57da1b6e23b256cdccca84d0c729a4568cf5c72c40099be8ebcdbdae63aa7531"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_forge_runtime.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_runtime.js",
+      "size": 3452,
+      "sha256": "ac33be66c228f145609e5e5f85370b65d4ec822c5b8287fe8c33bb35a20d7edb"
+    },
+    {
+      "path": "kubejs/client_scripts/koshpack_forge_tooltips.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
+      "size": 1176,
+      "sha256": "bce6ea1da4112275a4f725210501f6ee586162266db4ffb3b2bfa3dbda4d2a84"
     }
   ],
   "hotfixRevision": 1
