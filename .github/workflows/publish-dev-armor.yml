@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "launcher/dev/*.jar.b64"
+      - "launcher/dev-manifest.json"
       - ".github/workflows/publish-dev-armor.yml"
   workflow_dispatch:
 
@@ -15,9 +16,6 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    env:
-      DEV_VERSION: "alpha53-artillery-v1-crew"
-      DEV_NOTE: "alpha53 Artillery v1: heavy artillery-crew armor I-IV, olive/graphite/metal palette; registered in KoshPackArmorMod DEV bootstrap"
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -30,6 +28,31 @@ jobs:
           echo "SHA256=$(sha256sum dist/KoshPack_Armor_DEV.jar | awk '{print $1}')" >> "$GITHUB_ENV"
           echo "SIZE=$(stat -c%s dist/KoshPack_Armor_DEV.jar)" >> "$GITHUB_ENV"
 
+      - name: Read and validate DEV manifest
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          data = json.loads(Path("launcher/dev-manifest.json").read_text(encoding="utf-8"))
+          armor = data["armor"]
+          size = int(os.environ["SIZE"])
+          sha = os.environ["SHA256"]
+
+          assert data["channel"] == "dev-armor"
+          assert data["minecraft"] == "1.21.1"
+          assert data["neoforge"] == "21.1.248"
+          assert armor["file"] == "KoshPack_Armor_DEV.jar"
+          assert int(armor["size"]) == size, (armor["size"], size)
+          assert armor["sha256"] == sha, (armor["sha256"], sha)
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write(f'DEV_VERSION={armor["version"]}\n')
+              note = str(armor.get("note", "")).replace("\n", " ")
+              env.write(f'DEV_NOTE={note}\n')
+          print("Publishing", armor["version"])
+          PY
+
       - name: Verify expected build
         run: |
           test "$SIZE" -gt "100000"
@@ -39,54 +62,21 @@ jobs:
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/artilleryarmor/ArtilleryArmorAddon.class'
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_artillery_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_diver_test.mcfunction'
 
-      - name: Publish DEV release asset
+      - name: Publish DEV release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="armor-dev-current"
+          cp launcher/dev-manifest.json dist/dev-manifest.json
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/KoshPack_Armor_DEV.jar --clobber --repo "$GITHUB_REPOSITORY"
+            gh release upload "$TAG" dist/KoshPack_Armor_DEV.jar dist/dev-manifest.json --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" dist/KoshPack_Armor_DEV.jar --repo "$GITHUB_REPOSITORY" --title "Project Meridian DEV Armor" --notes "Автоматический DEV-канал тестовой брони Project Meridian." --latest=false
+            gh release create "$TAG" dist/KoshPack_Armor_DEV.jar dist/dev-manifest.json               --repo "$GITHUB_REPOSITORY"               --title "Project Meridian DEV Armor"               --notes "Автоматический DEV-канал тестовой брони Project Meridian."               --latest=false
           fi
 
-      - name: Update DEV manifest
+      - name: Summary
         run: |
-          python - <<'PY'
-          import json, os
-          from pathlib import Path
-          p=Path("launcher/dev-manifest.json")
-          data=json.loads(p.read_text(encoding="utf-8"))
-          data["schema"]=1
-          data["channel"]="dev-armor"
-          data["label"]="DEV / БРОНЯ"
-          data["launcherMinVersion"]="0.2.3"
-          data["minecraft"]="1.21.1"
-          data["neoforge"]="21.1.248"
-          data["armor"]={
-              "version":os.environ["DEV_VERSION"],
-              "file":"KoshPack_Armor_DEV.jar",
-              "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-              "size":int(os.environ["SIZE"]),
-              "sha256":os.environ["SHA256"],
-              "note":os.environ["DEV_NOTE"]
-          }
-          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-          PY
-
-      - name: Publish DEV manifest as release asset
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          cp launcher/dev-manifest.json dist/dev-manifest.json
-          gh release upload armor-dev-current dist/dev-manifest.json --clobber --repo "$GITHUB_REPOSITORY"
-
-      - name: Commit DEV manifest
-        run: |
-          git config user.name "Project Meridian CI"
-          git config user.email "actions@users.noreply.github.com"
-          git add launcher/dev-manifest.json
-          git diff --cached --quiet && exit 0
-          git commit -m "armor: publish $DEV_VERSION DEV manifest"
-          git push
+          echo "Published $DEV_VERSION"
+          echo "$DEV_NOTE"
