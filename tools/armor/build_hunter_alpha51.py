@@ -201,6 +201,46 @@ def main() -> None:
         "data/koshpackarmor/function/spawn_researcher_test.mcfunction",
         "assets/koshpackresearcherarmor/lang/ru_ru.json",
     ]
+
+    # Diagnostics: reveal how the working Researcher add-on is bootstrapped.
+    target_internal = b"ru/koshpack/forgebridge/researcherarmor/ResearcherArmorAddon"
+    print("=== Researcher bootstrap references ===")
+    for _name, _data in files.items():
+        if _name.endswith(".class") and target_internal in _data:
+            print(_name)
+    print("=== ResearcherArmorAddon UTF8 constants ===")
+    addon_data = files.get("ru/koshpack/forgebridge/researcherarmor/ResearcherArmorAddon.class", b"")
+    if addon_data[:4] == b"\\xca\\xfe\\xba\\xbe":
+        cp_count = struct.unpack(">H", addon_data[8:10])[0]
+        p = 10
+        idx = 1
+        while idx < cp_count:
+            tag = addon_data[p]
+            p += 1
+            if tag == 1:
+                ln = struct.unpack(">H", addon_data[p:p+2])[0]
+                raw = addon_data[p+2:p+2+ln]
+                p += 2 + ln
+                try:
+                    s = raw.decode("utf-8")
+                except UnicodeDecodeError:
+                    s = ""
+                if any(k in s for k in ("Researcher", "researcher", "EventBus", "Mod", "register", "koshpack")):
+                    print(repr(s))
+            elif tag in (3, 4):
+                p += 4
+            elif tag in (5, 6):
+                p += 8
+                idx += 1
+            elif tag in (7, 8, 16, 19, 20):
+                p += 2
+            elif tag in (9, 10, 11, 12, 17, 18):
+                p += 4
+            elif tag == 15:
+                p += 3
+            else:
+                raise ValueError(f"unsupported cp tag {tag}")
+            idx += 1
     missing = [name for name in required if name not in files]
     if missing:
         raise SystemExit("Missing Researcher base files: " + ", ".join(missing))
