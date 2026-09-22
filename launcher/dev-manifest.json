@@ -53,8 +53,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_forge_bench.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_bench.js",
-      "size": 90037,
-      "sha256": "ab0302d16f2a47327dce710764040cf851a8bad743c97f4d961ca72adb8469eb"
+      "size": 93432,
+      "sha256": "def19ddd45250a17917e5fabca479eaa8c2502cf574613666cc8a1cea33b8316"
     },
     {
       "path": "kubejs/server_scripts/koshpack_forge_runtime.js",
