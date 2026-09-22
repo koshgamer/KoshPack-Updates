@@ -35,6 +35,8 @@ jobs:
           rels = [
               "kubejs/startup_scripts/koshpack_profession_armor_components.js",
               "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
+              "kubejs/server_scripts/koshpack_profession_armor_traits.js",
+              "kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js",
           ]
           for rel in rels:
               src = Path("launcher/dev/extras") / rel
@@ -48,10 +50,10 @@ jobs:
 
           data["channel"] = "dev-armor"
           armor = data.setdefault("armor", {})
-          armor["version"] = "alpha55-all17-pilot-crafting-v1"
+          armor["version"] = "alpha55-all17-pilot-crafting-traits-v1"
           armor["note"] = (
-              "alpha55 armor + crafting-v1: 17 profession families; "
-              "Tier I workbench, Tier II-IV Foundry + sequential smithing"
+              "alpha55 armor + crafting + traits-v1: all 17 professions now have "
+              "real full-set bonuses and drawbacks, with tier-scaled behavior"
           )
           data["extras"] = entries
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
