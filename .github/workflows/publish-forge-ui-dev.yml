@@ -1,0 +1,83 @@
+name: Publish Forge UI DEV
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'launcher/dev/forge-ui.jar.b64'
+      - '.github/workflows/publish-forge-ui-dev.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forge-ui-dev-publish
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decode Forge UI
+        run: |
+          set -e
+          mkdir -p dist
+          base64 -d launcher/dev/forge-ui.jar.b64 > dist/KoshPack_Forge_UI_DEV.jar
+          unzip -t dist/KoshPack_Forge_UI_DEV.jar >/dev/null
+          jar tf dist/KoshPack_Forge_UI_DEV.jar | grep -q 'ru/koshpack/forgeui/client/ForgeBenchScreen.class'
+          jar tf dist/KoshPack_Forge_UI_DEV.jar | grep -q 'ru/koshpack/forgeui/forge/ForgeService.class'
+          jar tf dist/KoshPack_Forge_UI_DEV.jar | grep -q 'data/koshpack_forge_ui/forge_modifiers.json'
+
+      - name: Update DEV manifest
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          jar=Path("dist/KoshPack_Forge_UI_DEV.jar")
+          data=jar.read_bytes()
+          sha=hashlib.sha256(data).hexdigest()
+          size=len(data)
+
+          path=Path("launcher/dev-manifest.json")
+          m=json.loads(path.read_text(encoding="utf-8"))
+          extra={
+              "path":"mods/KoshPack_Forge_UI_DEV.jar",
+              "url":"https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV.jar",
+              "size":size,
+              "sha256":sha,
+          }
+          extras=[x for x in m.get("extras",[]) if x.get("path")!=extra["path"]]
+          extras.append(extra)
+          m["extras"]=extras
+          m["hotfixRevision"]=max(int(m.get("hotfixRevision",0))+1,7)
+          m["armor"]["version"]="alpha55-all17-pilot-forge-ui-alpha1"
+          m["armor"]["note"]="Native Forge Bench UI alpha1: custom 352x278 industrial screen, inventory item selection, sharpening slots/cards, server-side costs and safe item mutation."
+          path.write_text(json.dumps(m,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+          print("forge ui",size,sha)
+          PY
+
+      - name: Publish release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="forge-ui-dev-current"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/KoshPack_Forge_UI_DEV.jar --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" dist/KoshPack_Forge_UI_DEV.jar --repo "$GITHUB_REPOSITORY" --title "KoshPack Forge UI DEV" --notes "Native Forge Bench UI for the DEV channel." --latest=false
+          fi
+
+      - name: Commit manifest
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "dev: publish Forge UI alpha1"
+          git pull --rebase origin main
+          git push origin HEAD:main
