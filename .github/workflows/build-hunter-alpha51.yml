@@ -31,6 +31,16 @@ jobs:
       - name: Patch current DEV armor with Hunter
         run: python tools/armor/build_hunter_alpha51.py
 
+      - name: Inspect armor bootstrap
+        run: |
+          echo "===== KoshPackArmorMod ====="
+          javap -classpath dist/KoshPack_Armor_DEV.jar -c -p ru.koshpack.forgebridge.armor.KoshPackArmorMod
+          echo "===== ResearcherArmorAddon ====="
+          javap -classpath dist/KoshPack_Armor_DEV.jar -c -p ru.koshpack.forgebridge.researcherarmor.ResearcherArmorAddon
+          echo "===== HunterArmorAddon ====="
+          javap -classpath dist/KoshPack_Armor_DEV.jar -c -p ru.koshpack.forgebridge.hunterarmor.HunterArmorAddon
+          exit 1
+
       - name: Verify patched JAR
         run: |
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon.class'
