@@ -1,0 +1,51 @@
+name: Inspect current Diver armor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/inspect-current-diver.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decode current DEV JAR
+        run: |
+          mkdir -p /tmp/diver
+          base64 -d launcher/dev/current.jar.b64 > /tmp/diver/current.jar
+          unzip -t /tmp/diver/current.jar >/dev/null
+
+      - name: Decompile current Diver classes
+        run: |
+          curl -fL --retry 3 "https://www.benf.org/other/cfr/cfr-0.152.jar" -o /tmp/cfr.jar
+          java -jar /tmp/cfr.jar /tmp/diver/current.jar --outputdir /tmp/diver/src --silent true
+
+          DEST="tools/armor/current_diver_decompiled"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+
+          for rel in             ru/koshpack/forgebridge/armor/client/DiverModelGeometry.java             ru/koshpack/forgebridge/armor/client/DiverArmorModel.java             ru/koshpack/forgebridge/armor/client/DiverArmorClient.java             ru/koshpack/forgebridge/diverarmor/DiverArmorAddon.java             ru/koshpack/forgebridge/diverarmor/DiverArmorItem.java; do
+            if [ -f "/tmp/diver/src/$rel" ]; then
+              cp "/tmp/diver/src/$rel" "$DEST/$(basename "$rel")"
+            fi
+          done
+
+          javap -classpath /tmp/diver/current.jar -c -p ru.koshpack.forgebridge.armor.client.DiverModelGeometry > "$DEST/DiverModelGeometry.javap.txt"
+          javap -classpath /tmp/diver/current.jar -c -p ru.koshpack.forgebridge.armor.client.DiverArmorModel > "$DEST/DiverArmorModel.javap.txt"
+
+      - name: Commit inspection
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/armor/current_diver_decompiled
+          git diff --cached --quiet && exit 0
+          git commit -m "armor: inspect current Diver geometry"
+          git push
