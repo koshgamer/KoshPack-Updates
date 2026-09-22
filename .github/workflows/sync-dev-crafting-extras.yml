@@ -41,6 +41,7 @@ jobs:
               "kubejs/startup_scripts/koshpack_forge_bench.js",
               "kubejs/server_scripts/koshpack_forge_bench_recipes.js",
               "kubejs/server_scripts/koshpack_forge_bench.js",
+              "kubejs/server_scripts/koshpack_forge_test_kit.js",
               "kubejs/server_scripts/koshpack_forge_runtime.js",
               "kubejs/client_scripts/koshpack_forge_tooltips.js",
           ]
