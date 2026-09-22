@@ -19,7 +19,6 @@ var KOSH_FORGE_SESSIONS = {}
 var KOSH_FORGE_DATA_COMPONENTS = Java.loadClass('net.minecraft.core.component.DataComponents')
 var KOSH_FORGE_ITEM_LORE = Java.loadClass('net.minecraft.world.item.component.ItemLore')
 var KOSH_FORGE_ARRAY_LIST = Java.loadClass('java.util.ArrayList')
-var KOSH_FORGE_LORE_MARKER = '\u200B\u200C\u200D'
 
 var KOSH_ARMOR_NAMESPACES = {
   koshpackminerhelmet: true,
@@ -249,7 +248,7 @@ function koshForgeRefreshLore(stack, slots, force) {
         var line = iterator.next()
         var plain = ''
         try { plain = String(line.getString()) } catch (e) {}
-        if (plain.indexOf(KOSH_FORGE_LORE_MARKER) !== 0) lines.add(line)
+        if (plain.indexOf('Заточки: [') !== 0 && plain.indexOf('◆ Слот ') !== 0) lines.add(line)
       }
     }
   } catch (e) {}
@@ -259,7 +258,7 @@ function koshForgeRefreshLore(stack, slots, force) {
     glyphs.push(koshForgeReadSlot(stack, i) ? '◆' : '◇')
   }
 
-  lines.add(Text.yellow(KOSH_FORGE_LORE_MARKER + 'Заточки: [' + glyphs.join('] [') + ']'))
+  lines.add(Text.yellow('Заточки: [' + glyphs.join('] [') + ']'))
 
   for (var j = 0; j < slots; j++) {
     var slot = koshForgeReadSlot(stack, j)
@@ -269,7 +268,7 @@ function koshForgeRefreshLore(stack, slots, force) {
     var effect = koshForgeEffectText(slot.id, slot.level)
     var detail = '◆ Слот ' + (j + 1) + ': ' + modName + ' ' + koshForgeRoman(slot.level)
     if (effect) detail += ' — ' + effect
-    lines.add(Text.aqua(KOSH_FORGE_LORE_MARKER + detail))
+    lines.add(Text.aqua(detail))
   }
 
   try {
