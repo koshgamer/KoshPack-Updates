@@ -13,10 +13,10 @@ from pathlib import Path
 
 from PIL import Image
 
-VERSION = "alpha51-hunter-v1-tracker"
+VERSION = "alpha52-hunter-v2-registryfix"
 NOTE = (
-    "alpha51 Hunter v1: field tracker based on Researcher expedition silhouette, "
-    "earth/leather palette, preserved Archer separation, four I-IV armor tiers"
+    "alpha52 Hunter v2: fixes Hunter DeferredRegister bootstrap in KoshPackArmorMod; "
+    "field tracker earth/leather palette with four I-IV armor tiers"
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -93,6 +93,173 @@ def patch_class(data: bytes) -> bytes:
         index += 1
     out += data[pos:]
     return bytes(out)
+
+
+
+def _parse_constant_pool(data: bytes):
+    cp_count = struct.unpack(">H", data[8:10])[0]
+    entries = [None] * cp_count
+    pos = 10
+    idx = 1
+    while idx < cp_count:
+        start = pos
+        tag = data[pos]
+        pos += 1
+        value = None
+        if tag == 1:
+            ln = struct.unpack(">H", data[pos:pos+2])[0]
+            raw = data[pos+2:pos+2+ln]
+            pos += 2 + ln
+            try:
+                value = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                value = None
+        elif tag in (3, 4):
+            pos += 4
+        elif tag in (5, 6):
+            pos += 8
+            entries[idx] = (tag, value, data[start:pos])
+            idx += 1
+        elif tag in (7, 8, 16, 19, 20):
+            value = struct.unpack(">H", data[pos:pos+2])[0]
+            pos += 2
+        elif tag in (9, 10, 11, 12, 17, 18):
+            value = struct.unpack(">HH", data[pos:pos+4])
+            pos += 4
+        elif tag == 15:
+            value = (data[pos], struct.unpack(">H", data[pos+1:pos+3])[0])
+            pos += 3
+        else:
+            raise ValueError(f"Unsupported constant-pool tag {tag} at index {idx}")
+        entries[idx] = (tag, value, data[start:pos])
+        idx += 1
+    return cp_count, entries, pos
+
+
+def _u2(buf: bytes, pos: int) -> int:
+    return struct.unpack(">H", buf[pos:pos+2])[0]
+
+
+def _u4(buf: bytes, pos: int) -> int:
+    return struct.unpack(">I", buf[pos:pos+4])[0]
+
+
+def patch_koshpack_bootstrap(data: bytes) -> bytes:
+    """Append new HunterArmorAddon(eventBus) to KoshPackArmorMod constructor."""
+    cp_count, cp, cp_end = _parse_constant_pool(data)
+
+    utf8 = {entry[1]: i for i, entry in enumerate(cp) if entry and entry[0] == 1}
+    init_utf = utf8["<init>"]
+    bus_desc = "(Lnet/neoforged/bus/api/IEventBus;)V"
+    desc_utf = utf8[bus_desc]
+    code_utf = utf8["Code"]
+
+    nt_index = None
+    for i, entry in enumerate(cp):
+        if entry and entry[0] == 12 and entry[1] == (init_utf, desc_utf):
+            nt_index = i
+            break
+    if nt_index is None:
+        raise ValueError("Could not find constructor NameAndType for IEventBus")
+
+    hunter_internal = "ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon"
+    hunter_raw = hunter_internal.encode("utf-8")
+    hunter_utf_idx = cp_count
+    hunter_class_idx = cp_count + 1
+    hunter_ctor_idx = cp_count + 2
+
+    extra_cp = (
+        bytes([1]) + struct.pack(">H", len(hunter_raw)) + hunter_raw
+        + bytes([7]) + struct.pack(">H", hunter_utf_idx)
+        + bytes([10]) + struct.pack(">HH", hunter_class_idx, nt_index)
+    )
+
+    rest = bytearray(data[cp_end:])
+
+    # class header in "rest": access, this, super, interfaces_count...
+    p = 0
+    p += 6
+    interfaces_count = _u2(rest, p)
+    p += 2 + interfaces_count * 2
+
+    fields_count = _u2(rest, p)
+    p += 2
+    for _ in range(fields_count):
+        p += 6
+        attr_count = _u2(rest, p)
+        p += 2
+        for _ in range(attr_count):
+            attr_len = _u4(rest, p + 2)
+            p += 6 + attr_len
+
+    methods_count_pos = p
+    methods_count = _u2(rest, p)
+    p += 2
+
+    method_chunks = []
+    patched = False
+    for _ in range(methods_count):
+        m_start = p
+        access = _u2(rest, p)
+        name_idx = _u2(rest, p + 2)
+        desc_idx = _u2(rest, p + 4)
+        attr_count = _u2(rest, p + 6)
+        p += 8
+
+        attrs = []
+        is_target = (
+            cp[name_idx][1] == "<init>"
+            and cp[desc_idx][1] == bus_desc
+        )
+        for _ in range(attr_count):
+            a_name_idx = _u2(rest, p)
+            a_len = _u4(rest, p + 2)
+            info = bytes(rest[p+6:p+6+a_len])
+            p += 6 + a_len
+
+            if is_target and a_name_idx == code_utf:
+                max_stack = _u2(info, 0)
+                max_locals = _u2(info, 2)
+                code_len = _u4(info, 4)
+                code = info[8:8+code_len]
+                tail = info[8+code_len:]
+                if not code or code[-1] != 0xB1:
+                    raise ValueError("KoshPackArmorMod constructor does not end with return")
+
+                inject = (
+                    b"\\xbb" + struct.pack(">H", hunter_class_idx)
+                    + b"\\x59\\x2b\\xb7" + struct.pack(">H", hunter_ctor_idx)
+                    + b"\\x57"
+                )
+                new_code = code[:-1] + inject + code[-1:]
+                info = (
+                    struct.pack(">HHI", max(max_stack, 3), max_locals, len(new_code))
+                    + new_code + tail
+                )
+                a_len = len(info)
+                patched = True
+
+            attrs.append(struct.pack(">HI", a_name_idx, a_len) + info)
+
+        method_chunks.append(
+            struct.pack(">HHHH", access, name_idx, desc_idx, attr_count)
+            + b"".join(attrs)
+        )
+
+    class_tail = bytes(rest[p:])
+    methods_prefix = bytes(rest[:methods_count_pos]) + struct.pack(">H", methods_count)
+    new_rest = methods_prefix + b"".join(method_chunks) + class_tail
+
+    if not patched:
+        raise ValueError("KoshPackArmorMod(IEventBus) constructor was not patched")
+
+    return (
+        data[:8]
+        + struct.pack(">H", cp_count + 3)
+        + data[10:cp_end]
+        + extra_cp
+        + new_rest
+    )
 
 
 def tier_from_name(name: str) -> int:
@@ -202,45 +369,6 @@ def main() -> None:
         "assets/koshpackresearcherarmor/lang/ru_ru.json",
     ]
 
-    # Diagnostics: reveal how the working Researcher add-on is bootstrapped.
-    target_internal = b"ru/koshpack/forgebridge/researcherarmor/ResearcherArmorAddon"
-    print("=== Researcher bootstrap references ===")
-    for _name, _data in files.items():
-        if _name.endswith(".class") and target_internal in _data:
-            print(_name)
-    print("=== ResearcherArmorAddon UTF8 constants ===")
-    addon_data = files.get("ru/koshpack/forgebridge/researcherarmor/ResearcherArmorAddon.class", b"")
-    if addon_data[:4] == b"\\xca\\xfe\\xba\\xbe":
-        cp_count = struct.unpack(">H", addon_data[8:10])[0]
-        p = 10
-        idx = 1
-        while idx < cp_count:
-            tag = addon_data[p]
-            p += 1
-            if tag == 1:
-                ln = struct.unpack(">H", addon_data[p:p+2])[0]
-                raw = addon_data[p+2:p+2+ln]
-                p += 2 + ln
-                try:
-                    s = raw.decode("utf-8")
-                except UnicodeDecodeError:
-                    s = ""
-                if any(k in s for k in ("Researcher", "researcher", "EventBus", "Mod", "register", "koshpack")):
-                    print(repr(s))
-            elif tag in (3, 4):
-                p += 4
-            elif tag in (5, 6):
-                p += 8
-                idx += 1
-            elif tag in (7, 8, 16, 19, 20):
-                p += 2
-            elif tag in (9, 10, 11, 12, 17, 18):
-                p += 4
-            elif tag == 15:
-                p += 3
-            else:
-                raise ValueError(f"unsupported cp tag {tag}")
-            idx += 1
     missing = [name for name in required if name not in files]
     if missing:
         raise SystemExit("Missing Researcher base files: " + ", ".join(missing))
@@ -258,6 +386,11 @@ def main() -> None:
     for src, dst in CLASS_MAP.items():
         files[dst] = patch_class(files[src])
 
+    main_mod = "ru/koshpack/forgebridge/armor/KoshPackArmorMod.class"
+    if main_mod not in files:
+        raise SystemExit("Missing KoshPackArmorMod.class")
+    files[main_mod] = patch_koshpack_bootstrap(files[main_mod])
+
     researcher_prefix = "assets/koshpackresearcherarmor/"
     for src in [n for n in list(files) if n.startswith(researcher_prefix)]:
         dst = src.replace("koshpackresearcherarmor", "koshpackhunterarmor").replace("researcher", "hunter")
@@ -272,11 +405,6 @@ def main() -> None:
     src_fn = "data/koshpackarmor/function/spawn_researcher_test.mcfunction"
     hunter_fn = "data/koshpackarmor/function/spawn_hunter_test.mcfunction"
     files[hunter_fn] = patch_text(files[src_fn])
-
-    mods_toml = "META-INF/neoforge.mods.toml"
-    if mods_toml in files:
-        text = files[mods_toml].decode("utf-8")
-        files[mods_toml] = duplicate_toml_sections(text).encode("utf-8")
 
     # Existing signatures would no longer be valid after patching.
     for name in list(files):
