@@ -16,7 +16,7 @@ permissions:
 jobs:
   build-diver:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,11 +27,6 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.14"
-
       - name: Python
         uses: actions/setup-python@v5
         with:
@@ -40,9 +35,87 @@ jobs:
       - name: Install image tooling
         run: python -m pip install --disable-pip-version-check "Pillow==11.3.0"
 
-      - name: Compile donor-based Diver geometry
-        working-directory: tools/armor/diver_v2
-        run: gradle clean classes --stacktrace
+      - name: Compile Diver geometry against Minecraft API signatures
+        shell: bash
+        run: |
+          set -e
+          STUB=/tmp/kosh-diver-stubs
+          OUT=tools/armor/diver_v2/build/classes/java/main
+          rm -rf "$STUB" "$OUT"
+          mkdir -p             "$STUB/net/minecraft/client/model"             "$STUB/net/minecraft/client/model/geom"             "$STUB/net/minecraft/client/model/geom/builders"             "$STUB/net/minecraft/world/entity"             "$OUT"
+
+          cat > "$STUB/net/minecraft/client/model/HumanoidModel.java" <<'JAVA'
+          package net.minecraft.client.model;
+          import net.minecraft.client.model.geom.builders.CubeDeformation;
+          import net.minecraft.client.model.geom.builders.MeshDefinition;
+          public class HumanoidModel<T> {
+              public static MeshDefinition createMesh(CubeDeformation deformation, float yOffset) { return null; }
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/client/model/geom/PartPose.java" <<'JAVA'
+          package net.minecraft.client.model.geom;
+          public class PartPose {
+              public static final PartPose ZERO = new PartPose();
+              public static PartPose offset(float x, float y, float z) { return null; }
+              public static PartPose offsetAndRotation(float x, float y, float z, float xr, float yr, float zr) { return null; }
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/client/model/geom/builders/CubeDeformation.java" <<'JAVA'
+          package net.minecraft.client.model.geom.builders;
+          public class CubeDeformation {
+              public CubeDeformation(float grow) {}
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/client/model/geom/builders/CubeListBuilder.java" <<'JAVA'
+          package net.minecraft.client.model.geom.builders;
+          public class CubeListBuilder {
+              public static CubeListBuilder create() { return null; }
+              public CubeListBuilder texOffs(int u, int v) { return this; }
+              public CubeListBuilder mirror() { return this; }
+              public CubeListBuilder mirror(boolean value) { return this; }
+              public CubeListBuilder addBox(float x, float y, float z, float dx, float dy, float dz, CubeDeformation deformation) { return this; }
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/client/model/geom/builders/LayerDefinition.java" <<'JAVA'
+          package net.minecraft.client.model.geom.builders;
+          public class LayerDefinition {
+              public static LayerDefinition create(MeshDefinition mesh, int width, int height) { return null; }
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/client/model/geom/builders/MeshDefinition.java" <<'JAVA'
+          package net.minecraft.client.model.geom.builders;
+          public class MeshDefinition {
+              public PartDefinition getRoot() { return null; }
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/client/model/geom/builders/PartDefinition.java" <<'JAVA'
+          package net.minecraft.client.model.geom.builders;
+          import net.minecraft.client.model.geom.PartPose;
+          public class PartDefinition {
+              public PartDefinition addOrReplaceChild(String name, CubeListBuilder cubes, PartPose pose) { return null; }
+          }
+          JAVA
+
+          cat > "$STUB/net/minecraft/world/entity/EquipmentSlot.java" <<'JAVA'
+          package net.minecraft.world.entity;
+          public final class EquipmentSlot {
+              public static final EquipmentSlot HEAD = new EquipmentSlot();
+              public static final EquipmentSlot CHEST = new EquipmentSlot();
+              public static final EquipmentSlot LEGS = new EquipmentSlot();
+              public static final EquipmentSlot FEET = new EquipmentSlot();
+          }
+          JAVA
+
+          javac --release 21             -d "$OUT"             $(find "$STUB" -name '*.java' -print)             tools/armor/diver_v2/src/main/java/ru/koshpack/forgebridge/armor/client/DiverModelGeometry.java
+
+          test -s "$OUT/ru/koshpack/forgebridge/armor/client/DiverModelGeometry.class"
+          javap -classpath "$OUT" -verbose ru.koshpack.forgebridge.armor.client.DiverModelGeometry             | grep -q 'deep_sea_dome_iv'
 
       - name: Patch current DEV armor
         run: python tools/armor/build_diver_alpha54.py
