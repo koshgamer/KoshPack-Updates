@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.12"
+APP_VERSION = "0.2.13"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -42,6 +42,11 @@ DEV_EXTRA_PATHS = (
     "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
     "kubejs/server_scripts/koshpack_profession_armor_traits.js",
     "kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js",
+    "kubejs/startup_scripts/koshpack_forge_bench.js",
+    "kubejs/server_scripts/koshpack_forge_bench_recipes.js",
+    "kubejs/server_scripts/koshpack_forge_bench.js",
+    "kubejs/server_scripts/koshpack_forge_runtime.js",
+    "kubejs/client_scripts/koshpack_forge_tooltips.js",
 )
 PACK_ASSET_NAME = "minecraft.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
