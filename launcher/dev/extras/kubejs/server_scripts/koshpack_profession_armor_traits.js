@@ -328,7 +328,7 @@ PlayerEvents.tick(event => {
   }
 })
 
-EntityEvents.hurt(event => {
+EntityEvents.beforeHurt(event => {
   var source = event.source
 
   // Incoming modifiers.
