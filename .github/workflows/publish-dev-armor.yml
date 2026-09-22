@@ -34,7 +34,9 @@ jobs:
         run: |
           test "$SIZE" -gt "100000"
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/armor/client/DiverModelGeometry.class'
-          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_armor_test.mcfunction'\n          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon.class'\n          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_armor_test.mcfunction'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/hunterarmor/HunterArmorAddon.class'
+          jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_hunter_test.mcfunction'
 
       - name: Publish DEV release asset
         env:
