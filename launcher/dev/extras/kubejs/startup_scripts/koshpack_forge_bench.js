@@ -7,7 +7,12 @@ StartupEvents.registry('block', event => {
     .hardness(5.0)
     .resistance(6.0)
     .stoneSoundType()
-    .parentModel('koshpack_forge_ui:block/forge_bench')
+    .modelGenerator(m => {
+      // Keep the custom collision boxes below, but render the authored model as-is.
+      // Using parentModel together with .box() makes KubeJS generate child elements
+      // that reference undefined #north/#south/#up textures -> magenta/black model.
+      m.parent('koshpack_forge_ui:block/forge_bench')
+    })
     .box(1, 0, 1, 15, 10, 15)
     .box(0, 10, 0, 16, 14, 16)
     .box(3, 14, 4, 13, 16, 12)
