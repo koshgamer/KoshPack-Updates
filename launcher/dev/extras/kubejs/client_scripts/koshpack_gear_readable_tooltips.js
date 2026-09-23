@@ -262,11 +262,22 @@ function koshTipBuildBlock(stack, kind) {
   return block
 }
 
+ItemEvents.modifyTooltips(function(event) {
+  KOSH_GEAR_TOOLTIP_ROWS.forEach(function(row) {
+    var itemId = row[0]
+    var dynamicId = 'koshpack_gear_' + itemId.replace(':', '_')
+    event.modify(itemId, function(builder) {
+      builder.dynamic(dynamicId)
+    })
+  })
+})
+
 KOSH_GEAR_TOOLTIP_ROWS.forEach(function(row) {
   var itemId = row[0]
   var kind = row[1]
+  var dynamicId = 'koshpack_gear_' + itemId.replace(':', '_')
 
-  ItemEvents.dynamicTooltips(itemId, function(event) {
+  ItemEvents.dynamicTooltips(dynamicId, function(event) {
     try {
       koshTipRemoveOldManagedLines(event.lines)
 
