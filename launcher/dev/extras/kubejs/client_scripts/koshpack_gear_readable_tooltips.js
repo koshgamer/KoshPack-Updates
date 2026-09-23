@@ -44,6 +44,8 @@ var KOSH_TIP_COMPOUND_PART = Java.loadClass('net.silentchaos512.gear.item.Compou
 var KOSH_TIP_MATERIAL_INSTANCE = Java.loadClass('net.silentchaos512.gear.gear.material.MaterialInstance')
 var KOSH_TIP_BUILTIN_MATERIALS = Java.loadClass('net.silentchaos512.gear.core.BuiltinMaterials')
 var KOSH_TIP_PROPERTIES = Java.loadClass('net.silentchaos512.gear.setup.gear.GearProperties')
+var KOSH_TIP_PART_TYPES = Java.loadClass('net.silentchaos512.gear.setup.gear.PartTypes')
+var KOSH_TIP_PROPERTY_KEY = Java.loadClass('net.silentchaos512.gear.api.util.PropertyKey')
 var KOSH_TIP_ARRAY_LIST = Java.loadClass('java.util.ArrayList')
 
 function koshTipId(stack) {
@@ -140,11 +142,11 @@ function koshTipPhysics(stack, kind) {
 
   if (kind === 'tool') {
     if (harvest > 0.01) parts.push(koshTipFmt(harvest) + ' скорость добычи')
-    if (attack > 0.01) parts.push(koshTipFmt(attack) + ' урона')
+    if (attack > 0.01) parts.push(koshTipFmt(attack + 1) + ' урона')
     if (attackSpeed !== 0) parts.push(koshTipFmt(attackSpeed) + ' скорость атаки')
     if (blockReach !== 0) parts.push(koshTipFmt(blockReach) + ' дальность блоков')
   } else {
-    if (attack > 0.01) parts.push(koshTipFmt(attack) + ' урона')
+    if (attack > 0.01) parts.push(koshTipFmt(attack + 1) + ' урона')
     if (attackSpeed !== 0) parts.push(koshTipFmt(attackSpeed) + ' скорость атаки')
     if (attackReach !== 0) parts.push(koshTipFmt(attackReach) + ' дальность атаки')
     if (rangedDamage > 0.01) parts.push('×' + koshTipFmt(rangedDamage) + ' дальний урон')
@@ -155,14 +157,38 @@ function koshTipPhysics(stack, kind) {
   return parts
 }
 
-function koshTipMaterialDiff(stack, ironReference) {
+function koshTipMaterialProperty(material, partInstance, propertySupplier) {
+  if (!material || !partInstance) return NaN
+  try {
+    var property = propertySupplier.get()
+    var key = KOSH_TIP_PROPERTY_KEY.of(property, partInstance.getGearType())
+    return Number(material.getProperty(partInstance.getType(), key))
+  } catch (e) {}
+  return NaN
+}
+
+function koshTipMaterialDiff(mainPartStack) {
   var positives = []
   var negatives = []
-  if (!ironReference) return { positives: positives, negatives: negatives }
+  var compared = false
 
-  function compare(label, property, threshold) {
-    var actual = koshTipNumber(stack, property)
-    var iron = koshTipNumber(ironReference, property)
+  var partInstance = null
+  var currentMaterial = null
+  var ironMaterial = null
+
+  try { partInstance = KOSH_TIP_PART_INSTANCE.from(mainPartStack) } catch (e) {}
+  if (!partInstance) return { positives: positives, negatives: negatives, compared: false }
+
+  try { currentMaterial = partInstance.getPrimaryMaterial() } catch (e) {}
+  try { ironMaterial = KOSH_TIP_MATERIAL_INSTANCE.of(KOSH_TIP_BUILTIN_MATERIALS.IRON.getMaterial()) } catch (e) {}
+  if (!currentMaterial || !ironMaterial) return { positives: positives, negatives: negatives, compared: false }
+
+  function compare(label, propertySupplier, threshold) {
+    var actual = koshTipMaterialProperty(currentMaterial, partInstance, propertySupplier)
+    var iron = koshTipMaterialProperty(ironMaterial, partInstance, propertySupplier)
+    if (!isFinite(actual) || !isFinite(iron)) return
+
+    compared = true
     var delta = actual - iron
     if (delta > threshold) positives.push(label + ' +' + koshTipFmt(delta))
     if (delta < -threshold) negatives.push(label + ' ' + koshTipFmt(delta))
@@ -172,18 +198,17 @@ function koshTipMaterialDiff(stack, ironReference) {
   compare('скорость атаки', KOSH_TIP_PROPERTIES.ATTACK_SPEED, 0.01)
   compare('скорость добычи', KOSH_TIP_PROPERTIES.HARVEST_SPEED, 0.05)
 
-  var maxDamage = 0
-  var ironMaxDamage = 0
-  try { maxDamage = Number(stack.getMaxDamage()) } catch (e) {}
-  try { ironMaxDamage = Number(ironReference.getMaxDamage()) } catch (e) {}
+  var actualDurability = koshTipMaterialProperty(currentMaterial, partInstance, KOSH_TIP_PROPERTIES.DURABILITY)
+  var ironDurability = koshTipMaterialProperty(ironMaterial, partInstance, KOSH_TIP_PROPERTIES.DURABILITY)
 
-  if (ironMaxDamage > 0) {
-    var pct = Math.round((maxDamage / ironMaxDamage - 1) * 100)
+  if (isFinite(actualDurability) && isFinite(ironDurability) && ironDurability > 0) {
+    compared = true
+    var pct = Math.round((actualDurability / ironDurability - 1) * 100)
     if (pct > 0) positives.push('прочность +' + pct + '%')
     if (pct < 0) negatives.push('прочность ' + pct + '%')
   }
 
-  return { positives: positives, negatives: negatives }
+  return { positives: positives, negatives: negatives, compared: compared }
 }
 
 function koshTipRemoveOldManagedLines(lines) {
@@ -246,8 +271,7 @@ function koshTipBuildBlock(stack, kind) {
     }
   }
 
-  var reference = koshTipIronReference(stack, mainPart)
-  var diff = koshTipMaterialDiff(stack, reference)
+  var diff = koshTipMaterialDiff(mainPart)
 
   if (diff.positives.length > 0) {
     block.add(Text.green('Плюсы материала: ' + diff.positives.join(', ')))
@@ -255,7 +279,7 @@ function koshTipBuildBlock(stack, kind) {
   if (diff.negatives.length > 0) {
     block.add(Text.red('Минусы материала: ' + diff.negatives.join(', ')))
   }
-  if (reference && diff.positives.length === 0 && diff.negatives.length === 0) {
+  if (diff.compared && diff.positives.length === 0 && diff.negatives.length === 0) {
     block.add(Text.darkGray('Материал по физике близок к железу.'))
   }
 
