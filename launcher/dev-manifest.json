@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 27: adds material-bearing working-part replacement for 25 Silent Gear weapons/tools. Existing gear + newly cast matching MAIN part keeps the same item, forge treatments and percent wear while Silent Gear recalculates the new material stats. Material pros/cons are shown relative to iron. Armor hotfix 26 remains unchanged."
+    "note": "Hotfix 28: fixes weapon/tool material tooltip after working-part replacement. The material label and comparison are read from the actually installed recalculated Silent Gear MAIN part. Hotfix 27 material replacement and armor hotfix 26 remain active."
   },
   "extras": [
     {
@@ -73,7 +73,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
       "size": 2022,
       "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_gear_material_swap.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_gear_material_swap.js",
+      "size": 12919,
+      "sha256": "337c21b18e740ceb5cef863bd7d1c300daf1e77333f049894140761254d6cdaa"
     }
   ],
-  "hotfixRevision": 27
+  "hotfixRevision": 28
 }
