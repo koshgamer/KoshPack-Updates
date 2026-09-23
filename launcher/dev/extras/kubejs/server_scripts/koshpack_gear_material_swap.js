@@ -80,6 +80,60 @@ function koshGearWearFraction(stack) {
   return Math.max(0, Math.min(1, damage / maxDamage))
 }
 
+function koshGearForgeSnapshot(stack) {
+  var out = { version: '', loreSig: '', slots: [] }
+  if (!stack) return out
+
+  var tag = null
+  try { tag = stack.getCustomData() } catch (e) {}
+  if (!tag) return out
+
+  try { out.version = String(tag.getString('kosh_forge_version').orElse('')) } catch (e) {
+    try { out.version = String(tag.getString('kosh_forge_version')) } catch (_e) {}
+  }
+  try { out.loreSig = String(tag.getString('kosh_forge_lore_sig').orElse('')) } catch (e) {
+    try { out.loreSig = String(tag.getString('kosh_forge_lore_sig')) } catch (_e) {}
+  }
+
+  for (var i = 0; i < 3; i++) {
+    var id = ''
+    var level = 0
+    try { id = String(tag.getString('kosh_forge_slot_' + i + '_id').orElse('')) } catch (e) {
+      try { id = String(tag.getString('kosh_forge_slot_' + i + '_id')) } catch (_e) {}
+    }
+    try { level = Number(tag.getInt('kosh_forge_slot_' + i + '_level').orElse(0)) } catch (e) {
+      try { level = Number(tag.getInt('kosh_forge_slot_' + i + '_level')) } catch (_e) {}
+    }
+    out.slots.push({ id: id, level: level })
+  }
+
+  return out
+}
+
+function koshGearRestoreForgeSnapshot(stack, snapshot) {
+  if (!stack || !snapshot) return
+
+  var tag = null
+  try { tag = stack.getCustomData() } catch (e) {}
+  if (!tag) return
+
+  if (snapshot.version) tag.putString('kosh_forge_version', snapshot.version)
+  if (snapshot.loreSig) tag.putString('kosh_forge_lore_sig', snapshot.loreSig)
+
+  for (var i = 0; i < 3; i++) {
+    var slot = snapshot.slots && snapshot.slots[i] ? snapshot.slots[i] : null
+    if (slot && slot.id && slot.level > 0) {
+      tag.putString('kosh_forge_slot_' + i + '_id', slot.id)
+      tag.putInt('kosh_forge_slot_' + i + '_level', slot.level)
+    } else {
+      try { tag.remove('kosh_forge_slot_' + i + '_id') } catch (e) {}
+      try { tag.remove('kosh_forge_slot_' + i + '_level') } catch (e) {}
+    }
+  }
+
+  stack.setCustomData(tag)
+}
+
 function koshGearFmt(value) {
   var n = Number(value)
   if (!isFinite(n)) return '0'
@@ -277,6 +331,7 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
     if (KOSH_GEAR_BY_PART[koshGearStackId(part)].gear !== koshGearStackId(base)) return
 
     var wear = koshGearWearFraction(base)
+    var forgeSnapshot = koshGearForgeSnapshot(base)
     var result = base.copy()
     result.count = 1
 
@@ -286,6 +341,10 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
     KOSH_GEAR_DATA.addOrReplacePart(result, replacement)
     try { replacement.onAddToGear(result) } catch (e) {}
     KOSH_GEAR_DATA.recalculateGearData(result, null)
+
+    // Silent Gear is allowed to rebuild its own components, but our forge treatments
+    // are KoshPack state and must survive material replacement exactly.
+    koshGearRestoreForgeSnapshot(result, forgeSnapshot)
 
     var newMax = 0
     try { newMax = Number(result.getMaxDamage()) } catch (e) {}
