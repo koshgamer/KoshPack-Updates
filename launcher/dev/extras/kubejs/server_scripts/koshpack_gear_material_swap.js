@@ -418,12 +418,29 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
     var newMax = 0
     try { newMax = Number(result.getMaxDamage()) } catch (e) {}
     if (newMax > 0) {
-      var newDamage = Math.round(newMax * wear)
-      result.set(
-        KOSH_GEAR_DATA_COMPONENTS.DAMAGE,
-        Math.min(Math.max(0, newDamage), Math.max(0, newMax - 1))
+      var newDamage = Math.min(
+        Math.max(0, Math.round(newMax * wear)),
+        Math.max(0, newMax - 1)
       )
+
+      // ItemStack#setDamageValue is the authoritative path here. Writing the raw
+      // DAMAGE component directly can be overwritten/ignored by Silent Gear's
+      // rebuilt stack during recipe preview.
+      try {
+        result.setDamageValue(newDamage)
+      } catch (e) {
+        try { result.damageValue = newDamage } catch (_e) {}
+      }
     }
+
+    // Rebuild the visible forge lines after Silent Gear recalculates the item.
+    // The slot data is already restored above; this makes the preserved state
+    // visible again in the result tooltip.
+    try {
+      if (typeof koshForgeRefreshLore === 'function') {
+        koshForgeRefreshLore(result, 3, true)
+      }
+    } catch (e) {}
 
     // Always read the material back from the finished gear. The recipe grid can
     // hand us a transient part stack whose data no longer reflects the rebuilt
