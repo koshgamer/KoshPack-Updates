@@ -19,5 +19,19 @@ ItemEvents.modifyTooltips(event => {
     builder.removeText(Text.of('Ремонт: железо • Обычные чары разрешены'))
     builder.removeText(Text.of('Ремонт: алмаз • Обычные чары разрешены'))
     builder.removeText(Text.of('Ремонт: незерит • Обычные чары разрешены'))
+
+    // Hide internal/debug equipment path labels from the DEV armor JAR.
+    // They are implementation identifiers, not player-facing stats.
+    var armorRoles = [
+      'miner', 'engineer', 'scout', 'builder', 'medic', 'farmer', 'blacksmith',
+      'fisher', 'lumberjack', 'diver', 'fighter', 'archer', 'shooter',
+      'artillery', 'hunter', 'researcher', 'pilot'
+    ]
+    var armorParts = ['helmet', 'chestplate', 'leggings', 'boots']
+    armorRoles.forEach(role => {
+      armorParts.forEach(part => {
+        builder.removeText(Text.of('KoshPack:' + role + '/' + part))
+      })
+    })
   })
 })
