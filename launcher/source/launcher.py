@@ -49,6 +49,8 @@ DEV_EXTRA_PATHS = (
     "kubejs/client_scripts/koshpack_forge_tooltips.js",
     "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
     "kubejs/server_scripts/koshpack_gear_material_swap.js",
+    "kubejs/server_scripts/koshpack_alloy_progression.js",
+    "kubejs/client_scripts/koshpack_alloy_tooltips.js",
 )
 PACK_ASSET_NAME = "minecraft.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
