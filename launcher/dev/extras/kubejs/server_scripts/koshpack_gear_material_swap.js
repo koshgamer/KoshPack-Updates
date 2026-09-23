@@ -162,6 +162,60 @@ function koshGearMaterialId(partStack) {
   return ''
 }
 
+function koshGearKind(stack) {
+  var row = KOSH_GEAR_BY_GEAR[koshGearStackId(stack)]
+  return row ? row.kind : ''
+}
+
+function koshGearDurabilitySummary(stack) {
+  var maxDamage = 0
+  var damage = 0
+
+  try { maxDamage = Number(stack.getMaxDamage()) } catch (e) {}
+  try { damage = Number(stack.getDamageValue()) } catch (e) {}
+
+  if (!isFinite(maxDamage) || maxDamage <= 0) return null
+  if (!isFinite(damage) || damage < 0) damage = 0
+
+  var left = Math.max(0, maxDamage - damage)
+  var pct = Math.round((left / maxDamage) * 100)
+  return {
+    left: Math.round(left),
+    max: Math.round(maxDamage),
+    percent: Math.max(0, Math.min(100, pct))
+  }
+}
+
+function koshGearPhysicsText(stack) {
+  var kind = koshGearKind(stack)
+  var parts = []
+
+  var attack = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.ATTACK_DAMAGE)
+  var attackSpeed = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.ATTACK_SPEED)
+  var harvest = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.HARVEST_SPEED)
+  var attackReach = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.ATTACK_REACH)
+  var blockReach = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.BLOCK_REACH)
+  var ranged = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.RANGED_DAMAGE)
+  var drawSpeed = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.DRAW_SPEED)
+  var projectileSpeed = koshGearNumber(stack, KOSH_GEAR_PROPERTIES.PROJECTILE_SPEED)
+
+  if (kind === 'tool') {
+    if (harvest > 0.01) parts.push(koshGearFmt(harvest) + ' скорость добычи')
+    if (attack > 0.01) parts.push(koshGearFmt(attack) + ' урона')
+    if (attackSpeed !== 0) parts.push(koshGearFmt(attackSpeed) + ' скорость атаки')
+    if (blockReach !== 0) parts.push(koshGearFmt(blockReach) + ' дальность блоков')
+  } else {
+    if (attack > 0.01) parts.push(koshGearFmt(attack) + ' урона')
+    if (attackSpeed !== 0) parts.push(koshGearFmt(attackSpeed) + ' скорость атаки')
+    if (attackReach !== 0) parts.push(koshGearFmt(attackReach) + ' дальность атаки')
+    if (ranged > 0.01) parts.push('×' + koshGearFmt(ranged) + ' дальний урон')
+    if (drawSpeed !== 0) parts.push('×' + koshGearFmt(drawSpeed) + ' натяжение')
+    if (projectileSpeed > 1.001) parts.push('×' + koshGearFmt(projectileSpeed) + ' скорость снаряда')
+  }
+
+  return parts
+}
+
 function koshGearNumber(stack, property) {
   try {
     var props = KOSH_GEAR_DATA.getProperties(stack)
@@ -222,6 +276,9 @@ function koshGearMaterialLore(stack, partStack, ironReference) {
 
         if (
           plain.indexOf('◆ Рабочая часть: ') !== 0 &&
+          plain.indexOf('◆ Материал рабочей части: ') !== 0 &&
+          plain.indexOf('Итоговая физика: ') !== 0 &&
+          plain.indexOf('Состояние: ') !== 0 &&
           plain.indexOf('Плюсы материала: ') !== 0 &&
           plain.indexOf('Минусы материала: ') !== 0 &&
           plain.indexOf('Материал по физике близок к железу.') !== 0
@@ -232,7 +289,19 @@ function koshGearMaterialLore(stack, partStack, ironReference) {
     }
   } catch (e) {}
 
-  lines.add(Text.aqua('◆ Рабочая часть: ' + koshGearMaterialName(partStack)))
+  lines.add(Text.aqua('◆ Материал рабочей части: ' + koshGearMaterialName(partStack)))
+
+  var physics = koshGearPhysicsText(stack)
+  if (physics.length > 0) {
+    lines.add(Text.gray('Итоговая физика: ' + physics.join(' • ')))
+  }
+
+  var durability = koshGearDurabilitySummary(stack)
+  if (durability) {
+    var stateColor = durability.percent >= 70 ? Text.green
+      : (durability.percent >= 35 ? Text.yellow : Text.red)
+    lines.add(stateColor('Состояние: ' + durability.left + ' / ' + durability.max + ' • ' + durability.percent + '%'))
+  }
 
   if (ironReference) {
     var positives = []
