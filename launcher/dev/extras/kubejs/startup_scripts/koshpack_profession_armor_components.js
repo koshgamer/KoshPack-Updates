@@ -1,19 +1,7 @@
 // KoshPack professional armor crafting components.
 // Runtime item registrations for the 17-profession I -> IV armor progression.
-// Tier I is assembled at a workbench; Foundry-cast reinforcement parts begin at Tier II.
-
-const KOSHPACK_ARMOR_PIECES = [
-  { id: 'helmet', ru: 'шлема', texture: 'minecraft:item/iron_helmet' },
-  { id: 'chestplate', ru: 'нагрудника', texture: 'minecraft:item/iron_chestplate' },
-  { id: 'leggings', ru: 'поножей', texture: 'minecraft:item/iron_leggings' },
-  { id: 'boots', ru: 'ботинок', texture: 'minecraft:item/iron_boots' }
-]
-
-const KOSHPACK_ARMOR_TIERS = [
-  { id: 'ii', roman: 'II', material: 'сталь', rarity: 'uncommon' },
-  { id: 'iii', roman: 'III', material: 'багровая сталь', rarity: 'rare' },
-  { id: 'iv', roman: 'IV', material: 'тириановая сталь', rarity: 'epic' }
-]
+// Physical armor bases are no longer fixed KubeJS reinforcements: all four tiers
+// consume material-bearing Silent Gear plates cast in SGear Metalworks.
 
 const KOSHPACK_PROFESSIONS = [
   { id: 'miner', ru: 'Шахтёр', texture: 'minecraft:item/iron_pickaxe' },
@@ -36,16 +24,7 @@ const KOSHPACK_PROFESSIONS = [
 ]
 
 StartupEvents.registry('item', event => {
-  // Foundry-cast reusable-upgrade parts. The cast itself is NOT consumed by the casting recipe.
-  KOSHPACK_ARMOR_TIERS.forEach(tier => {
-    KOSHPACK_ARMOR_PIECES.forEach(piece => {
-      event.create(`armor_reinforcement_${piece.id}_${tier.id}`)
-        .displayName(`Литое усиление ${piece.ru} • ${tier.roman} (${tier.material})`)
-        .maxStackSize(16)
-        .rarity(tier.rarity)
-        .texture(piece.texture)
-    })
-  })
+  // Cast armor plates come from Silent Gear Metalworks and already carry material data.
 
   // One physical profession module is consumed per upgraded armor piece.
   // Higher modules are built from the previous module, so module progression is sequential too.
