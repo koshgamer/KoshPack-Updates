@@ -297,7 +297,11 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
       )
     }
 
-    koshGearRefreshMaterialState(result, part)
+    // Always read the material back from the finished gear. The recipe grid can
+    // hand us a transient part stack whose data no longer reflects the rebuilt
+    // Silent Gear construction after result recalculation.
+    var installedPart = koshGearCurrentMainPartStack(result)
+    if (installedPart) koshGearRefreshMaterialState(result, installedPart)
     event.exit(result)
   } catch (e) {
     console.error('[KoshPack Gear Material] swap failed: ' + e)
