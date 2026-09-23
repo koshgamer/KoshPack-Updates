@@ -44,6 +44,8 @@ jobs:
               "kubejs/server_scripts/koshpack_forge_test_kit.js",
               "kubejs/server_scripts/koshpack_forge_runtime.js",
               "kubejs/client_scripts/koshpack_forge_tooltips.js",
+              "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
+              "kubejs/server_scripts/koshpack_gear_material_swap.js",
           ]
           for rel in rels:
               src = Path("launcher/dev/extras") / rel

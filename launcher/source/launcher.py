@@ -47,6 +47,8 @@ DEV_EXTRA_PATHS = (
     "kubejs/server_scripts/koshpack_forge_bench.js",
     "kubejs/server_scripts/koshpack_forge_runtime.js",
     "kubejs/client_scripts/koshpack_forge_tooltips.js",
+    "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
+    "kubejs/server_scripts/koshpack_gear_material_swap.js",
 )
 PACK_ASSET_NAME = "minecraft.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
@@ -568,11 +570,18 @@ def get_dev_armor_manifest() -> dict[str, Any]:
     errors: list[str] = []
     urls = (
         DEV_MANIFEST_URL + f"?nocache={int(time.time())}",
+        DEV_MANIFEST_API_URL + f"&nocache={int(time.time())}",
         DEV_MANIFEST_RELEASE_URL + f"?nocache={int(time.time())}",
     )
     for url in urls:
         try:
             data = request_json(url, timeout=12)
+            if url.startswith(DEV_MANIFEST_API_URL):
+                import base64 as _manifest_b64
+                encoded = str(data.get("content") or "").replace("\n", "")
+                if not encoded:
+                    raise RuntimeError("GitHub API не вернул содержимое DEV manifest")
+                data = json.loads(_manifest_b64.b64decode(encoded).decode("utf-8"))
             armor = data.get("armor") or {}
             version = str(armor.get("version") or "").strip()
             sha256 = str(armor.get("sha256") or "").strip().lower()
