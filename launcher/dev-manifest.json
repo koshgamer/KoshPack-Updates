@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 21: professional armor now requires material-bearing Silent Gear cast armor plates; cast material controls physical armor stats while profession modules control role/tier. Forge UI alpha7 remains integrated; launcher 0.2.13 remains sufficient."
+    "note": "Hotfix 22: tier upgrades keep the existing armor material and no longer require a second cast plate. Material replacement is now a separate armor + cast plate recipe, and wear transfers by percentage so material swaps do not act as free repairs."
   },
   "extras": [
     {
@@ -75,5 +75,5 @@
       "sha256": "a0132a760496e9467f6a7ae74a0a1793797426d0a997979864eaeba09f5942b1"
     }
   ],
-  "hotfixRevision": 21
+  "hotfixRevision": 22
 }
