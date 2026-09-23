@@ -83,8 +83,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_gear_material_swap.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_gear_material_swap.js",
-      "size": 18763,
-      "sha256": "db986cf9ebdee4c5da7672079d618ee3cb4d33394284f0792724b3a0651694f3"
+      "size": 18766,
+      "sha256": "c5ea0b5e9acafe91fbffa612b026d2cc984046550d3b6912cfe27d6c977d49bf"
     },
     {
       "path": "kubejs/server_scripts/koshpack_alloy_progression.js",
