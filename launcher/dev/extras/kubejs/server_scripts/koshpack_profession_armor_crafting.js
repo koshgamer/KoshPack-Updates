@@ -4,7 +4,8 @@
 // Physical construction:
 // - every tier consumes a material-bearing Silent Gear armor plate cast in SGear Metalworks;
 // - the professional module determines profession/tier;
-// - the cast plate determines armor, toughness, knockback resistance and durability;
+// - the cast plate determines the raw material physics;
+// - armor tier adds construction bonuses on top of the raw material;
 // - II -> IV consume the previous armor piece + the next profession module;
 // - normal tier upgrades preserve the existing material;
 // - material replacement is a separate workbench operation: armor + newly cast plate.
@@ -30,6 +31,13 @@ const ARMOR_TIER_CHAIN = [
   { id: 'iii', prev: 'ii' },
   { id: 'iv', prev: 'iii' }
 ]
+
+const KOSH_ARMOR_TIER_CONSTRUCTION = {
+  i:   { durability: 1.00, armor: 0, toughness: 0 },
+  ii:  { durability: 1.25, armor: 1, toughness: 0 },
+  iii: { durability: 1.55, armor: 2, toughness: 0.5 },
+  iv:  { durability: 2.00, armor: 3, toughness: 1.0 }
+}
 
 const PROFESSIONS = [
   {
@@ -328,6 +336,27 @@ function koshArmorPieceFromArmorId(id) {
   return null
 }
 
+function koshArmorTierFromArmorId(id) {
+  if (!id) return 'i'
+  if (id.indexOf('_iv_test') >= 0) return 'iv'
+  if (id.indexOf('_iii_test') >= 0) return 'iii'
+  if (id.indexOf('_ii_test') >= 0) return 'ii'
+  return 'i'
+}
+
+function koshArmorApplyTierConstruction(materialStats, tier) {
+  var bonus = KOSH_ARMOR_TIER_CONSTRUCTION[tier] || KOSH_ARMOR_TIER_CONSTRUCTION.i
+  return {
+    id: materialStats.id,
+    name: materialStats.name,
+    armor: Math.max(0, materialStats.armor + bonus.armor),
+    toughness: Math.max(0, materialStats.toughness + bonus.toughness),
+    knockback: Math.max(0, materialStats.knockback),
+    magicArmor: Math.max(0, materialStats.magicArmor),
+    maxDamage: Math.max(1, Math.round(materialStats.maxDamage * bonus.durability))
+  }
+}
+
 function koshArmorApplyAttributes(stack, stats, piece, wearFraction) {
   var slot = koshArmorSlot(piece)
   var group = KOSH_ARMOR_EQUIPMENT_SLOT_GROUP.bySlot(slot)
@@ -380,7 +409,7 @@ function koshArmorFmt(value) {
   return String(rounded)
 }
 
-function koshArmorMaterialLore(stack, stats, piece) {
+function koshArmorMaterialLore(stack, materialStats, effectiveStats, piece, tier) {
   var lines = new KOSH_ARMOR_ARRAY_LIST()
 
   // Keep existing lore (including forge slots), replacing only our managed material lines.
@@ -395,6 +424,8 @@ function koshArmorMaterialLore(stack, stats, piece) {
         if (
           plain.indexOf('◆ Материал основы: ') !== 0 &&
           plain.indexOf('Физика основы: ') !== 0 &&
+          plain.indexOf('Итоговая физика: ') !== 0 &&
+          plain.indexOf('Конструкция ') !== 0 &&
           plain.indexOf('Плюсы материала: ') !== 0 &&
           plain.indexOf('Минусы материала: ') !== 0
         ) {
@@ -404,24 +435,33 @@ function koshArmorMaterialLore(stack, stats, piece) {
     }
   } catch (e) {}
 
-  lines.add(Text.aqua('◆ Материал основы: ' + stats.name))
+  lines.add(Text.aqua('◆ Материал основы: ' + materialStats.name))
 
-  var physical = 'Физика основы: ' + koshArmorFmt(stats.armor) + ' защиты'
-  if (stats.toughness > 0) physical += ' • ' + koshArmorFmt(stats.toughness) + ' стойкости'
-  if (stats.knockback > 0) physical += ' • ' + koshArmorFmt(stats.knockback) + ' сопр. отбрасыванию'
-  physical += ' • ' + stats.maxDamage + ' прочности'
+  var physical = 'Итоговая физика: ' + koshArmorFmt(effectiveStats.armor) + ' защиты'
+  if (effectiveStats.toughness > 0) physical += ' • ' + koshArmorFmt(effectiveStats.toughness) + ' стойкости'
+  if (effectiveStats.knockback > 0) physical += ' • ' + koshArmorFmt(effectiveStats.knockback) + ' сопр. отбрасыванию'
+  physical += ' • ' + effectiveStats.maxDamage + ' прочности'
   lines.add(Text.gray(physical))
+
+  var construction = KOSH_ARMOR_TIER_CONSTRUCTION[tier] || KOSH_ARMOR_TIER_CONSTRUCTION.i
+  if (tier !== 'i') {
+    var constructionText = 'Конструкция ' + tier.toUpperCase() + ': '
+      + '+' + koshArmorFmt(construction.armor) + ' защиты'
+      + ' • ×' + koshArmorFmt(construction.durability) + ' прочность'
+    if (construction.toughness > 0) constructionText += ' • +' + koshArmorFmt(construction.toughness) + ' стойкости'
+    lines.add(Text.gold(constructionText))
+  }
 
   var baseline = KOSH_ARMOR_IRON_BASELINE[piece]
   var positives = []
   var negatives = []
-  var armorDelta = stats.armor - baseline.armor
-  var durabilityPct = Math.round((stats.maxDamage / baseline.maxDamage - 1) * 100)
+  var armorDelta = materialStats.armor - baseline.armor
+  var durabilityPct = Math.round((materialStats.maxDamage / baseline.maxDamage - 1) * 100)
 
   if (armorDelta > 0.05) positives.push('защита +' + koshArmorFmt(armorDelta))
   if (armorDelta < -0.05) negatives.push('защита ' + koshArmorFmt(armorDelta))
-  if (stats.toughness > 0.01) positives.push('стойкость +' + koshArmorFmt(stats.toughness))
-  if (stats.knockback > 0.001) positives.push('отбрасывание +' + koshArmorFmt(stats.knockback))
+  if (materialStats.toughness > 0.01) positives.push('стойкость +' + koshArmorFmt(materialStats.toughness))
+  if (materialStats.knockback > 0.001) positives.push('отбрасывание +' + koshArmorFmt(materialStats.knockback))
   if (durabilityPct > 0) positives.push('прочность +' + durabilityPct + '%')
   if (durabilityPct < 0) negatives.push('прочность ' + durabilityPct + '%')
 
@@ -625,9 +665,15 @@ ServerEvents.modifyRecipeResult(KOSH_ARMOR_MATERIAL_RESULT_EVENT, event => {
       return
     }
 
-    koshArmorApplyAttributes(result, stats, piece, wearFraction)
+    var resultTier = koshArmorTierFromArmorId(koshArmorStackId(result))
+    var effectiveStats = koshArmorApplyTierConstruction(stats, resultTier)
+
+    koshArmorApplyAttributes(result, effectiveStats, piece, wearFraction)
+
+    // Cache only the raw material stats. This avoids tier bonuses compounding again
+    // on the next I -> II -> III -> IV upgrade.
     koshArmorWriteMaterialData(result, stats, piece)
-    koshArmorMaterialLore(result, stats, piece)
+    koshArmorMaterialLore(result, stats, effectiveStats, piece, resultTier)
 
     event.exit(result)
   } catch (e) {
