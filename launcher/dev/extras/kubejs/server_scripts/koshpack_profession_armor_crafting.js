@@ -409,6 +409,12 @@ function koshArmorFmt(value) {
   return String(rounded)
 }
 
+function koshArmorFactorFmt(value) {
+  var n = Number(value)
+  if (!isFinite(n)) return '1.00'
+  return n.toFixed(2)
+}
+
 function koshArmorMaterialLore(stack, materialStats, effectiveStats, piece, tier) {
   var lines = new KOSH_ARMOR_ARRAY_LIST()
 
@@ -447,7 +453,7 @@ function koshArmorMaterialLore(stack, materialStats, effectiveStats, piece, tier
   if (tier !== 'i') {
     var constructionText = 'Конструкция ' + tier.toUpperCase() + ': '
       + '+' + koshArmorFmt(construction.armor) + ' защиты'
-      + ' • ×' + koshArmorFmt(construction.durability) + ' прочность'
+      + ' • ×' + koshArmorFactorFmt(construction.durability) + ' прочность'
     if (construction.toughness > 0) constructionText += ' • +' + koshArmorFmt(construction.toughness) + ' стойкости'
     lines.add(Text.gold(constructionText))
   }
