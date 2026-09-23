@@ -404,9 +404,11 @@ function koshArmorApplyAttributes(stack, stats, piece, wearFraction) {
 }
 
 function koshArmorFmt(value) {
-  var rounded = Math.round(Number(value) * 10) / 10
-  if (Math.abs(rounded - Math.round(rounded)) < 0.001) return String(Math.round(rounded))
-  return String(rounded)
+  var n = Number(value)
+  if (!isFinite(n)) return '0'
+  var rounded = Math.round(n * 100) / 100
+  if (Math.abs(rounded - Math.round(rounded)) < 0.0001) return String(Math.round(rounded))
+  return rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
 }
 
 function koshArmorFactorFmt(value) {
