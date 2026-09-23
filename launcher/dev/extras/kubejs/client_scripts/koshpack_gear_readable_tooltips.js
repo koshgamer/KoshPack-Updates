@@ -38,6 +38,25 @@ KOSH_GEAR_TOOLTIP_ROWS.forEach(function(row) {
   KOSH_GEAR_TOOLTIP_KIND[row[0]] = row[1]
 })
 
+const KOSH_GEAR_SHOW_HARVEST_TIER = {
+  'silentgear:pickaxe': true,
+  'silentgear:paxel': true,
+  'silentgear:hammer': true,
+  'silentgear:excavator': true,
+  'silentgear:prospector_hammer': true
+}
+
+const KOSH_GEAR_HARVEST_NAMES = {
+  zero: 'дерево',
+  wood: 'дерево',
+  gold: 'золото',
+  stone: 'камень',
+  copper: 'медь',
+  iron: 'железо',
+  diamond: 'алмаз',
+  netherite: 'незерит'
+}
+
 var KOSH_TIP_GEAR_DATA = Java.loadClass('net.silentchaos512.gear.util.GearData')
 var KOSH_TIP_PART_INSTANCE = Java.loadClass('net.silentchaos512.gear.gear.part.PartInstance')
 var KOSH_TIP_COMPOUND_PART = Java.loadClass('net.silentchaos512.gear.item.CompoundPartItem')
@@ -68,6 +87,48 @@ function koshTipNumber(stack, property) {
     return Number(KOSH_TIP_GEAR_DATA.getProperties(stack).getNumber(property))
   } catch (e) {}
   return 0
+}
+
+function koshTipHarvestTier(stack) {
+  if (!KOSH_GEAR_SHOW_HARVEST_TIER[koshTipId(stack)]) return null
+
+  try {
+    var value = KOSH_TIP_GEAR_DATA.getProperties(stack).get(KOSH_TIP_PROPERTIES.HARVEST_TIER)
+    if (!value) return null
+
+    var tier = value.value()
+    if (!tier) return null
+
+    var name = String(tier.name())
+    var hint = ''
+    try {
+      var optionalHint = tier.levelHint()
+      if (optionalHint && optionalHint.isPresent()) hint = String(optionalHint.get())
+    } catch (e) {}
+
+    var level = Number(hint)
+    var reachLabel = ''
+
+    // Do not hardcode vanilla ores here: KoshPack contains modded stone/ore tags.
+    // The harvest tier is the authoritative rule; any modded blocks added to the
+    // relevant tags automatically follow it.
+    if (isFinite(level)) {
+      if (level < 1) reachLabel = 'базового тира'
+      else if (level < 1.5) reachLabel = 'каменного тира'
+      else if (level < 2) reachLabel = 'медного тира'
+      else if (level < 3) reachLabel = 'железного тира'
+      else if (level < 4) reachLabel = 'алмазного тира'
+      else reachLabel = 'незеритового тира'
+    }
+
+    return {
+      name: KOSH_GEAR_HARVEST_NAMES[name] || name,
+      hint: hint,
+      reachLabel: reachLabel
+    }
+  } catch (e) {}
+
+  return null
 }
 
 function koshTipMainPart(stack) {
@@ -222,6 +283,8 @@ function koshTipRemoveOldManagedLines(lines) {
       plain.indexOf('◆ Рабочая часть: ') === 0 ||
       plain.indexOf('◆ Материал рабочей части: ') === 0 ||
       plain.indexOf('Итоговая физика: ') === 0 ||
+      plain.indexOf('Характеристики: ') === 0 ||
+      plain.indexOf('Уровень добычи: ') === 0 ||
       plain.indexOf('Состояние: ') === 0 ||
       plain.indexOf('Плюсы материала: ') === 0 ||
       plain.indexOf('Минусы материала: ') === 0 ||
@@ -257,7 +320,15 @@ function koshTipBuildBlock(stack, kind) {
 
   var physics = koshTipPhysics(stack, kind)
   if (physics.length > 0) {
-    block.add(Text.gray('Итоговая физика: ' + physics.join(' • ')))
+    block.add(Text.gray('Характеристики: ' + physics.join(' • ')))
+  }
+
+  var harvestTier = koshTipHarvestTier(stack)
+  if (harvestTier) {
+    var tierText = 'Уровень добычи: ' + harvestTier.name
+    if (harvestTier.hint) tierText += ' ' + harvestTier.hint
+    if (harvestTier.reachLabel) tierText += ' • Берёт: всё до ' + harvestTier.reachLabel
+    block.add(Text.gold(tierText))
   }
 
   var state = koshTipState(stack)
