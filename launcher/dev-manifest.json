@@ -73,12 +73,6 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
       "size": 2022,
       "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
-    },
-    {
-      "path": "kubejs/server_scripts/koshpack_gear_material_swap.js",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_gear_material_swap.js",
-      "size": 12919,
-      "sha256": "337c21b18e740ceb5cef863bd7d1c300daf1e77333f049894140761254d6cdaa"
     }
   ],
   "hotfixRevision": 28
