@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-ui-alpha7-integrated",
+    "version": "alpha55-all17-pilot-forge-ui-alpha7-integrated-h34-alloys",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 33: restores both weapon/tool DEV extras in the live manifest. Readable tooltips now show Minecraft-final melee damage and direct material-vs-iron pros/cons; material swap, percentage wear transfer and forge-treatment preservation remain active."
+    "note": "Hotfix 34 / Alloys: Foundry is now the canonical KoshPack alloy progression. Create/Create Metallurgy shortcut routes are closed, arbitrary Silent Gear Crude/Super alloying is disabled, named alloys progress through stages I-V up to Tyrian Steel and Uru, and compact alloy tooltips are included. DEV extras: 14."
   },
   "extras": [
     {
@@ -99,5 +99,5 @@
       "sha256": "6813b5b950614698768c9a93a03668768f415ce48a6a901bf48fc5c4aa784f36"
     }
   ],
-  "hotfixRevision": 33
+  "hotfixRevision": 34
 }
