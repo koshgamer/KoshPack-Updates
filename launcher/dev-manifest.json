@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 24: armor tier now adds construction bonuses over raw material physics. I x1.00/+0 armor, II x1.25/+1 armor, III x1.55/+2 armor/+0.5 toughness, IV x2.00/+3 armor/+1 toughness. Wear remains percentage-based and raw material stats are cached separately to prevent bonus compounding."
+    "note": "Hotfix 25: final armor tooltip polish for the current material/tier system. Construction durability factors now display exactly as x1.25 / x1.55 / x2.00, and internal KoshPack:<role>/<piece> debug labels are hidden for all professions/armor slots. Material, tier, wear and forge-treatment mechanics are unchanged."
   },
   "extras": [
     {
@@ -75,5 +75,5 @@
       "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
     }
   ],
-  "hotfixRevision": 24
+  "hotfixRevision": 25
 }
