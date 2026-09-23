@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 31: Silent Gear weapon/tool material description is now rendered dynamically from the final live item, so crafting can no longer overwrite it. The tooltip shows working material, final physics, durability state, and material pros/cons before advanced Silent Gear details. Forge treatments remain preserved."
+    "note": "Hotfix 32: fixes KubeJS live tooltip wiring for Silent Gear weapons/tools. Readable material/physics/state summaries are now registered through modifyTooltips -> builder.dynamic and should render on hover. The weapon/tool material-swap server script is also restored to the DEV manifest."
   },
   "extras": [
     {
@@ -73,7 +73,19 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
       "size": 2022,
       "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
+    },
+    {
+      "path": "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
+      "size": 10823,
+      "sha256": "80b574ce8715ddfd6a4709e7981de477c5ac566484b7b3743dcba4a0b42f4746"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_gear_material_swap.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_gear_material_swap.js",
+      "size": 18132,
+      "sha256": "d8a7afe8b1443402891ac69d179b1d1f063bf9e54300d8b3a58542a6752a8a6d"
     }
   ],
-  "hotfixRevision": 31
+  "hotfixRevision": 32
 }
