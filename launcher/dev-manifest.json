@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 29: weapon/tool material replacement now explicitly snapshots and restores all three KoshPack forge treatment slots and levels after Silent Gear recalculation. Material, wear and armor systems remain unchanged."
+    "note": "Hotfix 30: Silent Gear weapons/tools now get an armor-style readable tooltip block: working material, final physics, current durability state/percentage, and material pros/cons. Forge treatment slots/levels remain explicitly preserved across material swaps. Armor hotfix 26 remains active."
   },
   "extras": [
     {
@@ -73,7 +73,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
       "size": 2022,
       "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_gear_material_swap.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_gear_material_swap.js",
+      "size": 18132,
+      "sha256": "ee9dbb1661776f0a51d77072b5ec2b838993619726d7fb3003b34ebd50a18100"
     }
   ],
-  "hotfixRevision": 29
+  "hotfixRevision": 30
 }
