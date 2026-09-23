@@ -77,8 +77,8 @@
     {
       "path": "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
-      "size": 14345,
-      "sha256": "dcdc1a3f57e39156165536044b79c19cc940efa3d4e5a7828cb7f70ddd606cd2"
+      "size": 14517,
+      "sha256": "9a44e17ccb76fb776efc6a939c477ca94a16a5f373b156f24723a493c3c84607"
     },
     {
       "path": "kubejs/server_scripts/koshpack_gear_material_swap.js",
