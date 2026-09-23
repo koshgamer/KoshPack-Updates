@@ -23,8 +23,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_profession_armor_crafting.js",
-      "size": 29894,
-      "sha256": "053acfde974aedddff274cec09ee583be09788b83fb80db1ab6184bb4dedb86f"
+      "size": 30020,
+      "sha256": "8538e15a83a471179b8c10531850c31a1d755a3ba68b5cfe7425ed6f5e7688c3"
     },
     {
       "path": "kubejs/server_scripts/koshpack_profession_armor_traits.js",
@@ -71,8 +71,8 @@
     {
       "path": "kubejs/client_scripts/koshpack_forge_tooltips.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
-      "size": 1428,
-      "sha256": "a0132a760496e9467f6a7ae74a0a1793797426d0a997979864eaeba09f5942b1"
+      "size": 2022,
+      "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
     }
   ],
   "hotfixRevision": 24
