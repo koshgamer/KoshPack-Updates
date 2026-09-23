@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-ui-alpha7-integrated-h35-mining-tooltip",
+    "version": "alpha55-all17-pilot-forge-ui-alpha7-integrated-h36-swap-state",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 35: mining level tooltip is now player-readable. Copper shows 1.5 / 4 with 'выше камня, ниже железа'; iron/diamond/netherite show clear pack progression levels. Alloy progression from h34 remains active. DEV extras: 14."
+    "note": "Hotfix 36: material replacement now preserves percentage wear with ItemStack damage API and rebuilds visible KoshPack forge treatment lore after Silent Gear recalculation. Mining tooltip h35 and alloy progression h34 remain active. DEV extras: 14."
   },
   "extras": [
     {
@@ -99,5 +99,5 @@
       "sha256": "6813b5b950614698768c9a93a03668768f415ce48a6a901bf48fc5c4aa784f36"
     }
   ],
-  "hotfixRevision": 35
+  "hotfixRevision": 36
 }
