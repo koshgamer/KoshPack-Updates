@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 30: Silent Gear weapons/tools now get an armor-style readable tooltip block: working material, final physics, current durability state/percentage, and material pros/cons. Forge treatment slots/levels remain explicitly preserved across material swaps. Armor hotfix 26 remains active."
+    "note": "Hotfix 31: Silent Gear weapon/tool material description is now rendered dynamically from the final live item, so crafting can no longer overwrite it. The tooltip shows working material, final physics, durability state, and material pros/cons before advanced Silent Gear details. Forge treatments remain preserved."
   },
   "extras": [
     {
@@ -73,7 +73,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_forge_tooltips.js",
       "size": 2022,
       "sha256": "a5b5bd9c972efaabb4448b8844027675f2badc45cefced01b9fb7b0d49ac5362"
+    },
+    {
+      "path": "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
+      "size": 10483,
+      "sha256": "064f8a83e1601d50120bfb13fa64603070189a7b636063cd3c733268b5ce30d4"
     }
   ],
-  "hotfixRevision": 30
+  "hotfixRevision": 31
 }
