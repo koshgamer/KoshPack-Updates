@@ -380,12 +380,24 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
   var row = null
 
   try {
-    var stacks = event.grid.findAll()
-    var iterator = stacks.iterator()
+    // Read the actual crafting slots directly. In KubeJS 1.21.x, findAll()
+    // can hand recipe-matching wrapper stacks that do not retain all live
+    // components (damage/custom_data). grid.get(index) is the authoritative
+    // ItemStack placed by the player.
+    var gridSize = 9
+    try {
+      var w = Number(event.grid.width)
+      var h = Number(event.grid.height)
+      if (isFinite(w) && isFinite(h) && w > 0 && h > 0) gridSize = w * h
+    } catch (e) {}
 
-    while (iterator.hasNext()) {
-      var stack = iterator.next()
+    for (var gridIndex = 0; gridIndex < gridSize; gridIndex++) {
+      var stack = null
+      try { stack = event.grid.get(gridIndex) } catch (e) {}
+      if (!stack) continue
+
       var id = koshGearStackId(stack)
+      if (!id || id === 'minecraft:air') continue
 
       if (KOSH_GEAR_BY_GEAR[id]) {
         base = stack
@@ -401,6 +413,12 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
 
     var wear = koshGearWearFraction(base)
     var forgeSnapshot = koshGearForgeSnapshot(base)
+    var customDataSnapshot = null
+    try {
+      var baseCustomData = base.getCustomData()
+      if (baseCustomData) customDataSnapshot = baseCustomData.copy()
+    } catch (e) {}
+
     var result = base.copy()
     result.count = 1
 
@@ -411,8 +429,14 @@ ServerEvents.modifyRecipeResult(KOSH_GEAR_MATERIAL_RESULT_EVENT, function(event)
     try { replacement.onAddToGear(result) } catch (e) {}
     KOSH_GEAR_DATA.recalculateGearData(result, null)
 
-    // Silent Gear is allowed to rebuild its own components, but our forge treatments
-    // are KoshPack state and must survive material replacement exactly.
+    // Silent Gear is allowed to rebuild its own components, but player-owned
+    // KoshPack custom_data must survive exactly. Restore the full snapshot first,
+    // then explicitly restore forge slots for backwards compatibility.
+    if (customDataSnapshot) {
+      try { result.setCustomData(customDataSnapshot.copy()) } catch (e) {
+        try { result.setCustomData(customDataSnapshot) } catch (_e) {}
+      }
+    }
     koshGearRestoreForgeSnapshot(result, forgeSnapshot)
 
     var newMax = 0
