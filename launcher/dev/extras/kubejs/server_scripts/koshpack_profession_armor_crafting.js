@@ -449,6 +449,56 @@ function koshArmorWriteMaterialData(stack, stats, piece) {
   stack.setCustomData(tag)
 }
 
+function koshArmorCachedStats(stack, piece) {
+  if (!stack) return null
+
+  var tag = null
+  try { tag = stack.getCustomData() } catch (e) {}
+  if (!tag) return null
+
+  try {
+    if (!tag.contains('kosh_armor_material_schema')) return null
+  } catch (e) {
+    return null
+  }
+
+  var id = ''
+  var name = ''
+  var cachedPiece = ''
+  var armor = 0
+  var toughness = 0
+  var knockback = 0
+  var magicArmor = 0
+  var maxDamage = 0
+
+  try { id = String(tag.getString('kosh_armor_material_id')) } catch (e) {}
+  try { name = String(tag.getString('kosh_armor_material_name')) } catch (e) {}
+  try { cachedPiece = String(tag.getString('kosh_armor_material_piece')) } catch (e) {}
+  try { armor = Number(tag.getFloat('kosh_armor_material_armor')) } catch (e) {}
+  try { toughness = Number(tag.getFloat('kosh_armor_material_toughness')) } catch (e) {}
+  try { knockback = Number(tag.getFloat('kosh_armor_material_knockback')) } catch (e) {}
+  try { magicArmor = Number(tag.getFloat('kosh_armor_material_magic_armor')) } catch (e) {}
+  try { maxDamage = Number(tag.getInt('kosh_armor_material_max_damage')) } catch (e) {}
+
+  if (cachedPiece && cachedPiece !== piece) return null
+  if (!isFinite(armor) || armor < 0) armor = 0
+  if (!isFinite(toughness) || toughness < 0) toughness = 0
+  if (!isFinite(knockback) || knockback < 0) knockback = 0
+  if (!isFinite(magicArmor) || magicArmor < 0) magicArmor = 0
+  if (!isFinite(maxDamage) || maxDamage <= 0) return null
+
+  return {
+    id: id,
+    name: name || id || 'неизвестный материал',
+    armor: armor,
+    toughness: toughness,
+    knockback: knockback,
+    magicArmor: magicArmor,
+    maxDamage: Math.floor(maxDamage)
+  }
+}
+
+
 ServerEvents.recipes(event => {
   PROFESSIONS.forEach(prof => {
     // Remove direct/legacy recipes for all 272 visual armor items first.
@@ -510,53 +560,79 @@ ServerEvents.recipes(event => {
 })
 
 ServerEvents.modifyRecipeResult(KOSH_ARMOR_MATERIAL_RESULT_EVENT, event => {
-  var plate = null
-  var base = null
-  var piece = null
-
-  var stacks = event.grid.findAll()
-  var iterator = stacks.iterator()
-  while (iterator.hasNext()) {
-    var stack = iterator.next()
-    var id = koshArmorStackId(stack)
-    var platePiece = koshArmorPlatePiece(id)
-
-    if (platePiece) {
-      plate = stack
-      piece = platePiece
-    } else if (id.indexOf('koshpack') === 0 && id.indexOf(':') > 0) {
-      // All current profession armor namespaces begin with koshpack*.
-      // KubeJS profession modules are in the kubejs namespace, so they cannot match.
-      base = stack
-      if (!piece) piece = koshArmorPieceFromArmorId(id)
-    }
-  }
-
-  // Tier I creation has a plate but no base.
-  // Tier upgrade has a base but no plate.
-  // Material swap has both.
-  if (!piece || (!plate && !base)) return
-
   var result = event.item
-  var wearFraction = koshArmorWearFraction(base)
-  if (base) koshArmorCopyUpgradeState(base, result)
-
-  // Plate wins when explicitly supplied (material swap / tier I creation).
-  // Otherwise the previous armor itself remains the material source (normal tier upgrade).
-  var materialSource = plate || base
-  if (!materialSource) return
 
   try {
-    var materialList = materialSource.get(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get())
-    if (materialList) result.set(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get(), materialList)
-  } catch (e) {}
+    var plate = null
+    var base = null
+    var piece = null
 
-  var stats = koshArmorMaterialStats(materialSource, piece)
-  if (!stats) return
+    var stacks = event.grid.findAll()
+    var iterator = stacks.iterator()
+    while (iterator.hasNext()) {
+      var stack = iterator.next()
+      var id = koshArmorStackId(stack)
+      var platePiece = koshArmorPlatePiece(id)
 
-  koshArmorApplyAttributes(result, stats, piece, wearFraction)
-  koshArmorWriteMaterialData(result, stats, piece)
-  koshArmorMaterialLore(result, stats, piece)
+      if (platePiece) {
+        plate = stack
+        piece = platePiece
+      } else if (id.indexOf('koshpack') === 0 && id.indexOf(':') > 0) {
+        // All current profession armor namespaces begin with koshpack*.
+        // KubeJS profession modules are in the kubejs namespace, so they cannot match.
+        base = stack
+        if (!piece) piece = koshArmorPieceFromArmorId(id)
+      }
+    }
 
-  event.exit(result)
+    // Tier I creation has a plate but no base.
+    // Tier upgrade has a base but no plate.
+    // Material swap has both.
+    if (!piece || (!plate && !base)) {
+      event.exit(result)
+      return
+    }
+
+    var wearFraction = koshArmorWearFraction(base)
+    if (base) koshArmorCopyUpgradeState(base, result)
+
+    // A newly cast plate is authoritative for creation/material replacement.
+    // A normal tier upgrade deliberately avoids asking Silent Gear to reinterpret
+    // our custom armor item as a compound part; it reuses the cached material stats.
+    var stats = null
+
+    if (plate) {
+      try {
+        var materialList = plate.get(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get())
+        if (materialList) result.set(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get(), materialList)
+      } catch (e) {}
+
+      stats = koshArmorMaterialStats(plate, piece)
+    } else if (base) {
+      stats = koshArmorCachedStats(base, piece)
+
+      // Keep canonical Silent Gear material data when present, but a missing/unsupported
+      // MATERIAL_LIST can no longer make the tier upgrade recipe disappear.
+      try {
+        var inheritedMaterialList = base.get(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get())
+        if (inheritedMaterialList) result.set(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get(), inheritedMaterialList)
+      } catch (e) {}
+    }
+
+    if (!stats) {
+      // Fail open: a broken material cache must not erase a valid crafting result.
+      event.exit(result)
+      return
+    }
+
+    koshArmorApplyAttributes(result, stats, piece, wearFraction)
+    koshArmorWriteMaterialData(result, stats, piece)
+    koshArmorMaterialLore(result, stats, piece)
+
+    event.exit(result)
+  } catch (e) {
+    console.error('[KoshPack Armor] modifyRecipeResult fallback: ' + e)
+    // Never let a dynamic-stat failure turn a valid workbench recipe into an empty output.
+    event.exit(result)
+  }
 })
