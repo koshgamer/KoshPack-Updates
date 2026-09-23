@@ -107,24 +107,26 @@ function koshTipHarvestTier(stack) {
     } catch (e) {}
 
     var level = Number(hint)
-    var reachLabel = ''
+    var relationLabel = ''
 
-    // Do not hardcode vanilla ores here: KoshPack contains modded stone/ore tags.
-    // The harvest tier is the authoritative rule; any modded blocks added to the
-    // relevant tags automatically follow it.
+    // Keep this human-readable. The exact modded blocks/ores are still governed
+    // by harvest tags; this line only explains where the current tool sits in
+    // KoshPack's 0..4 mining progression.
     if (isFinite(level)) {
-      if (level < 1) reachLabel = 'базового тира'
-      else if (level < 1.5) reachLabel = 'каменного тира'
-      else if (level < 2) reachLabel = 'медного тира'
-      else if (level < 3) reachLabel = 'железного тира'
-      else if (level < 4) reachLabel = 'алмазного тира'
-      else reachLabel = 'незеритового тира'
+      if (level < 1) relationLabel = 'ниже камня'
+      else if (level < 1.5) relationLabel = 'уровень камня'
+      else if (level < 2) relationLabel = 'выше камня, ниже железа'
+      else if (level < 3) relationLabel = 'уровень железа'
+      else if (level < 4) relationLabel = 'уровень алмаза'
+      else if (level === 4) relationLabel = 'уровень незерита'
+      else relationLabel = 'выше незерита'
     }
 
     return {
       name: KOSH_GEAR_HARVEST_NAMES[name] || name,
       hint: hint,
-      reachLabel: reachLabel
+      level: level,
+      relationLabel: relationLabel
     }
   } catch (e) {}
 
@@ -325,9 +327,13 @@ function koshTipBuildBlock(stack, kind) {
 
   var harvestTier = koshTipHarvestTier(stack)
   if (harvestTier) {
-    var tierText = 'Уровень добычи: ' + harvestTier.name
-    if (harvestTier.hint) tierText += ' ' + harvestTier.hint
-    if (harvestTier.reachLabel) tierText += ' • Берёт: всё до ' + harvestTier.reachLabel
+    var tierText = 'Уровень добычи: '
+    if (isFinite(harvestTier.level)) {
+      tierText += koshTipFmt(harvestTier.level) + ' / 4'
+    } else {
+      tierText += harvestTier.name
+    }
+    if (harvestTier.relationLabel) tierText += ' • ' + harvestTier.relationLabel
     block.add(Text.gold(tierText))
   }
 
