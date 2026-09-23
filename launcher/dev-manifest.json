@@ -23,8 +23,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_profession_armor_crafting.js",
-      "size": 30020,
-      "sha256": "8538e15a83a471179b8c10531850c31a1d755a3ba68b5cfe7425ed6f5e7688c3"
+      "size": 30107,
+      "sha256": "10a324246f47fc437f9e10015c5bdfb53764e57dd054f579ac6fde1227c917e2"
     },
     {
       "path": "kubejs/server_scripts/koshpack_profession_armor_traits.js",
