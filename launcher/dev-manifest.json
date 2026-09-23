@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 23: fixes real workbench I→II/III/IV crafting. Tier upgrades use the armor's cached material data and the dynamic result handler is fail-safe, so upgraded/treated/damaged armor no longer produces an empty crafting output. Material swap and percentage wear transfer from hotfix 22 remain."
+    "note": "Hotfix 24: armor tier now adds construction bonuses over raw material physics. I x1.00/+0 armor, II x1.25/+1 armor, III x1.55/+2 armor/+0.5 toughness, IV x2.00/+3 armor/+1 toughness. Wear remains percentage-based and raw material stats are cached separately to prevent bonus compounding."
   },
   "extras": [
     {
@@ -75,5 +75,5 @@
       "sha256": "a0132a760496e9467f6a7ae74a0a1793797426d0a997979864eaeba09f5942b1"
     }
   ],
-  "hotfixRevision": 23
+  "hotfixRevision": 24
 }
