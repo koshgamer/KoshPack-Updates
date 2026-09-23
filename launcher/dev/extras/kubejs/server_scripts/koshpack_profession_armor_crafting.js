@@ -5,10 +5,11 @@
 // - every tier consumes a material-bearing Silent Gear armor plate cast in SGear Metalworks;
 // - the professional module determines profession/tier;
 // - the cast plate determines armor, toughness, knockback resistance and durability;
-// - II -> IV also consume the previous armor piece, preserving its forge/enchantment state.
+// - II -> IV consume the previous armor piece + the next profession module;
+// - normal tier upgrades preserve the existing material;
+// - material replacement is a separate workbench operation: armor + newly cast plate.
 //
-// All four tiers are assembled at the workbench so the newly cast plate can intentionally
-// replace the previous physical material during an upgrade.
+// Wear is transferred as a percentage, so changing material never becomes a free repair.
 
 const ARMOR_PIECES = [
   { id: 'helmet', tier1Extra: ['minecraft:leather', 'minecraft:string'] },
@@ -274,8 +275,8 @@ function koshArmorMaterialStats(plate, piece) {
 function koshArmorCopyUpgradeState(base, result) {
   if (!base) return
 
-  // Workbench upgrades should be as lossless as the old smithing chain:
-  // keep enchantments, forge custom_data, names/lore and any other per-stack patch.
+  // Workbench upgrades/material swaps must keep enchantments, forge custom_data,
+  // names/lore and all other per-stack state.
   try {
     result.patch(base.getComponentsPatch())
     return
@@ -300,7 +301,34 @@ function koshArmorCopyUpgradeState(base, result) {
   } catch (e) {}
 }
 
-function koshArmorApplyAttributes(stack, stats, piece) {
+function koshArmorWearFraction(base) {
+  if (!base) return 0
+
+  var maxDamage = 0
+  var damage = 0
+  try { maxDamage = Number(base.getMaxDamage()) } catch (e) {}
+  try { damage = Number(base.getDamageValue()) } catch (e) {}
+
+  if (!isFinite(maxDamage) || maxDamage <= 0) {
+    try { maxDamage = Number(base.get(KOSH_ARMOR_DATA_COMPONENTS.MAX_DAMAGE)) } catch (e) {}
+  }
+
+  if (!isFinite(maxDamage) || maxDamage <= 0) return 0
+  if (!isFinite(damage) || damage <= 0) return 0
+
+  return Math.max(0, Math.min(1, damage / maxDamage))
+}
+
+function koshArmorPieceFromArmorId(id) {
+  if (!id) return null
+  if (id.indexOf('_helmet_') >= 0) return 'helmet'
+  if (id.indexOf('_chestplate_') >= 0) return 'chestplate'
+  if (id.indexOf('_leggings_') >= 0) return 'leggings'
+  if (id.indexOf('_boots_') >= 0) return 'boots'
+  return null
+}
+
+function koshArmorApplyAttributes(stack, stats, piece, wearFraction) {
   var slot = koshArmorSlot(piece)
   var group = KOSH_ARMOR_EQUIPMENT_SLOT_GROUP.bySlot(slot)
   var builder = KOSH_ARMOR_ITEM_ATTRIBUTE_MODIFIERS.builder()
@@ -334,12 +362,16 @@ function koshArmorApplyAttributes(stack, stats, piece) {
   stack.set(KOSH_ARMOR_DATA_COMPONENTS.ATTRIBUTE_MODIFIERS, builder.build())
   stack.set(KOSH_ARMOR_DATA_COMPONENTS.MAX_DAMAGE, stats.maxDamage)
 
-  // Preserve wear from the previous tier, but never produce an invalid damage value
-  // if the player deliberately switches to a less durable material.
-  var damage = 0
-  try { damage = Number(stack.getDamageValue()) } catch (e) {}
-  if (!isFinite(damage) || damage < 0) damage = 0
-  stack.set(KOSH_ARMOR_DATA_COMPONENTS.DAMAGE, Math.min(Math.floor(damage), Math.max(0, stats.maxDamage - 1)))
+  // Transfer wear by percentage, not by raw damage points.
+  // Example: 50% worn copper -> 50% worn steel, never a free repair.
+  var wear = Number(wearFraction)
+  if (!isFinite(wear) || wear < 0) wear = 0
+  wear = Math.max(0, Math.min(1, wear))
+  var scaledDamage = Math.round(stats.maxDamage * wear)
+  stack.set(
+    KOSH_ARMOR_DATA_COMPONENTS.DAMAGE,
+    Math.min(Math.max(0, scaledDamage), Math.max(0, stats.maxDamage - 1))
+  )
 }
 
 function koshArmorFmt(value) {
@@ -448,21 +480,30 @@ ServerEvents.recipes(event => {
         .id('kubejs:armor/assembly/' + prof.id + '/' + piece.id + '_i')
     })
 
-    // Tiers II-IV stay strictly sequential, but are assembled on the workbench.
-    // A newly cast plate is mandatory at every step and can intentionally change
-    // the armor's material without changing its profession or visual tier.
+    // Tier upgrades preserve the existing material.
+    // No second pair of "pants plates" is required just to go I -> II -> III -> IV.
     ARMOR_TIER_CHAIN.forEach(tier => {
       ARMOR_PIECES.forEach(piece => {
         event.shapeless(
           armorId(prof, piece.id, tier.id),
-          [
-            armorId(prof, piece.id, tier.prev),
-            moduleId(prof, tier.id),
-            ARMOR_BASE_PARTS[piece.id]
-          ]
+          [armorId(prof, piece.id, tier.prev), moduleId(prof, tier.id)]
         )
           .modifyResult(KOSH_ARMOR_MATERIAL_RESULT_EVENT)
           .id('kubejs:armor/upgrade/' + prof.id + '/' + piece.id + '_' + tier.id)
+      })
+    })
+
+    // Material replacement is independent from tier progression.
+    // Any existing profession armor piece can be rebuilt around a newly cast plate
+    // of the same slot while keeping profession, tier, enchantments and forge treatments.
+    ;['i', 'ii', 'iii', 'iv'].forEach(tier => {
+      ARMOR_PIECES.forEach(piece => {
+        event.shapeless(
+          armorId(prof, piece.id, tier),
+          [armorId(prof, piece.id, tier), ARMOR_BASE_PARTS[piece.id]]
+        )
+          .modifyResult(KOSH_ARMOR_MATERIAL_RESULT_EVENT)
+          .id('kubejs:armor/material_swap/' + prof.id + '/' + piece.id + '_' + tier)
       })
     })
   })
@@ -487,25 +528,33 @@ ServerEvents.modifyRecipeResult(KOSH_ARMOR_MATERIAL_RESULT_EVENT, event => {
       // All current profession armor namespaces begin with koshpack*.
       // KubeJS profession modules are in the kubejs namespace, so they cannot match.
       base = stack
+      if (!piece) piece = koshArmorPieceFromArmorId(id)
     }
   }
 
-  if (!plate || !piece) return
+  // Tier I creation has a plate but no base.
+  // Tier upgrade has a base but no plate.
+  // Material swap has both.
+  if (!piece || (!plate && !base)) return
 
   var result = event.item
+  var wearFraction = koshArmorWearFraction(base)
   if (base) koshArmorCopyUpgradeState(base, result)
 
-  // Preserve the canonical Silent Gear material list itself on the final armor.
-  // This is the source of truth for future refinements, not just a copied text ID.
+  // Plate wins when explicitly supplied (material swap / tier I creation).
+  // Otherwise the previous armor itself remains the material source (normal tier upgrade).
+  var materialSource = plate || base
+  if (!materialSource) return
+
   try {
-    var materialList = plate.get(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get())
+    var materialList = materialSource.get(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get())
     if (materialList) result.set(KOSH_SG_DATA_COMPONENTS.MATERIAL_LIST.get(), materialList)
   } catch (e) {}
 
-  var stats = koshArmorMaterialStats(plate, piece)
+  var stats = koshArmorMaterialStats(materialSource, piece)
   if (!stats) return
 
-  koshArmorApplyAttributes(result, stats, piece)
+  koshArmorApplyAttributes(result, stats, piece, wearFraction)
   koshArmorWriteMaterialData(result, stats, piece)
   koshArmorMaterialLore(result, stats, piece)
 
