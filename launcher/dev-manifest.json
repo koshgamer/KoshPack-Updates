@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha-0.114",
+    "version": "alpha-0.115",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Alpha 0.114: метеорит теперь около 2 минут виден высоко в небе до финального падения, затем переходит в отдельную 15-секундную фазу снижения. Орбитальный радар предупреждает примерно за 2:15, за минуту и в момент начала падения. Сохранены физическая модель метеорита, увеличенный кратер и осыпание блоков при землетрясении."
+    "note": "Alpha 0.115: метеорит больше не состоит из телепортируемых FallingBlockEntity. Визуальная модель теперь рендерится на клиенте каждый кадр и вычисляет положение по дробному времени между тиками — по принципу плавного движения Create. Первые ~2 минуты объект находится далеко и высоко в небе, затем 15 секунд непрерывно ускоряется к точке удара. Скорость и длительность одинаковы при любом FPS/герцовке; меняется только плавность отображения."
   },
   "extras": [
     {
@@ -101,9 +101,9 @@
     {
       "path": "mods/meridian_world_events-dev.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
-      "size": 86366,
-      "sha256": "04dc373485b7092ff532c95986eabebe4e3651757dfaabf994c6914fe5596a68"
+      "size": 91609,
+      "sha256": "8e594478838d2f421c3361b0eb7b5b14b6745612911347cd11fe2c204bf89af2"
     }
   ],
-  "hotfixRevision": 44
+  "hotfixRevision": 45
 }
