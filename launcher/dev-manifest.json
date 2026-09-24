@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha-0.115",
+    "version": "alpha-0.116",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Alpha 0.115: метеорит больше не состоит из телепортируемых FallingBlockEntity. Визуальная модель теперь рендерится на клиенте каждый кадр и вычисляет положение по дробному времени между тиками — по принципу плавного движения Create. Первые ~2 минуты объект находится далеко и высоко в небе, затем 15 секунд непрерывно ускоряется к точке удара. Скорость и длительность одинаковы при любом FPS/герцовке; меняется только плавность отображения."
+    "note": "Alpha 0.116: метеорит теперь начинается как маленькая яркая точка высоко в небе. Первую минуту он медленно движется по виртуальной skybox-траектории, затем примерно за минуту начинает настоящее плавное падение с виртуальной высоты около 1000 блоков, ускоряясь к земле. За 15 секунд до удара идёт отдельное предупреждение. Клиентская покадровая интерполяция из 0.115 сохранена."
   },
   "extras": [
     {
@@ -101,9 +101,9 @@
     {
       "path": "mods/meridian_world_events-dev.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
-      "size": 91609,
-      "sha256": "8e594478838d2f421c3361b0eb7b5b14b6745612911347cd11fe2c204bf89af2"
+      "size": 91920,
+      "sha256": "c41eea0712522b75de72661edf0af9f5f38d731b70ecfddc39f7a9c04e26de85"
     }
   ],
-  "hotfixRevision": 45
+  "hotfixRevision": 46
 }
