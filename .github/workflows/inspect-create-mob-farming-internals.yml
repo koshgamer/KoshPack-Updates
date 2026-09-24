@@ -10,7 +10,7 @@ jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -22,21 +22,39 @@ jobs:
           URL="https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar"
           curl -fL --retry 5 --retry-delay 2 "$URL" -o mod.jar
 
-          echo "=== RESOURCE/CLASS INDEX ==="
-          jar tf mod.jar | grep -Ei 'ponder|observer|gate|critter|blade|filter|config|tag|recipe|lang' | head -n 500 || true
+          echo "=== SERVER CONFIG ==="
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.config.CMFServerConfig
 
-          echo "=== EN_US RELEVANT STRINGS ==="
-          unzip -p mod.jar assets/createmobfarming/lang/en_us.json 2>/dev/null | grep -Ei 'observer|gate|critter|blade|filter|ponder|range|signal|contraption|looting|experience|address' | head -n 400 || true
+          echo "=== OBSERVER ==="
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.entityobserver.EntityObserverBlockEntity
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.entityobserver.EntityObserverScan
 
-          echo "=== DATA TAGS ==="
-          for f in $(jar tf mod.jar | grep -E '^data/createmobfarming/.+\.json$' | head -n 300); do
+          echo "=== BLADE ==="
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.mechanicalblade.BladeDamage
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.mechanicalblade.BladeExperience
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.mechanicalblade.BladeAttackService
+
+          echo "=== CRITTERPORT ==="
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.critterport.CritterportBlockEntity
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.critterport.CritterportRouting
+
+          echo "=== GATE ==="
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.mobgate.MobGateBlockEntity
+
+          echo "=== FILTER ==="
+          javap -classpath mod.jar -p -c com.ethane.createmobfarming.content.entityfilter.EntityFilter
+
+          echo "=== TAG VALUES ==="
+          for f in             data/createmobfarming/tags/entity_type/critterport_immune.json             data/createmobfarming/tags/entity_type/mechanical_blade_bosses.json             data/createmobfarming/tags/entity_type/mechanical_blade_immune.json             data/createmobfarming/tags/enchantment/mechanical_blade_supported.json             data/create/tags/block/fan_transparent.json             data/create/tags/item/contraption_controlled.json; do
             echo "--- $f"
-            unzip -p mod.jar "$f" | head -c 6000
+            unzip -p mod.jar "$f" || true
             echo
           done
 
-          echo "=== JAVAP TARGETS ==="
-          for c in $(jar tf mod.jar | grep '\.class$' | grep -Ei 'observer|gate|critter|blade|filter|config' | sed 's#/#.#g;s#\.class$##' | head -n 80); do
-            echo "===== $c ====="
-            javap -classpath mod.jar -p -c "$c" 2>/dev/null | head -n 500 || true
+          echo "=== RECIPES ==="
+          for f in data/createmobfarming/recipe/*.json; do :; done
+          for f in $(jar tf mod.jar | grep '^data/createmobfarming/recipe/.*\.json$'); do
+            echo "--- $f"
+            unzip -p mod.jar "$f"
+            echo
           done
