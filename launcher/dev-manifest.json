@@ -97,7 +97,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_alloy_tooltips.js",
       "size": 2325,
       "sha256": "6813b5b950614698768c9a93a03668768f415ce48a6a901bf48fc5c4aa784f36"
+    },
+    {
+      "path": "mods/meridian_world_events-dev.jar",
+      "url": "https://github.com/koshgamer/KoshPack-DEV/releases/download/dev-current/meridian_world_events-dev.jar",
+      "size": 71012,
+      "sha256": "2e0c64c445bf2f138761b2fcc3a93b4d56c71e672f605892bcf8c72fbc608d83"
     }
   ],
-  "hotfixRevision": 38
+  "hotfixRevision": 39
 }
