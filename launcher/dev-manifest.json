@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha55-all17-pilot-forge-ui-alpha7-integrated-h38-live-grid",
+    "version": "alpha-0.111",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Hotfix 38: tool material replacement now reads the actual crafting slots with grid.get(index) instead of findAll(), preserves full KoshPack custom_data, then reapplies percentage wear and forge treatment state. DEV extras: 14."
+    "note": "Alpha 0.111: current DEV snapshot. Future DEV publishes should increment the visible build number (0.112, 0.113, ...) whenever the test pack changes."
   },
   "extras": [
     {
