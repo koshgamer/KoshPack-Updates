@@ -1,0 +1,30 @@
+name: Publish Meridian World Events DEV asset
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/publish-meridian-trigger"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decode Meridian World Events jar
+        run: |
+          base64 -d launcher/dev/meridian_world_events-dev.jar.b64 > meridian_world_events-dev.jar
+          sha256sum meridian_world_events-dev.jar
+          test "$(stat -c%s meridian_world_events-dev.jar)" -eq 71012
+
+      - name: Upload to public DEV release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload armor-dev-current meridian_world_events-dev.jar --repo "$GITHUB_REPOSITORY" --clobber
