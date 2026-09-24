@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: dev-manifest-writers
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
