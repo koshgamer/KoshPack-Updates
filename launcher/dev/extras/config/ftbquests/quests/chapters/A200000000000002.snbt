@@ -1,128 +1,128 @@
 {
 	default_hide_dependency_lines: false
 	default_quest_shape: ""
-	filename: "A200000000000002"
+	filename: "1200000000000002"
 	group: "4D4552494449414E"
 	icon: { id: "minecraft:blast_furnace" }
-	id: "A200000000000002"
+	id: "1200000000000002"
 	images: [ ]
 	order_index: 1
 	quest_links: [ ]
 	quests: [
 		{
-			id: "B201000000000001"
-			dependencies: ["B101000000000006"]
+			id: "2201000000000001"
+			dependencies: ["2101000000000006"]
 			hide_until_deps_visible: true
 			x: -4.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C201000000000001"
+					id: "3201000000000001"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D201000000000001"
+					id: "4201000000000001"
 					type: "xp"
 					xp: 80
 				}
 			]
 		}
 		{
-			id: "B201000000000002"
-			dependencies: ["B201000000000001"]
+			id: "2201000000000002"
+			dependencies: ["2201000000000001"]
 			x: -2.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C201000000000002"
+					id: "3201000000000002"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D201000000000002"
+					id: "4201000000000002"
 					type: "xp"
 					xp: 100
 				}
 			]
 		}
 		{
-			id: "B201000000000003"
-			dependencies: ["B201000000000002"]
+			id: "2201000000000003"
+			dependencies: ["2201000000000002"]
 			x: 0.0d
 			y: -1.0d
 			tasks: [
 				{
-					id: "C201000000000003"
+					id: "3201000000000003"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D201000000000003"
+					id: "4201000000000003"
 					type: "xp"
 					xp: 100
 				}
 			]
 		}
 		{
-			id: "B201000000000004"
-			dependencies: ["B201000000000002"]
+			id: "2201000000000004"
+			dependencies: ["2201000000000002"]
 			x: 0.0d
 			y: 1.0d
 			tasks: [
 				{
-					id: "C201000000000004"
+					id: "3201000000000004"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D201000000000004"
+					id: "4201000000000004"
 					type: "xp"
 					xp: 100
 				}
 			]
 		}
 		{
-			id: "B201000000000005"
+			id: "2201000000000005"
 			dependencies: [
-				"B201000000000003"
-				"B201000000000004"
+				"2201000000000003"
+				"2201000000000004"
 			]
 			dependency_requirement: "all_completed"
 			x: 2.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C201000000000005"
+					id: "3201000000000005"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D201000000000005"
+					id: "4201000000000005"
 					type: "xp"
 					xp: 140
 				}
 			]
 		}
 		{
-			id: "B201000000000006"
-			dependencies: ["B201000000000005"]
+			id: "2201000000000006"
+			dependencies: ["2201000000000005"]
 			x: 4.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C201000000000006"
+					id: "3201000000000006"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D201000000000006"
+					id: "4201000000000006"
 					type: "xp"
 					xp: 180
 				}

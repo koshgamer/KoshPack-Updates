@@ -1,23 +1,23 @@
 {
 	default_hide_dependency_lines: false
 	default_quest_shape: ""
-	filename: "A300000000000003"
+	filename: "1300000000000003"
 	group: "4D4552494449414E"
 	icon: { id: "create:wrench" }
-	id: "A300000000000003"
+	id: "1300000000000003"
 	images: [ ]
 	order_index: 2
 	quest_links: [ ]
 	quests: [
 		{
-			id: "B301000000000001"
-			dependencies: ["B201000000000006"]
+			id: "2301000000000001"
+			dependencies: ["2201000000000006"]
 			hide_until_deps_visible: true
 			x: -4.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C301000000000001"
+					id: "3301000000000001"
 					type: "item"
 					item: { count: 1, id: "create:wrench" }
 					count: 1L
@@ -25,20 +25,20 @@
 			]
 			rewards: [
 				{
-					id: "D301000000000001"
+					id: "4301000000000001"
 					type: "xp"
 					xp: 80
 				}
 			]
 		}
 		{
-			id: "B301000000000002"
-			dependencies: ["B301000000000001"]
+			id: "2301000000000002"
+			dependencies: ["2301000000000001"]
 			x: -2.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C301000000000002"
+					id: "3301000000000002"
 					type: "item"
 					item: { count: 1, id: "create:cogwheel" }
 					count: 8L
@@ -46,20 +46,20 @@
 			]
 			rewards: [
 				{
-					id: "D301000000000002"
+					id: "4301000000000002"
 					type: "xp"
 					xp: 90
 				}
 			]
 		}
 		{
-			id: "B301000000000003"
-			dependencies: ["B301000000000002"]
+			id: "2301000000000003"
+			dependencies: ["2301000000000002"]
 			x: 0.0d
 			y: -1.0d
 			tasks: [
 				{
-					id: "C301000000000003"
+					id: "3301000000000003"
 					type: "item"
 					item: { count: 1, id: "create:mechanical_press" }
 					count: 1L
@@ -67,20 +67,20 @@
 			]
 			rewards: [
 				{
-					id: "D301000000000003"
+					id: "4301000000000003"
 					type: "xp"
 					xp: 120
 				}
 			]
 		}
 		{
-			id: "B301000000000004"
-			dependencies: ["B301000000000002"]
+			id: "2301000000000004"
+			dependencies: ["2301000000000002"]
 			x: 0.0d
 			y: 1.0d
 			tasks: [
 				{
-					id: "C301000000000004"
+					id: "3301000000000004"
 					type: "item"
 					item: { count: 1, id: "create:mechanical_mixer" }
 					count: 1L
@@ -88,49 +88,49 @@
 			]
 			rewards: [
 				{
-					id: "D301000000000004"
+					id: "4301000000000004"
 					type: "xp"
 					xp: 120
 				}
 			]
 		}
 		{
-			id: "B301000000000005"
+			id: "2301000000000005"
 			dependencies: [
-				"B301000000000003"
-				"B301000000000004"
+				"2301000000000003"
+				"2301000000000004"
 			]
 			dependency_requirement: "all_completed"
 			x: 2.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C301000000000005"
+					id: "3301000000000005"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D301000000000005"
+					id: "4301000000000005"
 					type: "xp"
 					xp: 160
 				}
 			]
 		}
 		{
-			id: "B301000000000006"
-			dependencies: ["B301000000000005"]
+			id: "2301000000000006"
+			dependencies: ["2301000000000005"]
 			x: 4.0d
 			y: 0.0d
 			tasks: [
 				{
-					id: "C301000000000006"
+					id: "3301000000000006"
 					type: "checkmark"
 				}
 			]
 			rewards: [
 				{
-					id: "D301000000000006"
+					id: "4301000000000006"
 					type: "xp"
 					xp: 220
 				}
