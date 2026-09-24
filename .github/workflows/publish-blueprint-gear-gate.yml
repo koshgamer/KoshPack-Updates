@@ -19,9 +19,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          URL="https://raw.githubusercontent.com/koshgamer/KoshPack-DEV/pack-development/kubejs/server_scripts/koshpack_vanilla_gear_progression.js"
-          FILE="koshpack_vanilla_gear_progression.js"
-          curl -fL --retry 5 --retry-delay 2 "$URL" -o "$FILE"
+          FILE="launcher/extras/koshpack_vanilla_gear_progression.js"
           grep -q "KOSH_VANILLA_TIERED_GEAR" "$FILE"
           grep -q "silentgear:conversion" "$FILE"
           SHA256="$(sha256sum "$FILE" | awk '{print $1}')"
@@ -41,7 +39,7 @@ jobs:
           target = "kubejs/server_scripts/koshpack_vanilla_gear_progression.js"
           entry = {
               "path": target,
-              "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-DEV/pack-development/kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
+              "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/extras/koshpack_vanilla_gear_progression.js",
               "size": int(os.environ["GEAR_GATE_SIZE"]),
               "sha256": os.environ["GEAR_GATE_SHA256"],
           }
