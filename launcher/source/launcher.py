@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.14"
+APP_VERSION = "0.2.15"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -603,7 +603,7 @@ def get_dev_armor_manifest() -> dict[str, Any]:
                 extra_sha = str(entry.get("sha256") or "").strip().lower()
                 extra_size = int(entry.get("size") or 0)
                 parts = Path(rel).parts
-                allowed_prefix = rel.startswith("kubejs/") or rel.startswith("mods/")
+                allowed_prefix = rel.startswith("kubejs/") or rel.startswith("mods/") or rel.startswith("config/ftbquests/quests/")
                 if (
                     not allowed_prefix
                     or Path(rel).is_absolute()
@@ -633,14 +633,14 @@ def get_dev_armor_manifest() -> dict[str, Any]:
 def _dev_extra_target(rel: str) -> Path:
     normalized = rel.replace("\\", "/").strip()
     p = Path(normalized)
-    allowed = normalized.startswith("kubejs/") or normalized.startswith("mods/")
+    allowed = normalized.startswith("kubejs/") or normalized.startswith("mods/") or normalized.startswith("config/ftbquests/quests/")
     if not allowed or p.is_absolute() or ".." in p.parts:
         raise RuntimeError(f"Небезопасный путь DEV extra: {rel}")
     return INSTANCE_DIR / p
 
 
 def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
-    """Install checksum-pinned DEV KubeJS extras and preserve any stable copies."""
+    """Install checksum-pinned DEV extras and preserve any stable copies."""
     installed: list[str] = []
     extras = manifest.get("extras") or []
     for entry in extras:
