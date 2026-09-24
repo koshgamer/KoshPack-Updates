@@ -1,7 +1,7 @@
 {
 	default_hide_dependency_lines: false
 	default_quest_shape: ""
-	filename: "1100000000000001"
+	filename: "A100000000000001"
 	group: "4D4552494449414E"
 	icon: { id: "minecraft:crafting_table" }
 	id: "1100000000000001"

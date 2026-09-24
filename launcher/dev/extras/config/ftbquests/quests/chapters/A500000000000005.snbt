@@ -1,7 +1,7 @@
 {
 	default_hide_dependency_lines: false
 	default_quest_shape: ""
-	filename: "1500000000000005"
+	filename: "A500000000000005"
 	group: "4D4552494449414E"
 	icon: { id: "minecraft:ender_eye" }
 	id: "1500000000000005"

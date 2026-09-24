@@ -1,7 +1,7 @@
 {
 	default_hide_dependency_lines: false
 	default_quest_shape: ""
-	filename: "1400000000000004"
+	filename: "A400000000000004"
 	group: "4D4552494449414E"
 	icon: { id: "minecraft:leather_chestplate" }
 	id: "1400000000000004"
