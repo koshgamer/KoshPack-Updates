@@ -1,0 +1,142 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A500000000000005"
+	group: "4D4552494449414E"
+	icon: { id: "minecraft:ender_eye" }
+	id: "A500000000000005"
+	images: [ ]
+	order_index: 4
+	quest_links: [ ]
+	quests: [
+		{
+			id: "B501000000000001"
+			dependencies: ["B301000000000006"]
+			hide_until_deps_visible: true
+			x: -5.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C501000000000001"
+					type: "item"
+					item: { count: 1, id: "kubejs:nether_protection_ring" }
+					count: 1L
+				}
+			]
+			rewards: [
+				{
+					id: "D501000000000001"
+					type: "xp"
+					xp: 140
+				}
+			]
+		}
+		{
+			id: "B501000000000002"
+			dependencies: ["B501000000000001"]
+			x: -3.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C501000000000002"
+					type: "dimension"
+					dimension: "minecraft:the_nether"
+				}
+			]
+			rewards: [
+				{
+					id: "D501000000000002"
+					type: "xp"
+					xp: 200
+				}
+			]
+		}
+		{
+			id: "B501000000000003"
+			dependencies: ["B501000000000002"]
+			x: -1.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C501000000000003"
+					type: "item"
+					item: { count: 1, id: "minecraft:blaze_rod" }
+					count: 4L
+				}
+			]
+			rewards: [
+				{
+					id: "D501000000000003"
+					type: "xp"
+					xp: 180
+				}
+			]
+		}
+		{
+			id: "B501000000000004"
+			dependencies: ["B501000000000003"]
+			x: 1.0d
+			y: -1.0d
+			tasks: [
+				{
+					id: "C501000000000004"
+					type: "item"
+					item: { count: 1, id: "minecraft:ender_eye" }
+					count: 12L
+				}
+			]
+			rewards: [
+				{
+					id: "D501000000000004"
+					type: "xp"
+					xp: 220
+				}
+			]
+		}
+		{
+			id: "B501000000000005"
+			dependencies: ["B501000000000003"]
+			x: 1.0d
+			y: 1.0d
+			tasks: [
+				{
+					id: "C501000000000005"
+					type: "item"
+					item: { count: 1, id: "kubejs:end_protection_ring" }
+					count: 1L
+				}
+			]
+			rewards: [
+				{
+					id: "D501000000000005"
+					type: "xp"
+					xp: 220
+				}
+			]
+		}
+		{
+			id: "B501000000000006"
+			dependencies: [
+				"B501000000000004"
+				"B501000000000005"
+			]
+			dependency_requirement: "all_completed"
+			x: 4.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C501000000000006"
+					type: "dimension"
+					dimension: "minecraft:the_end"
+				}
+			]
+			rewards: [
+				{
+					id: "D501000000000006"
+					type: "xp"
+					xp: 350
+				}
+			]
+		}
+	]
+}
