@@ -108,8 +108,8 @@
       "path": "mods/meridian_quests_ui-dev.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_quests_ui-dev.jar",
       "size": 16253,
-      "sha256": "68e5ace1d37c09fef027cdc9efa44a79bf98cb3da3974202996ce4ca3f574e82"
+      "sha256": "6bab721b0d621952964ca2c9e682ce76c1e637cc0689411c978feb65ae70317a"
     }
   ],
-  "hotfixRevision": 50
+  "hotfixRevision": 51
 }
