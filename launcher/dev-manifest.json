@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha-0.113",
+    "version": "alpha-0.114",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Alpha 0.113: метеорит теперь существует как видимая падающая модель из горячих блоков, летит по диагональной траектории с огненно-дымным следом, после удара разбивается и оставляет увеличенный кратер; сейсмический толчок теперь дополнительно срывает отдельные безопасные строительные/поверхностные блоки в falling-block обломки. Домашнее подтверждение из 0.112 сохранено."
+    "note": "Alpha 0.114: метеорит теперь около 2 минут виден высоко в небе до финального падения, затем переходит в отдельную 15-секундную фазу снижения. Орбитальный радар предупреждает примерно за 2:15, за минуту и в момент начала падения. Сохранены физическая модель метеорита, увеличенный кратер и осыпание блоков при землетрясении."
   },
   "extras": [
     {
@@ -101,9 +101,9 @@
     {
       "path": "mods/meridian_world_events-dev.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
-      "size": 85499,
-      "sha256": "389059e2348e63edb18f1e82658a2d8dcc2a06c7aff2dd25c38f520c77312f92"
+      "size": 86366,
+      "sha256": "04dc373485b7092ff532c95986eabebe4e3651757dfaabf994c6914fe5596a68"
     }
   ],
-  "hotfixRevision": 43
+  "hotfixRevision": 44
 }
