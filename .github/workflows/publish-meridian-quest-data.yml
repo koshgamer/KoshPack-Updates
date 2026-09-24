@@ -1,0 +1,88 @@
+name: Publish Meridian FTB Quest Data
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "launcher/dev/extras/config/ftbquests/quests/**"
+      - ".github/workflows/publish-meridian-quest-data.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Add quest data to DEV manifest
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          from urllib.parse import quote
+
+          manifest_path = Path("launcher/dev-manifest.json")
+          root = Path("launcher/dev/extras")
+          quest_root = root / "config/ftbquests/quests"
+          data = json.loads(manifest_path.read_text("utf-8"))
+
+          prefix = "config/ftbquests/quests/"
+          extras = [
+              e for e in data.get("extras", [])
+              if not str(e.get("path", "")).startswith(prefix)
+          ]
+
+          added = []
+          for file in sorted(p for p in quest_root.rglob("*") if p.is_file()):
+              rel = file.relative_to(root).as_posix()
+              payload = file.read_bytes()
+              entry = {
+                  "path": rel,
+                  "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/"
+                         + quote(file.as_posix()),
+                  "size": len(payload),
+                  "sha256": hashlib.sha256(payload).hexdigest(),
+              }
+              added.append(entry)
+
+          extras.extend(added)
+          data["extras"] = extras
+          data["launcherMinVersion"] = "0.2.15"
+          armor = data.setdefault("armor", {})
+          armor["version"] = "alpha-0.120"
+          armor["note"] = (
+              "Alpha 0.120: добавлен настоящий backend FTB Quests для нового интерфейса Meridian. "
+              "Стартовый пакет содержит 5 глав и 29 узлов: Освоение, Металлургия, "
+              "Механизация, Профессии и За гранью. Есть зависимости, реальные item/dimension "
+              "задачи, ручные технологические чекпоинты, награды XP и русская локализация."
+          )
+          data["hotfixRevision"] = int(data.get("hotfixRevision", 0)) + 1
+
+          manifest_path.write_text(
+              json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+              "utf-8"
+          )
+          print("Quest files:", len(added))
+          print("hotfixRevision:", data["hotfixRevision"])
+          PY
+
+      - name: Commit DEV manifest
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev-manifest.json
+          if git diff --cached --quiet; then
+            echo "DEV manifest already current."
+            exit 0
+          fi
+          git commit -m "dev: publish Meridian FTB quest backend"
+          git pull --rebase origin main
+          git push origin HEAD:main
