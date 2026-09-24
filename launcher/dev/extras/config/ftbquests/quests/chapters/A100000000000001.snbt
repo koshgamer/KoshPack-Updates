@@ -1,0 +1,140 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A100000000000001"
+	group: "4D4552494449414E"
+	icon: { id: "minecraft:crafting_table" }
+	id: "A100000000000001"
+	images: [ ]
+	order_index: 0
+	quest_links: [ ]
+	quests: [
+		{
+			id: "B101000000000001"
+			x: -4.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C101000000000001"
+					type: "item"
+					item: { count: 1, id: "minecraft:crafting_table" }
+					count: 1L
+				}
+			]
+			rewards: [
+				{
+					id: "D101000000000001"
+					type: "xp"
+					xp: 25
+				}
+			]
+		}
+		{
+			id: "B101000000000002"
+			dependencies: ["B101000000000001"]
+			x: -2.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C101000000000002"
+					type: "item"
+					item: { count: 1, id: "minecraft:stone_pickaxe" }
+					count: 1L
+				}
+			]
+			rewards: [
+				{
+					id: "D101000000000002"
+					type: "xp"
+					xp: 35
+				}
+			]
+		}
+		{
+			id: "B101000000000003"
+			dependencies: ["B101000000000002"]
+			x: 0.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C101000000000003"
+					type: "item"
+					item: { count: 1, id: "minecraft:furnace" }
+					count: 1L
+				}
+			]
+			rewards: [
+				{
+					id: "D101000000000003"
+					type: "xp"
+					xp: 40
+				}
+			]
+		}
+		{
+			id: "B101000000000004"
+			dependencies: ["B101000000000003"]
+			x: 2.0d
+			y: -1.0d
+			tasks: [
+				{
+					id: "C101000000000004"
+					type: "item"
+					item: { count: 1, id: "minecraft:iron_ingot" }
+					count: 8L
+				}
+			]
+			rewards: [
+				{
+					id: "D101000000000004"
+					type: "xp"
+					xp: 60
+				}
+			]
+		}
+		{
+			id: "B101000000000005"
+			dependencies: ["B101000000000003"]
+			x: 2.0d
+			y: 1.0d
+			tasks: [
+				{
+					id: "C101000000000005"
+					type: "item"
+					item: { count: 1, id: "minecraft:copper_ingot" }
+					count: 8L
+				}
+			]
+			rewards: [
+				{
+					id: "D101000000000005"
+					type: "xp"
+					xp: 60
+				}
+			]
+		}
+		{
+			id: "B101000000000006"
+			dependencies: [
+				"B101000000000004"
+				"B101000000000005"
+			]
+			dependency_requirement: "all_completed"
+			x: 4.0d
+			y: 0.0d
+			tasks: [
+				{
+					id: "C101000000000006"
+					type: "checkmark"
+				}
+			]
+			rewards: [
+				{
+					id: "D101000000000006"
+					type: "xp"
+					xp: 100
+				}
+			]
+		}
+	]
+}
