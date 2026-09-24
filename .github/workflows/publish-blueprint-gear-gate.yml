@@ -1,0 +1,68 @@
+name: Publish Blueprint Gear Gate DEV Extra
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/blueprint-gear-gate-trigger"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and verify progression script
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://raw.githubusercontent.com/koshgamer/KoshPack-DEV/pack-development/kubejs/server_scripts/koshpack_vanilla_gear_progression.js"
+          FILE="koshpack_vanilla_gear_progression.js"
+          curl -fL --retry 5 --retry-delay 2 "$URL" -o "$FILE"
+          grep -q "KOSH_VANILLA_TIERED_GEAR" "$FILE"
+          grep -q "silentgear:conversion" "$FILE"
+          SHA256="$(sha256sum "$FILE" | awk '{print $1}')"
+          SIZE="$(stat -c %s "$FILE")"
+          echo "GEAR_GATE_SHA256=$SHA256" >> "$GITHUB_ENV"
+          echo "GEAR_GATE_SIZE=$SIZE" >> "$GITHUB_ENV"
+
+      - name: Add script to DEV extras
+        shell: python
+        run: |
+          import json, os
+          from pathlib import Path
+
+          path = Path("launcher/dev-manifest.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+
+          target = "kubejs/server_scripts/koshpack_vanilla_gear_progression.js"
+          entry = {
+              "path": target,
+              "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-DEV/pack-development/kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
+              "size": int(os.environ["GEAR_GATE_SIZE"]),
+              "sha256": os.environ["GEAR_GATE_SHA256"],
+          }
+
+          extras = data.setdefault("extras", [])
+          extras[:] = [x for x in extras if x.get("path") != target]
+          extras.append(entry)
+          data["hotfixRevision"] = int(data.get("hotfixRevision", 0)) + 1
+
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+      - name: Commit DEV manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/dev-manifest.json
+          if git diff --cached --quiet; then
+            echo "DEV manifest already contains current blueprint gear gate"
+            exit 0
+          fi
+          git commit -m "dev: ship blueprint-first vanilla gear gate"
+          git push
