@@ -1,0 +1,69 @@
+name: Patch Meridian station models
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "launcher/dev/patches/meridian_world_events/**"
+      - ".github/workflows/patch-meridian-stations.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: patch-meridian-stations
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Decode current World Events jar
+        run: |
+          base64 -d launcher/dev/meridian_world_events-dev.jar.b64 > meridian_world_events-dev.jar
+          test "$(stat -c%s meridian_world_events-dev.jar)" -gt 1000
+
+      - name: Replace station model resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          PATCH_ROOT="launcher/dev/patches/meridian_world_events"
+          mapfile -t FILES < <(cd "$PATCH_ROOT" && find assets -type f -name '*.json' -printf '%p\n' | sort)
+          test "${#FILES[@]}" -eq 5
+          (
+            cd "$PATCH_ROOT"
+            zip -q -u "$GITHUB_WORKSPACE/meridian_world_events-dev.jar" "${FILES[@]}"
+          )
+
+          for f in "${FILES[@]}"; do
+            unzip -p meridian_world_events-dev.jar "$f" >/tmp/model.json
+            python3 -m json.tool /tmp/model.json >/dev/null
+            echo "patched: $f"
+          done
+
+      - name: Re-encode patched jar
+        run: |
+          base64 -w0 meridian_world_events-dev.jar > launcher/dev/meridian_world_events-dev.jar.b64
+          echo >> launcher/dev/meridian_world_events-dev.jar.b64
+          echo "jar bytes: $(stat -c%s meridian_world_events-dev.jar)"
+          sha256sum meridian_world_events-dev.jar
+
+      - name: Commit patched DEV payload
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev/meridian_world_events-dev.jar.b64
+          if git diff --cached --quiet; then
+            echo "Payload already contains these station models."
+            exit 0
+          fi
+          git commit -m "dev: patch voxel Meridian station models"
+          git pull --rebase origin main
+          git push origin HEAD:main
