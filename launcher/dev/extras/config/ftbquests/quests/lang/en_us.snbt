@@ -1,0 +1,115 @@
+{
+	chapter_group.4D4552494449414E.title: "PROJECT MERIDIAN"
+
+	chapter.A100000000000001.title: "Settlement"
+	chapter.A200000000000002.title: "Metallurgy"
+	chapter.A300000000000003.title: "Mechanization"
+	chapter.A400000000000004.title: "Professions"
+	chapter.A500000000000005.title: "Beyond"
+
+	quest.B101000000000001.title: "Start Somewhere"
+	quest.B101000000000001.quest_subtitle: "Your first workstation"
+	quest.B101000000000001.quest_desc: ["Craft a crafting table. Meridian does not define your backstory — the world is already here, and surviving it is up to you."]
+	quest.B101000000000002.title: "Stone at Hand"
+	quest.B101000000000002.quest_subtitle: "Basic tools"
+	quest.B101000000000002.quest_desc: ["Make a stone pickaxe and start gathering resources."]
+	quest.B101000000000003.title: "First Heat"
+	quest.B101000000000003.quest_subtitle: "A furnace"
+	quest.B101000000000003.quest_desc: ["Build a furnace. The world will soon demand much more metal."]
+	quest.B101000000000004.title: "Iron Reserve"
+	quest.B101000000000004.quest_subtitle: "8 iron ingots"
+	quest.B101000000000004.quest_desc: ["Gather your first stock of iron for tools and machinery."]
+	quest.B101000000000005.title: "Copper"
+	quest.B101000000000005.quest_subtitle: "8 copper ingots"
+	quest.B101000000000005.quest_desc: ["Copper will be used throughout Meridian's technological progression."]
+	quest.B101000000000006.title: "A Foothold"
+	quest.B101000000000006.quest_subtitle: "Establish a permanent base"
+	quest.B101000000000006.quest_desc: ["Create a place that can genuinely be called a base."]
+	task.C101000000000006.title: "The base is ready"
+
+	quest.B201000000000001.title: "The Foundry"
+	quest.B201000000000001.quest_subtitle: "Assemble the metallurgy setup"
+	quest.B201000000000001.quest_desc: ["Move beyond the vanilla furnace and assemble Meridian's foundry."]
+	task.C201000000000001.title: "Foundry assembled"
+	quest.B201000000000002.title: "HV3000"
+	quest.B201000000000002.quest_subtitle: "Bring the heat online"
+	quest.B201000000000002.quest_desc: ["Connect and start the HV3000 heater."]
+	task.C201000000000002.title: "Heater online"
+	quest.B201000000000003.title: "First Melt"
+	quest.B201000000000003.quest_subtitle: "Melt a metal"
+	quest.B201000000000003.quest_desc: ["Produce your first proper melt in the crucible."]
+	task.C201000000000003.title: "Melt produced"
+	quest.B201000000000004.title: "Casting"
+	quest.B201000000000004.quest_subtitle: "Use a mold"
+	quest.B201000000000004.quest_desc: ["Cast a component through the spout and a mold."]
+	task.C201000000000004.title: "First casting complete"
+	quest.B201000000000005.title: "Alloy"
+	quest.B201000000000005.quest_subtitle: "Mix metals"
+	quest.B201000000000005.quest_desc: ["Create your first alloy in the foundry."]
+	task.C201000000000005.title: "First alloy created"
+	quest.B201000000000006.title: "Weapon Casting"
+	quest.B201000000000006.quest_subtitle: "Cast a complete weapon"
+	quest.B201000000000006.quest_desc: ["Use a large mold to cast a weapon and finish the first metallurgy path."]
+	task.C201000000000006.title: "Weapon cast"
+
+	quest.B301000000000001.title: "Engineer's Tool"
+	quest.B301000000000001.quest_subtitle: "Create wrench"
+	quest.B301000000000001.quest_desc: ["Craft a wrench. There will be a lot of machinery from here on."]
+	quest.B301000000000002.title: "Transmit Motion"
+	quest.B301000000000002.quest_subtitle: "Cogwheels"
+	quest.B301000000000002.quest_desc: ["Build a stock of cogwheels and begin a mechanical network."]
+	quest.B301000000000003.title: "Mechanical Press"
+	quest.B301000000000003.quest_subtitle: "First production node"
+	quest.B301000000000003.quest_desc: ["Build a mechanical press."]
+	quest.B301000000000004.title: "Mechanical Mixer"
+	quest.B301000000000004.quest_subtitle: "Mixing and processing"
+	quest.B301000000000004.quest_desc: ["Add a mechanical mixer to production."]
+	quest.B301000000000005.title: "Automated Line"
+	quest.B301000000000005.quest_subtitle: "Connect the processes"
+	quest.B301000000000005.quest_desc: ["Link several machines into a genuinely automatic production line."]
+	task.C301000000000005.title: "The line runs automatically"
+	quest.B301000000000006.title: "Infrastructure"
+	quest.B301000000000006.quest_subtitle: "Production becomes a system"
+	quest.B301000000000006.quest_desc: ["Build a stable network for production and transport."]
+	task.C301000000000006.title: "Infrastructure online"
+
+	quest.B401000000000001.title: "Specialization"
+	quest.B401000000000001.quest_subtitle: "Choose a profession"
+	quest.B401000000000001.quest_desc: ["Decide how your character contributes to the settlement. A profession defines a specialty, not a backstory."]
+	task.C401000000000001.title: "Profession chosen"
+	quest.B401000000000002.title: "Set I"
+	quest.B401000000000002.quest_subtitle: "Basic profession gear"
+	quest.B401000000000002.quest_desc: ["Assemble the first tier of your profession set."]
+	task.C401000000000002.title: "Set I assembled"
+	quest.B401000000000003.title: "Set II"
+	quest.B401000000000003.quest_subtitle: "Reinforced gear"
+	quest.B401000000000003.quest_desc: ["Upgrade to the second tier."]
+	task.C401000000000003.title: "Set II assembled"
+	quest.B401000000000004.title: "Set III"
+	quest.B401000000000004.quest_subtitle: "Technological tier"
+	quest.B401000000000004.quest_desc: ["Assemble the third tier, where equipment starts strongly changing profession capabilities."]
+	task.C401000000000004.title: "Set III assembled"
+	quest.B401000000000005.title: "Set IV"
+	quest.B401000000000005.quest_subtitle: "Maximum specialization"
+	quest.B401000000000005.quest_desc: ["Create the fourth tier of the profession set."]
+	task.C401000000000005.title: "Set IV assembled"
+
+	quest.B501000000000001.title: "Nether Protection"
+	quest.B501000000000001.quest_subtitle: "Access ring"
+	quest.B501000000000001.quest_desc: ["Prepare the protection ring. Nether travel is locked without it."]
+	quest.B501000000000002.title: "The Nether"
+	quest.B501000000000002.quest_subtitle: "First crossing"
+	quest.B501000000000002.quest_desc: ["Enter the Nether after preparing for it."]
+	quest.B501000000000003.title: "Blaze"
+	quest.B501000000000003.quest_subtitle: "Blaze rods"
+	quest.B501000000000003.quest_desc: ["Obtain blaze rods for the path toward the End."]
+	quest.B501000000000004.title: "Twelve Eyes"
+	quest.B501000000000004.quest_subtitle: "Prepare the portal"
+	quest.B501000000000004.quest_desc: ["Collect 12 Eyes of Ender."]
+	quest.B501000000000005.title: "End Protection"
+	quest.B501000000000005.quest_subtitle: "Second access ring"
+	quest.B501000000000005.quest_desc: ["Prepare the protection ring for the End."]
+	quest.B501000000000006.title: "The End"
+	quest.B501000000000006.quest_subtitle: "The next horizon"
+	quest.B501000000000006.quest_desc: ["Enter the End and advance the world's technological progression."]
+}
