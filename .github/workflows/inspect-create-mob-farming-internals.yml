@@ -1,0 +1,42 @@
+name: Inspect Create Mob Farming internals
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/inspect-mob-farming-internals-trigger"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Inspect upstream JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar"
+          curl -fL --retry 5 --retry-delay 2 "$URL" -o mod.jar
+
+          echo "=== RESOURCE/CLASS INDEX ==="
+          jar tf mod.jar | grep -Ei 'ponder|observer|gate|critter|blade|filter|config|tag|recipe|lang' | head -n 500 || true
+
+          echo "=== EN_US RELEVANT STRINGS ==="
+          unzip -p mod.jar assets/createmobfarming/lang/en_us.json 2>/dev/null | grep -Ei 'observer|gate|critter|blade|filter|ponder|range|signal|contraption|looting|experience|address' | head -n 400 || true
+
+          echo "=== DATA TAGS ==="
+          for f in $(jar tf mod.jar | grep -E '^data/createmobfarming/.+\.json$' | head -n 300); do
+            echo "--- $f"
+            unzip -p mod.jar "$f" | head -c 6000
+            echo
+          done
+
+          echo "=== JAVAP TARGETS ==="
+          for c in $(jar tf mod.jar | grep '\.class$' | grep -Ei 'observer|gate|critter|blade|filter|config' | sed 's#/#.#g;s#\.class$##' | head -n 80); do
+            echo "===== $c ====="
+            javap -classpath mod.jar -p -c "$c" 2>/dev/null | head -n 500 || true
+          done
