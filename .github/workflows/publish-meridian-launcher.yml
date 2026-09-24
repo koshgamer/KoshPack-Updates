@@ -63,3 +63,33 @@ jobs:
           } else {
             gh release create $tag $asset --repo $env:GITHUB_REPOSITORY --title "Project Meridian Launcher" --notes "Актуальная публичная версия Project Meridian Launcher для Windows." --latest=false
           }
+
+      - name: Update launcher manifest
+        shell: pwsh
+        run: |
+          $asset = "dist/Project-Meridian-Launcher.exe"
+          $sha = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLower()
+          $size = (Get-Item $asset).Length
+          $versionMatch = Select-String -Path "launcher/source/launcher.py" -Pattern 'APP_VERSION = "([^"]+)"'
+          $version = $versionMatch.Matches[0].Groups[1].Value
+          $manifest = Get-Content "launcher/manifest.json" -Raw | ConvertFrom-Json
+          $manifest.launcher.version = $version
+          $manifest.launcher.url = "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-current/Project-Meridian-Launcher.exe"
+          $manifest.launcher.sha256 = $sha
+          $manifest.launcher.size = [int64]$size
+          $json = $manifest | ConvertTo-Json -Depth 20
+          [System.IO.File]::WriteAllText((Resolve-Path "launcher/manifest.json"), $json + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
+
+      - name: Commit launcher manifest
+        shell: pwsh
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/manifest.json
+          if (git diff --cached --quiet) {
+            Write-Host "Launcher manifest already current."
+            exit 0
+          }
+          git commit -m "launcher: publish current Windows build"
+          git pull --rebase origin main
+          git push origin HEAD:main
