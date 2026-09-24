@@ -11,7 +11,7 @@
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Alpha 0.120: Meridian Quest Book получил настоящий backend FTB Quests. Добавлены первые 5 глав: Освоение, Металлургия, Механизация, Профессии и За гранью. Есть зависимости, русские/английские тексты, реальные предметные и dimension-задачи, а технологические шаги кузницы пока отмечаются вручную до подключения custom-task hooks."
+    "note": "Alpha 0.120: добавлен настоящий backend FTB Quests для нового интерфейса Meridian. Стартовый пакет содержит 5 глав и 29 узлов: Освоение, Металлургия, Механизация, Профессии и За гранью. Есть зависимости, реальные item/dimension задачи, ручные технологические чекпоинты, награды XP и русская локализация."
   },
   "extras": [
     {
@@ -111,22 +111,46 @@
       "sha256": "5da10f70beb2f6e885fc5f8d6fbfe747e5152ceedae6bf949ad648c2c73a9500"
     },
     {
-      "path": "config/ftbquests/quests/data.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/data.snbt",
-      "size": 500,
-      "sha256": "0fa299211c45d49bb58610f842497739aef299ec64bc26433af1f3d2b2aefff2"
-    },
-    {
       "path": "config/ftbquests/quests/chapter_groups.snbt",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapter_groups.snbt",
       "size": 55,
       "sha256": "1680b217a316dea8fd4ae629314a926889cd951a4b55b24654b605e4c4f2b9c5"
     },
     {
-      "path": "config/ftbquests/quests/lang/ru_ru.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/lang/ru_ru.snbt",
-      "size": 10161,
-      "sha256": "364d891f693350fad135511704801cc238fd6bd41e137fb75ef360ae4e8d75fb"
+      "path": "config/ftbquests/quests/chapters/A100000000000001.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A100000000000001.snbt",
+      "size": 2174,
+      "sha256": "9f87e6cc89627b5294d7a45c8f8a1e920d5252ed60c2245c9733858201274db2"
+    },
+    {
+      "path": "config/ftbquests/quests/chapters/A200000000000002.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A200000000000002.snbt",
+      "size": 1932,
+      "sha256": "aeb902f26845c85036d0ca9180ad9c144582b26fb240c9ac489b683665fd9b24"
+    },
+    {
+      "path": "config/ftbquests/quests/chapters/A300000000000003.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A300000000000003.snbt",
+      "size": 2163,
+      "sha256": "59c45e8a91dd4c5fdcf90b5912b0635186928c7ae50935402611c8929a95091e"
+    },
+    {
+      "path": "config/ftbquests/quests/chapters/A400000000000004.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A400000000000004.snbt",
+      "size": 1599,
+      "sha256": "1c57dd3146bf3ea9044f67918c1d883c532b9d9c1869db0cf70f8a95a92eae55"
+    },
+    {
+      "path": "config/ftbquests/quests/chapters/A500000000000005.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A500000000000005.snbt",
+      "size": 2267,
+      "sha256": "b1c074bdad5b72addad45803c4d5da019e9753577ddac381d3c6d49eb59a0195"
+    },
+    {
+      "path": "config/ftbquests/quests/data.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/data.snbt",
+      "size": 526,
+      "sha256": "f10b018384d1b96af644c46fe496c2dc08f332004019d9a52d083ca9754af723"
     },
     {
       "path": "config/ftbquests/quests/lang/en_us.snbt",
@@ -135,35 +159,11 @@
       "sha256": "940bd230abbbcda2ffdfa045d8e38a32b15f14da7c4da0b5c8a3976a2361f1ac"
     },
     {
-      "path": "config/ftbquests/quests/chapters/A100000000000001.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A100000000000001.snbt",
-      "size": 2174,
-      "sha256": "006b3a9d684279598d609063a11b0739d200440a1735054bbc4e5f95e519a434"
-    },
-    {
-      "path": "config/ftbquests/quests/chapters/A200000000000002.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A200000000000002.snbt",
-      "size": 1932,
-      "sha256": "a3c418aae49f6a46dc54c95bd1428f64ba706e5079df5beb2bb5fd9db605c23e"
-    },
-    {
-      "path": "config/ftbquests/quests/chapters/A300000000000003.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A300000000000003.snbt",
-      "size": 2163,
-      "sha256": "4425a40dd97660f55a478257d3e547def292841f6b6ccdf430fef47175229e97"
-    },
-    {
-      "path": "config/ftbquests/quests/chapters/A400000000000004.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A400000000000004.snbt",
-      "size": 1599,
-      "sha256": "70d406c8b507bf7cbe2a161a9a91c6e16b52ad8e8dab50aeb2cf4f613ab3efb0"
-    },
-    {
-      "path": "config/ftbquests/quests/chapters/A500000000000005.snbt",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapters/A500000000000005.snbt",
-      "size": 2267,
-      "sha256": "8e6cafc0bde1f0fb020a5f57636464b46c0eb6fe7c37993b7aa0261e88a790b0"
+      "path": "config/ftbquests/quests/lang/ru_ru.snbt",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/lang/ru_ru.snbt",
+      "size": 10161,
+      "sha256": "364d891f693350fad135511704801cc238fd6bd41e137fb75ef360ae4e8d75fb"
     }
   ],
-  "hotfixRevision": 61
+  "hotfixRevision": 62
 }
