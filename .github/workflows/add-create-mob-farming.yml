@@ -1,0 +1,79 @@
+name: Add Create Mob Farming to DEV
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/mob-farming-trigger"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and verify upstream mod
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar"
+          FILE="createmobfarming-1.1.0.jar"
+          EXPECTED_SIZE="323854"
+          EXPECTED_SHA1="21af5df588f7adc1ee0a670498a9080852a0b452"
+
+          curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 "$URL" -o "$FILE"
+
+          ACTUAL_SIZE="$(stat -c %s "$FILE")"
+          ACTUAL_SHA1="$(sha1sum "$FILE" | awk '{print $1}')"
+          test "$ACTUAL_SIZE" = "$EXPECTED_SIZE"
+          test "$ACTUAL_SHA1" = "$EXPECTED_SHA1"
+
+          # Sanity-check that CurseForge served a real JAR/ZIP.
+          test "$(head -c 2 "$FILE")" = "PK"
+          unzip -t "$FILE" >/dev/null
+
+          SHA256="$(sha256sum "$FILE" | awk '{print $1}')"
+          echo "MOB_FARMING_SHA256=$SHA256" >> "$GITHUB_ENV"
+          echo "MOB_FARMING_SIZE=$ACTUAL_SIZE" >> "$GITHUB_ENV"
+
+      - name: Add mod to launcher DEV manifest
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          path = Path("launcher/dev-manifest.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+
+          target = "mods/createmobfarming-1.1.0.jar"
+          entry = {
+              "path": target,
+              "url": "https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar",
+              "size": int(__import__("os").environ["MOB_FARMING_SIZE"]),
+              "sha256": __import__("os").environ["MOB_FARMING_SHA256"],
+          }
+
+          extras = data.setdefault("extras", [])
+          extras[:] = [x for x in extras if x.get("path") != target and not str(x.get("path", "")).startswith("mods/createmobfarming-")]
+          extras.append(entry)
+          data["hotfixRevision"] = int(data.get("hotfixRevision", 0)) + 1
+
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+      - name: Commit DEV manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/dev-manifest.json
+          if git diff --cached --quiet; then
+            echo "DEV manifest already contains Create Mob Farming 1.1.0"
+            exit 0
+          fi
+          git commit -m "dev: add Create Mob Farming 1.1.0"
+          git push
