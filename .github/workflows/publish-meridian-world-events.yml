@@ -5,7 +5,9 @@ on:
     branches:
       - main
     paths:
+      - "launcher/dev/meridian_world_events-dev.jar.b64"
       - ".github/publish-meridian-trigger"
+      - ".github/workflows/publish-meridian-world-events.yml"
 
 permissions:
   contents: write
@@ -16,11 +18,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Decode Meridian World Events jar
         run: |
           base64 -d launcher/dev/meridian_world_events-dev.jar.b64 > meridian_world_events-dev.jar
-          sha256sum meridian_world_events-dev.jar
+          echo "SIZE=$(stat -c%s meridian_world_events-dev.jar)" >> "$GITHUB_ENV"
+          echo "SHA256=$(sha256sum meridian_world_events-dev.jar | awk '{print $1}')" >> "$GITHUB_ENV"
           test "$(stat -c%s meridian_world_events-dev.jar)" -gt 1000
 
       - name: Upload to public DEV release
@@ -28,3 +33,40 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload armor-dev-current meridian_world_events-dev.jar --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Update DEV manifest
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          p = Path("launcher/dev-manifest.json")
+          data = json.loads(p.read_text("utf-8"))
+          rel = "mods/meridian_world_events-dev.jar"
+          entry = {
+              "path": rel,
+              "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
+              "size": int(os.environ["SIZE"]),
+              "sha256": os.environ["SHA256"],
+          }
+          extras = [e for e in data.get("extras", []) if e.get("path") != rel]
+          extras.append(entry)
+          data["extras"] = extras
+          data["hotfixRevision"] = int(data.get("hotfixRevision", 0)) + 1
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
+          print("Published", rel, entry["size"], entry["sha256"])
+          print("hotfixRevision", data["hotfixRevision"])
+          PY
+
+      - name: Commit manifest
+        run: |
+          git config user.name "Project Meridian CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add launcher/dev-manifest.json
+          if git diff --cached --quiet; then
+            echo "Manifest already current."
+            exit 0
+          fi
+          git commit -m "dev: publish Meridian World Events update"
+          git pull --rebase origin main
+          git push origin HEAD:main
