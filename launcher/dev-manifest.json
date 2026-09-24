@@ -169,7 +169,13 @@
       "url": "https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar",
       "size": 323854,
       "sha256": "c6b725328df5749365983d2dc27596be4ffa4f188f3d147ce8c1592e931b4d1d"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/extras/koshpack_vanilla_gear_progression.js",
+      "size": 1717,
+      "sha256": "13bfc18b470a173396db8f59a4f307e0b0ea1897d989514a6a201ba9fa962113"
     }
   ],
-  "hotfixRevision": 65
+  "hotfixRevision": 66
 }
