@@ -1,0 +1,23 @@
+name: Inspect Create Mob Farming metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/inspect-mob-farming-trigger"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download upstream JAR and print NeoForge metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 5 --retry-delay 2             "https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar"             -o createmobfarming-1.1.0.jar
+          echo "=== META-INF/neoforge.mods.toml ==="
+          unzip -p createmobfarming-1.1.0.jar META-INF/neoforge.mods.toml
+          echo
+          echo "=== hashes ==="
+          sha1sum createmobfarming-1.1.0.jar
+          sha256sum createmobfarming-1.1.0.jar
