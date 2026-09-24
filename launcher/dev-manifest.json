@@ -6,12 +6,12 @@
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "armor": {
-    "version": "alpha-0.111",
+    "version": "alpha-0.112",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
     "size": 1212661,
     "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
-    "note": "Alpha 0.111: current DEV snapshot. Future DEV publishes should increment the visible build number (0.112, 0.113, ...) whenever the test pack changes."
+    "note": "Alpha 0.112: Meridian World Events — заметная тряска при сейсмическом толчке, метеорит падает ближе к игроку, целевой чанк подгружается, после удара остаётся кратер и ядро; подтверждение дома удерживается на action bar до выбора."
   },
   "extras": [
     {
@@ -101,9 +101,9 @@
     {
       "path": "mods/meridian_world_events-dev.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
-      "size": 71013,
-      "sha256": "c8ed2694e7282b4ff7c7d6eb481a0a1b23dc0148a8f766b0bd003d439d9823ee"
+      "size": 77692,
+      "sha256": "fecf7c27b4a41d755eb4f1990ad7e7f115bfa57ccaace650412105caee5b5039"
     }
   ],
-  "hotfixRevision": 41
+  "hotfixRevision": 42
 }
