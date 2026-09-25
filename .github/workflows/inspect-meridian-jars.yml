@@ -1,0 +1,91 @@
+name: Inspect Meridian Gameplay JARs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/inspect-meridian-jars-trigger"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Download current Meridian DEV pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 5 --retry-delay 2             "https://github.com/koshgamer/KoshPack-DEV/releases/download/dev-current/minecraft.zip"             -o minecraft.zip
+          mkdir unpack
+          unzip -q minecraft.zip -d unpack
+          MODS_DIR="$(find unpack -type d -name mods -print -quit)"
+          echo "MODS_DIR=$MODS_DIR" >> "$GITHUB_ENV"
+          echo "MCROOT=$(dirname "$MODS_DIR")" >> "$GITHUB_ENV"
+
+      - name: Inspect exact installed JARs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          inspect() {
+            pattern="$1"
+            jar="$(find "$MODS_DIR" -maxdepth 1 -type f -iname "$pattern" -print -quit || true)"
+            echo "===== $pattern ====="
+            echo "JAR=$jar"
+            [ -n "$jar" ] || return 0
+            sha256sum "$jar"
+            echo "--- metadata ---"
+            unzip -p "$jar" META-INF/neoforge.mods.toml 2>/dev/null | head -n 180 || true
+            unzip -p "$jar" META-INF/mods.toml 2>/dev/null | head -n 180 || true
+            echo "--- relevant index ---"
+            jar tf "$jar" | grep -Ei 'weapon|ammo|fuel|scope|liquid|boss|entity_type|structure|recipe|config|ponder|advancement|loot_table' | head -n 350 || true
+          }
+
+          inspect 'create-gunsmithing-1.21.1-1.4.9-koshfix.jar'
+          inspect 'Create Big Cannons-Simple Scope*1.2.0.jar'
+          inspect 'railways-0.3.0-beta.2+neoforge-mc1.21.1.jar'
+          inspect "L_Ender's Cataclysm 1.21.1-3.33.jar"
+          inspect 'DungeonsArise-1.21.1-2.1.68-release.jar'
+          inspect 'Incendium_1.21.x_v5.4.4.jar'
+          inspect 'Nullscape_1.21.x_v1.2.14.jar'
+          inspect 'regions-unexplored-0.6.2-neoforge-21.1.jar'
+          inspect 'tectonic-3.0.26-neoforge-21.1.jar'
+
+          echo "===== EXACT CGS WEAPON DATA ====="
+          CGS="$(find "$MODS_DIR" -maxdepth 1 -type f -name 'create-gunsmithing-1.21.1-1.4.9-koshfix.jar' -print -quit || true)"
+          if [ -n "$CGS" ]; then
+            for f in               data/cgs/weapons/flintlock.json               data/cgs/weapons/revolver.json               data/cgs/weapons/shotgun.json               data/cgs/weapons/nailgun.json               data/cgs/weapons/gatling.json               data/cgs/weapons/blazegun.json               data/cgs/weapons/launcher.json; do
+              echo "--- $f"; unzip -p "$CGS" "$f" 2>/dev/null || true; echo
+            done
+          fi
+
+          echo "===== EXACT RAILWAYS FUEL DATA ====="
+          RAIL="$(find "$MODS_DIR" -maxdepth 1 -type f -name 'railways-0.3.0-beta.2+neoforge-mc1.21.1.jar' -print -quit || true)"
+          if [ -n "$RAIL" ]; then
+            for f in $(jar tf "$RAIL" | grep -E '^data/railways_liquid_fuel/.*\.json$|^data/railways/railways_liquid_fuel/.*\.json$|railways_liquid_fuel/.+\.json$' | head -n 100); do
+              echo "--- $f"; unzip -p "$RAIL" "$f"; echo
+            done
+          fi
+
+          echo "===== EXACT CATACLYSM LANG/TAGS/STRUCTURES ====="
+          CAT="$(find "$MODS_DIR" -maxdepth 1 -type f -name "L_Ender's Cataclysm 1.21.1-3.33.jar" -print -quit || true)"
+          if [ -n "$CAT" ]; then
+            echo "--- boss/structure strings ---"
+            unzip -p "$CAT" assets/cataclysm/lang/en_us.json 2>/dev/null | grep -Ei 'ancient_remnant|netherite_monstrosity|ender_guardian|ignis|harbinger|leviathan|maledictus|scylla|aptrgangr|boss|structure|altar|eye' | head -n 450 || true
+            echo "--- entity tags ---"
+            for f in $(jar tf "$CAT" | grep -E '^data/.+/tags/entity_type/.*\.json$' | head -n 100); do
+              echo "--- $f"; unzip -p "$CAT" "$f" 2>/dev/null | head -c 10000; echo
+            done
+            echo "--- structures ---"
+            jar tf "$CAT" | grep -E '^data/cataclysm/worldgen/(structure|structure_set)/.*\.json$' | head -n 200 || true
+          fi
+
+          echo "===== PACK CONFIGS ====="
+          find "$MCROOT/config" -maxdepth 2 -type f 2>/dev/null | grep -Ei 'cataclysm|railway|cgs|gun|scope|dungeons|regions|tectonic' | sort | while read -r f; do
+            echo "--- $f"
+            head -n 220 "$f" || true
+          done
