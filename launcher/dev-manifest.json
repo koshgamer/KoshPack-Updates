@@ -193,7 +193,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/lang/ru_ru.snbt",
       "size": 238568,
       "sha256": "1ff85419410827b768160c05a49f59410fcc5002d061bfec9b2bbed946d4de29"
+    },
+    {
+      "path": "mods/meridian_quests_ui-dev.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_quests_ui-dev.jar",
+      "size": 105162,
+      "sha256": "8e55bb228908dfa31269fab306428e357fd8863fc48a60f7d740c8b9fad7a2d6"
     }
   ],
-  "hotfixRevision": 67
+  "hotfixRevision": 68
 }
