@@ -12,120 +12,123 @@
 		{
 			id: "2201000000000001"
 			dependencies: ["2101000000000006"]
-			hide_until_deps_visible: true
-			x: -4.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3201000000000001"
-					type: "checkmark"
-				}
-			]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -4.2d
+			tasks: [{ id: "3201000000000001", type: "checkmark" }]
 			rewards: [
-				{
-					id: "4201000000000001"
-					type: "xp"
-					xp: 80
-				}
+				{ id: "4201000000000001", type: "xp", xp: 40 }
+				{ id: "4201000000001001", type: "item", item: { count: 1, id: "minecraft:coal" }, count: 8 }
 			]
 		}
 		{
 			id: "2201000000000002"
 			dependencies: ["2201000000000001"]
-			x: -2.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3201000000000002"
-					type: "checkmark"
-				}
-			]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -2.7d
+			tasks: [{ id: "3201000000000002", type: "checkmark" }]
 			rewards: [
-				{
-					id: "4201000000000002"
-					type: "xp"
-					xp: 100
-				}
+				{ id: "4201000000000002", type: "xp", xp: 50 }
+				{ id: "4201000000001002", type: "item", item: { count: 1, id: "minecraft:clay_ball" }, count: 8 }
 			]
 		}
 		{
 			id: "2201000000000003"
 			dependencies: ["2201000000000002"]
-			x: 0.0d
-			y: -1.0d
-			tasks: [
-				{
-					id: "3201000000000003"
-					type: "checkmark"
-				}
-			]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -1.2d
+			tasks: [{ id: "3201000000000003", type: "checkmark" }]
 			rewards: [
-				{
-					id: "4201000000000003"
-					type: "xp"
-					xp: 100
-				}
+				{ id: "4201000000000003", type: "xp", xp: 60 }
+				{ id: "4201000000001003", type: "item", item: { count: 1, id: "minecraft:bucket" }, count: 1 }
 			]
 		}
 		{
 			id: "2201000000000004"
-			dependencies: ["2201000000000002"]
-			x: 0.0d
-			y: 1.0d
-			tasks: [
-				{
-					id: "3201000000000004"
-					type: "checkmark"
-				}
-			]
+			dependencies: ["2201000000000003"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 0.3d
+			tasks: [{ id: "3201000000000004", type: "checkmark" }]
 			rewards: [
-				{
-					id: "4201000000000004"
-					type: "xp"
-					xp: 100
-				}
+				{ id: "4201000000000004", type: "xp", xp: 60 }
+				{ id: "4201000000001004", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 4 }
 			]
 		}
 		{
 			id: "2201000000000005"
-			dependencies: [
-				"2201000000000003"
-				"2201000000000004"
-			]
-			dependency_requirement: "all_completed"
-			x: 2.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3201000000000005"
-					type: "checkmark"
-				}
-			]
+			dependencies: ["2201000000000003"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 0.3d
+			tasks: [{ id: "3201000000000005", type: "checkmark" }]
 			rewards: [
-				{
-					id: "4201000000000005"
-					type: "xp"
-					xp: 140
-				}
+				{ id: "4201000000000005", type: "xp", xp: 60 }
+				{ id: "4201000000001005", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 4 }
 			]
 		}
 		{
 			id: "2201000000000006"
-			dependencies: ["2201000000000005"]
-			x: 4.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3201000000000006"
-					type: "checkmark"
-				}
-			]
+			dependencies: ["2201000000000004", "2201000000000005"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 1.8d
+			tasks: [{ id: "3201000000000006", type: "checkmark" }]
 			rewards: [
-				{
-					id: "4201000000000006"
-					type: "xp"
-					xp: 180
-				}
+				{ id: "4201000000000006", type: "xp", xp: 75 }
+				{ id: "4201000000001006", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 8 }
+			]
+		}
+		{
+			id: "2201000000000007"
+			dependencies: ["2201000000000006"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 3.3d
+			tasks: [{ id: "3201000000000007", type: "checkmark" }]
+			rewards: [
+				{ id: "4201000000000007", type: "xp", xp: 80 }
+				{ id: "4201000000001007", type: "item", item: { count: 1, id: "minecraft:sand" }, count: 12 }
+			]
+		}
+		{
+			id: "2201000000000008"
+			dependencies: ["2201000000000006"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 3.3d
+			tasks: [{ id: "3201000000000008", type: "checkmark" }]
+			rewards: [
+				{ id: "4201000000000008", type: "xp", xp: 80 }
+				{ id: "4201000000001008", type: "item", item: { count: 1, id: "minecraft:coal" }, count: 12 }
+			]
+		}
+		{
+			id: "2201000000000009"
+			dependencies: ["2201000000000007", "2201000000000008"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 4.8d
+			tasks: [{ id: "3201000000000009", type: "checkmark" }]
+			rewards: [
+				{ id: "4201000000000009", type: "xp", xp: 100 }
+				{ id: "4201000000001009", type: "item", item: { count: 1, id: "minecraft:gold_nugget" }, count: 8 }
+			]
+		}
+		{
+			id: "2201000000000010"
+			dependencies: ["2201000000000009"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 6.3d
+			tasks: [{ id: "3201000000000010", type: "checkmark" }]
+			rewards: [
+				{ id: "4201000000000010", type: "xp", xp: 120 }
+				{ id: "4201000000001010", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 3 }
 			]
 		}
 	]

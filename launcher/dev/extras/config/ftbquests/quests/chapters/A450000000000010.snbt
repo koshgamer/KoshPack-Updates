@@ -1,0 +1,98 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A450000000000010"
+	group: "4D4552494449414E"
+	icon: { id: "kubejs:forge_bench" }
+	id: "1450000000000010"
+	images: [ ]
+	order_index: 8
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2450000000000001"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -3d
+			tasks: [{ id: "3450000000000001", type: "item", item: { count: 1, id: "kubejs:forge_bench" }, count: 1L }]
+			rewards: [
+				{ id: "4450000000000001", type: "xp", xp: 90 }
+				{ id: "4450000000001001", type: "item", item: { count: 1, id: "minecraft:flint" }, count: 4 }
+			]
+		}
+		{
+			id: "2450000000000002"
+			dependencies: ["2450000000000001"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -1.5d
+			tasks: [{ id: "3450000000000002", type: "item", item: { count: 1, id: "kubejs:base_abrasive" }, count: 4L }]
+			rewards: [
+				{ id: "4450000000000002", type: "xp", xp: 70 }
+				{ id: "4450000000001002", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 3 }
+			]
+		}
+		{
+			id: "2450000000000003"
+			dependencies: ["2450000000000002"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 0d
+			tasks: [{ id: "3450000000000003", type: "checkmark" }]
+			rewards: [
+				{ id: "4450000000000003", type: "xp", xp: 100 }
+				{ id: "4450000000001003", type: "item", item: { count: 1, id: "minecraft:amethyst_shard" }, count: 2 }
+			]
+		}
+		{
+			id: "2450000000000004"
+			dependencies: ["2450000000000003"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 1.5d
+			tasks: [{ id: "3450000000000004", type: "item", item: { count: 1, id: "kubejs:industrial_abrasive" }, count: 4L }]
+			rewards: [
+				{ id: "4450000000000004", type: "xp", xp: 90 }
+				{ id: "4450000000001004", type: "item", item: { count: 1, id: "minecraft:flint" }, count: 4 }
+			]
+		}
+		{
+			id: "2450000000000005"
+			dependencies: ["2501000000000002"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 0d
+			tasks: [{ id: "3450000000000005", type: "item", item: { count: 1, id: "kubejs:heat_resistant_binder" }, count: 4L }]
+			rewards: [
+				{ id: "4450000000000005", type: "xp", xp: 110 }
+				{ id: "4450000000001005", type: "item", item: { count: 1, id: "minecraft:magma_cream" }, count: 1 }
+			]
+		}
+		{
+			id: "2450000000000006"
+			dependencies: ["2501000000000006"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 1.5d
+			tasks: [{ id: "3450000000000006", type: "item", item: { count: 1, id: "kubejs:finishing_abrasive" }, count: 4L }]
+			rewards: [
+				{ id: "4450000000000006", type: "xp", xp: 130 }
+				{ id: "4450000000001006", type: "item", item: { count: 1, id: "minecraft:amethyst_shard" }, count: 4 }
+			]
+		}
+		{
+			id: "2450000000000007"
+			dependencies: ["2450000000000004", "2450000000000005", "2450000000000006"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 3.2d
+			tasks: [{ id: "3450000000000007", type: "checkmark" }]
+			rewards: [
+				{ id: "4450000000000007", type: "xp", xp: 180 }
+				{ id: "4450000000001007", type: "item", item: { count: 1, id: "minecraft:diamond" }, count: 1 }
+			]
+		}
+	]
+}

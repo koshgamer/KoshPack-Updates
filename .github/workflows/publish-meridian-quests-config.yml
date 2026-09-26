@@ -36,15 +36,9 @@ jobs:
 
           root = Path("launcher/dev/extras/config/ftbquests/quests")
           files = [
-              "data.snbt",
-              "chapter_groups.snbt",
-              "lang/ru_ru.snbt",
-              "lang/en_us.snbt",
-              "chapters/A100000000000001.snbt",
-              "chapters/A200000000000002.snbt",
-              "chapters/A300000000000003.snbt",
-              "chapters/A400000000000004.snbt",
-              "chapters/A500000000000005.snbt",
+              path.relative_to(root).as_posix()
+              for path in sorted(root.rglob("*"))
+              if path.is_file()
           ]
 
           prefix = "config/ftbquests/quests/"
@@ -72,11 +66,10 @@ jobs:
           data["launcherMinVersion"] = "0.2.15"
           data["armor"]["version"] = "alpha-0.120"
           data["armor"]["note"] = (
-              "Alpha 0.120: Meridian Quest Book получил настоящий backend FTB Quests. "
-              "Добавлены первые 5 глав: Освоение, Металлургия, Механизация, "
-              "Профессии и За гранью. Есть зависимости, русские/английские тексты, "
-              "реальные предметные и dimension-задачи, а технологические шаги кузницы "
-              "пока отмечаются вручную до подключения custom-task hooks."
+              "Alpha 0.120: полный backend Meridian Quest Book: 12 глав и 186 квестов. "
+              "Добавлены подробные русские и английские обучения, зависимости, "
+              "предметные и dimension-задачи, ручные технологические чекпоинты "
+              "и награды XP."
           )
           data["hotfixRevision"] = max(
               int(data.get("hotfixRevision", 0)) + 1,

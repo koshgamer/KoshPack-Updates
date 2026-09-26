@@ -1,0 +1,114 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A425000000000009"
+	group: "4D4552494449414E"
+	icon: { id: "create_new_age:generator_coil" }
+	id: "1425000000000009"
+	images: [ ]
+	order_index: 6
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2425000000000001"
+			dependencies: ["2301000000000010"]
+			hide_until_deps_complete: true
+			x: -2.4d
+			y: -2.7d
+			tasks: [{ id: "3425000000000001", type: "item", item: { count: 1, id: "create_new_age:magnetite_block" }, count: 4L }]
+			rewards: [
+				{ id: "4425000000000001", type: "xp", xp: 70 }
+				{ id: "4425000000001001", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 8 }
+			]
+		}
+		{
+			id: "2425000000000002"
+			dependencies: ["2425000000000001"]
+			hide_until_deps_complete: true
+			x: -0.2d
+			y: -3.2d
+			tasks: [{ id: "3425000000000002", type: "item", item: { count: 1, id: "create_new_age:generator_coil" }, count: 1L }]
+			rewards: [
+				{ id: "4425000000000002", type: "xp", xp: 80 }
+				{ id: "4425000000001002", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 4 }
+			]
+		}
+		{
+			id: "2425000000000003"
+			dependencies: ["2425000000000002"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -2.6d
+			tasks: [{ id: "3425000000000003", type: "item", item: { count: 1, id: "create_new_age:carbon_brushes" }, count: 1L }]
+			rewards: [
+				{ id: "4425000000000003", type: "xp", xp: 80 }
+				{ id: "4425000000001003", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 4 }
+			]
+		}
+		{
+			id: "2425000000000004"
+			dependencies: ["2425000000000003"]
+			hide_until_deps_complete: true
+			x: 3.2d
+			y: -1d
+			tasks: [{ id: "3425000000000004", type: "item", item: { count: 1, id: "create_new_age:electrical_connector" }, count: 2L }]
+			rewards: [
+				{ id: "4425000000000004", type: "xp", xp: 90 }
+				{ id: "4425000000001004", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 6 }
+			]
+		}
+		{
+			id: "2425000000000005"
+			dependencies: ["2425000000000004"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 0.6d
+			tasks: [{ id: "3425000000000005", type: "item", item: { count: 1, id: "create_new_age:basic_motor" }, count: 1L }]
+			rewards: [
+				{ id: "4425000000000005", type: "xp", xp: 100 }
+				{ id: "4425000000001005", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 8 }
+			]
+		}
+		{
+			id: "2425000000000006"
+			dependencies: ["2425000000000005"]
+			hide_until_deps_complete: true
+			x: 0.5d
+			y: 2.1d
+			tasks: [{ id: "3425000000000006", type: "item", item: { count: 1, id: "create_new_age:basic_motor_extension" }, count: 1L }]
+			rewards: [
+				{ id: "4425000000000006", type: "xp", xp: 100 }
+				{ id: "4425000000001006", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "2425000000000007"
+			dependencies: ["2425000000000005"]
+			hide_until_deps_complete: true
+			x: 3.5d
+			y: 2.1d
+			tasks: [{ id: "3425000000000007", type: "item", item: { count: 1, id: "create_new_age:energiser_t1" }, count: 1L }]
+			rewards: [
+				{ id: "4425000000000007", type: "xp", xp: 110 }
+				{ id: "4425000000001007", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 4 }
+			]
+		}
+		{
+			id: "2425000000000008"
+			dependencies: ["2425000000000006", "2425000000000007"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 2d
+			y: 3.7d
+			tasks: [
+				{ id: "3425000000000008", type: "item", item: { count: 1, id: "create_new_age:generator_coil" }, count: 2L }
+				{ id: "3425000000001008", type: "item", item: { count: 1, id: "create_new_age:electrical_connector" }, count: 4L }
+				{ id: "3425000000002008", type: "item", item: { count: 1, id: "create_new_age:basic_motor" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4425000000000008", type: "xp", xp: 150 }
+				{ id: "4425000000001008", type: "item", item: { count: 1, id: "create:shaft" }, count: 8 }
+			]
+		}
+	]
+}

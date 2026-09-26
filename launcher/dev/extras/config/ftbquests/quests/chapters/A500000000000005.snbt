@@ -6,136 +6,184 @@
 	icon: { id: "minecraft:ender_eye" }
 	id: "1500000000000005"
 	images: [ ]
-	order_index: 4
+	order_index: 11
 	quest_links: [ ]
 	quests: [
 		{
 			id: "2501000000000001"
-			dependencies: ["2301000000000006"]
-			hide_until_deps_visible: true
-			x: -5.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3501000000000001"
-					type: "item"
-					item: { count: 1, id: "kubejs:nether_protection_ring" }
-					count: 1L
-				}
-			]
+			dependencies: ["2301000000000010"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -7.2d
+			tasks: [{ id: "3501000000000001", type: "item", item: { count: 1, id: "kubejs:nether_protection_ring" }, count: 1L }]
 			rewards: [
-				{
-					id: "4501000000000001"
-					type: "xp"
-					xp: 140
-				}
+				{ id: "4501000000000001", type: "xp", xp: 100 }
+				{ id: "4501000000001001", type: "item", item: { count: 1, id: "minecraft:magma_cream" }, count: 1 }
 			]
 		}
 		{
 			id: "2501000000000002"
 			dependencies: ["2501000000000001"]
-			x: -3.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3501000000000002"
-					type: "dimension"
-					dimension: "minecraft:the_nether"
-				}
-			]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -5.6d
+			tasks: [{ id: "3501000000000002", type: "dimension", dimension: "minecraft:the_nether" }]
 			rewards: [
-				{
-					id: "4501000000000002"
-					type: "xp"
-					xp: 200
-				}
+				{ id: "4501000000000002", type: "xp", xp: 140 }
+				{ id: "4501000000001002", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 3 }
 			]
 		}
 		{
 			id: "2501000000000003"
 			dependencies: ["2501000000000002"]
-			x: -1.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3501000000000003"
-					type: "item"
-					item: { count: 1, id: "minecraft:blaze_rod" }
-					count: 4L
-				}
-			]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -4d
+			tasks: [{ id: "3501000000000003", type: "item", item: { count: 1, id: "minecraft:blaze_rod" }, count: 4L }]
 			rewards: [
-				{
-					id: "4501000000000003"
-					type: "xp"
-					xp: 180
-				}
+				{ id: "4501000000000003", type: "xp", xp: 120 }
+				{ id: "4501000000001003", type: "item", item: { count: 1, id: "minecraft:blaze_powder" }, count: 2 }
 			]
+		}
+
+		{
+			id: "2511000000000001"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: -2.6d
+			y: -0.9d
+			tasks: [{ id: "3511000000000001", type: "item", item: { count: 1, id: "endrem:old_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000001", type: "xp", xp: 60 }]
 		}
 		{
-			id: "2501000000000004"
+			id: "2511000000000002"
 			dependencies: ["2501000000000003"]
-			x: 1.0d
-			y: -1.0d
-			tasks: [
-				{
-					id: "3501000000000004"
-					type: "item"
-					item: { count: 1, id: "minecraft:ender_eye" }
-					count: 12L
-				}
-			]
-			rewards: [
-				{
-					id: "4501000000000004"
-					type: "xp"
-					xp: 220
-				}
-			]
+			hide_until_deps_complete: true
+			x: -1.6d
+			y: -1.9d
+			tasks: [{ id: "3511000000000002", type: "item", item: { count: 1, id: "endrem:rogue_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000002", type: "xp", xp: 70 }]
 		}
+		{
+			id: "2511000000000003"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: -0.3d
+			y: -2.4d
+			tasks: [{ id: "3511000000000003", type: "item", item: { count: 1, id: "endrem:cold_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000003", type: "xp", xp: 70 }]
+		}
+		{
+			id: "2511000000000004"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: 1.1d
+			y: -2.2d
+			tasks: [{ id: "3511000000000004", type: "item", item: { count: 1, id: "endrem:corrupted_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000004", type: "xp", xp: 60 }]
+		}
+
+		{
+			id: "2511000000000005"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: 2.3d
+			y: -1.4d
+			tasks: [{ id: "3511000000000005", type: "item", item: { count: 1, id: "endrem:black_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000005", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2511000000000006"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: 2.9d
+			y: -0.1d
+			tasks: [{ id: "3511000000000006", type: "item", item: { count: 1, id: "endrem:lost_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000006", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2511000000000007"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: 2.9d
+			y: 1.3d
+			tasks: [{ id: "3511000000000007", type: "item", item: { count: 1, id: "endrem:magical_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000007", type: "xp", xp: 80 }]
+		}
+		{
+			id: "2511000000000008"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: 2.3d
+			y: 2.6d
+			tasks: [{ id: "3511000000000008", type: "item", item: { count: 1, id: "endrem:guardian_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000008", type: "xp", xp: 90 }]
+		}
+
+		{
+			id: "2511000000000009"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: 1.1d
+			y: 3.4d
+			tasks: [{ id: "3511000000000009", type: "item", item: { count: 1, id: "endrem:nether_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000009", type: "xp", xp: 80 }]
+		}
+		{
+			id: "2511000000000010"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: -0.3d
+			y: 3.6d
+			tasks: [{ id: "3511000000000010", type: "item", item: { count: 1, id: "endrem:cursed_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000010", type: "xp", xp: 80 }]
+		}
+		{
+			id: "2511000000000011"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: -1.6d
+			y: 3.1d
+			tasks: [{ id: "3511000000000011", type: "item", item: { count: 1, id: "endrem:wither_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000011", type: "xp", xp: 120 }]
+		}
+		{
+			id: "2511000000000012"
+			dependencies: ["2501000000000003"]
+			hide_until_deps_complete: true
+			x: -2.6d
+			y: 2.1d
+			tasks: [{ id: "3511000000000012", type: "item", item: { count: 1, id: "endrem:trial_eye" }, count: 1L }]
+			rewards: [{ id: "4511000000000012", type: "xp", xp: 100 }]
+		}
+
 		{
 			id: "2501000000000005"
-			dependencies: ["2501000000000003"]
-			x: 1.0d
-			y: 1.0d
-			tasks: [
-				{
-					id: "3501000000000005"
-					type: "item"
-					item: { count: 1, id: "kubejs:end_protection_ring" }
-					count: 1L
-				}
+			dependencies: [
+				"2511000000000001","2511000000000002","2511000000000003","2511000000000004",
+				"2511000000000005","2511000000000006","2511000000000007","2511000000000008",
+				"2511000000000009","2511000000000010","2511000000000011","2511000000000012"
 			]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 5.3d
+			tasks: [{ id: "3501000000000005", type: "item", item: { count: 1, id: "kubejs:end_protection_ring" }, count: 1L }]
 			rewards: [
-				{
-					id: "4501000000000005"
-					type: "xp"
-					xp: 220
-				}
+				{ id: "4501000000000005", type: "xp", xp: 160 }
+				{ id: "4501000000001005", type: "item", item: { count: 1, id: "minecraft:phantom_membrane" }, count: 1 }
 			]
 		}
 		{
 			id: "2501000000000006"
-			dependencies: [
-				"2501000000000004"
-				"2501000000000005"
-			]
-			dependency_requirement: "all_completed"
-			x: 4.0d
-			y: 0.0d
-			tasks: [
-				{
-					id: "3501000000000006"
-					type: "dimension"
-					dimension: "minecraft:the_end"
-				}
-			]
+			dependencies: ["2501000000000005"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 6.9d
+			tasks: [{ id: "3501000000000006", type: "dimension", dimension: "minecraft:the_end" }]
 			rewards: [
-				{
-					id: "4501000000000006"
-					type: "xp"
-					xp: 350
-				}
+				{ id: "4501000000000006", type: "xp", xp: 250 }
+				{ id: "4501000000001006", type: "item", item: { count: 1, id: "minecraft:shulker_shell" }, count: 1 }
 			]
 		}
 	]

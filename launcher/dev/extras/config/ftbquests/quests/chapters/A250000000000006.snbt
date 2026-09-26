@@ -1,0 +1,112 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A250000000000006"
+	group: "4D4552494449414E"
+	icon: { id: "minecraft:chest" }
+	id: "1250000000000006"
+	images: [ ]
+	order_index: 2
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2251000000000001"
+			dependencies: ["2101000000000006"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -3.4d
+			tasks: [{ id: "3251000000000001", type: "item", item: { count: 1, id: "minecraft:chest" }, count: 4L }]
+			rewards: [
+				{ id: "4251000000000001", type: "xp", xp: 35 }
+				{ id: "4251000000001001", type: "item", item: { count: 1, id: "minecraft:item_frame" }, count: 4 }
+			]
+		}
+		{
+			id: "2251000000000002"
+			dependencies: ["2251000000000001"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -1.9d
+			tasks: [{ id: "3251000000000002", type: "item", item: { count: 1, id: "sophisticatedbackpacks:backpack" }, count: 1L }]
+			rewards: [
+				{ id: "4251000000000002", type: "xp", xp: 45 }
+				{ id: "4251000000001002", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 4 }
+			]
+		}
+		{
+			id: "2251000000000003"
+			dependencies: ["2251000000000002"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -0.4d
+			tasks: [{ id: "3251000000000003", type: "checkmark" }]
+			rewards: [
+				{ id: "4251000000000003", type: "xp", xp: 50 }
+				{ id: "4251000000001003", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 3 }
+			]
+		}
+		{
+			id: "2251000000000004"
+			dependencies: ["2251000000000002"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -0.4d
+			tasks: [{ id: "3251000000000004", type: "checkmark" }]
+			rewards: [
+				{ id: "4251000000000004", type: "xp", xp: 50 }
+				{ id: "4251000000001004", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 4 }
+			]
+		}
+		{
+			id: "2251000000000005"
+			dependencies: ["2251000000000003", "2251000000000004"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 1.1d
+			tasks: [{ id: "3251000000000005", type: "checkmark" }]
+			rewards: [
+				{ id: "4251000000000005", type: "xp", xp: 60 }
+				{ id: "4251000000001005", type: "item", item: { count: 1, id: "minecraft:barrel" }, count: 2 }
+			]
+		}
+		{
+			id: "2251000000000006"
+			dependencies: ["2251000000000005"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 2.6d
+			tasks: [{ id: "3251000000000006", type: "checkmark" }]
+			rewards: [
+				{ id: "4251000000000006", type: "xp", xp: 70 }
+				{ id: "4251000000001006", type: "item", item: { count: 1, id: "minecraft:paper" }, count: 8 }
+			]
+		}
+		{
+			id: "2251000000000007"
+			dependencies: ["2251000000000005"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 2.6d
+			tasks: [{ id: "3251000000000007", type: "checkmark" }]
+			rewards: [
+				{ id: "4251000000000007", type: "xp", xp: 70 }
+				{ id: "4251000000001007", type: "item", item: { count: 1, id: "minecraft:hopper" }, count: 1 }
+			]
+		}
+		{
+			id: "2251000000000008"
+			dependencies: ["2251000000000006", "2251000000000007"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 4.1d
+			tasks: [{ id: "3251000000000008", type: "checkmark" }]
+			rewards: [
+				{ id: "4251000000000008", type: "xp", xp: 90 }
+				{ id: "4251000000001008", type: "item", item: { count: 1, id: "minecraft:chest" }, count: 4 }
+				{ id: "4251000000001009", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 4 }
+			]
+		}
+	]
+}

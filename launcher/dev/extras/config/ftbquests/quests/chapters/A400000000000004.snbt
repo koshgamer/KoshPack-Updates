@@ -6,103 +6,1231 @@
 	icon: { id: "minecraft:leather_chestplate" }
 	id: "1400000000000004"
 	images: [ ]
-	order_index: 3
+	order_index: 7
 	quest_links: [ ]
 	quests: [
 		{
-			id: "2401000000000001"
-			dependencies: ["2101000000000006"]
-			hide_until_deps_visible: true
-			x: -4.0d
-			y: 0.0d
+			id: "24010100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -9d
+			y: -5.4d
 			tasks: [
-				{
-					id: "3401000000000001"
-					type: "checkmark"
-				}
+				{ id: "34010100000000", type: "item", item: { count: 1, id: "kubejs:miner_module_i" }, count: 1L }
+				{ id: "34010101000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_helmet_i_test" }, count: 1L }
+				{ id: "34010102000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_chestplate_i_test" }, count: 1L }
+				{ id: "34010103000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_leggings_i_test" }, count: 1L }
+				{ id: "34010104000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_boots_i_test" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4401000000000001"
-					type: "xp"
-					xp: 75
-				}
+				{ id: "44010100000000", type: "xp", xp: 80 }
+				{ id: "44010101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
 			]
 		}
 		{
-			id: "2401000000000002"
-			dependencies: ["2401000000000001"]
-			x: -2.0d
-			y: 0.0d
+			id: "24010200000000"
+			dependencies: ["24010100000000"]
+			hide_until_deps_complete: true
+			x: -8d
+			y: -6.2d
 			tasks: [
-				{
-					id: "3401000000000002"
-					type: "checkmark"
-				}
+				{ id: "34010200000000", type: "item", item: { count: 1, id: "kubejs:miner_module_ii" }, count: 1L }
+				{ id: "34010201000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_helmet_ii_test" }, count: 1L }
+				{ id: "34010202000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_chestplate_ii_test" }, count: 1L }
+				{ id: "34010203000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_leggings_ii_test" }, count: 1L }
+				{ id: "34010204000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_boots_ii_test" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4401000000000002"
-					type: "xp"
-					xp: 100
-				}
+				{ id: "44010200000000", type: "xp", xp: 120 }
+				{ id: "44010201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
 			]
 		}
 		{
-			id: "2401000000000003"
-			dependencies: ["2401000000000002"]
-			x: 0.0d
-			y: 0.0d
+			id: "24010300000000"
+			dependencies: ["24010200000000"]
+			hide_until_deps_complete: true
+			x: -8d
+			y: -4.6000000000000005d
 			tasks: [
-				{
-					id: "3401000000000003"
-					type: "checkmark"
-				}
+				{ id: "34010300000000", type: "item", item: { count: 1, id: "kubejs:miner_module_iii" }, count: 1L }
+				{ id: "34010301000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_helmet_iii_test" }, count: 1L }
+				{ id: "34010302000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_chestplate_iii_test" }, count: 1L }
+				{ id: "34010303000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_leggings_iii_test" }, count: 1L }
+				{ id: "34010304000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_boots_iii_test" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4401000000000003"
-					type: "xp"
-					xp: 130
-				}
+				{ id: "44010300000000", type: "xp", xp: 160 }
+				{ id: "44010301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
 			]
 		}
 		{
-			id: "2401000000000004"
-			dependencies: ["2401000000000003"]
-			x: 2.0d
-			y: 0.0d
+			id: "24010400000000"
+			dependencies: ["24010300000000"]
+			hide_until_deps_complete: true
+			x: -7d
+			y: -5.4d
 			tasks: [
-				{
-					id: "3401000000000004"
-					type: "checkmark"
-				}
+				{ id: "34010400000000", type: "item", item: { count: 1, id: "kubejs:miner_module_iv" }, count: 1L }
+				{ id: "34010401000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_helmet_iv_test" }, count: 1L }
+				{ id: "34010402000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_chestplate_iv_test" }, count: 1L }
+				{ id: "34010403000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_leggings_iv_test" }, count: 1L }
+				{ id: "34010404000000", type: "item", item: { count: 1, id: "koshpackminerhelmet:miner_boots_iv_test" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4401000000000004"
-					type: "xp"
-					xp: 170
-				}
+				{ id: "44010400000000", type: "xp", xp: 200 }
+				{ id: "44010401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
 			]
 		}
 		{
-			id: "2401000000000005"
-			dependencies: ["2401000000000004"]
-			x: 4.0d
-			y: 0.0d
+			id: "24020100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -5d
+			y: -5.4d
 			tasks: [
-				{
-					id: "3401000000000005"
-					type: "checkmark"
-				}
+				{ id: "34020100000000", type: "item", item: { count: 1, id: "kubejs:engineer_module_i" }, count: 1L }
+				{ id: "34020101000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_helmet_i_test" }, count: 1L }
+				{ id: "34020102000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_chestplate_i_test" }, count: 1L }
+				{ id: "34020103000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_leggings_i_test" }, count: 1L }
+				{ id: "34020104000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_boots_i_test" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4401000000000005"
-					type: "xp"
-					xp: 220
-				}
+				{ id: "44020100000000", type: "xp", xp: 80 }
+				{ id: "44020101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24020200000000"
+			dependencies: ["24020100000000"]
+			hide_until_deps_complete: true
+			x: -4d
+			y: -6.2d
+			tasks: [
+				{ id: "34020200000000", type: "item", item: { count: 1, id: "kubejs:engineer_module_ii" }, count: 1L }
+				{ id: "34020201000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_helmet_ii_test" }, count: 1L }
+				{ id: "34020202000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_chestplate_ii_test" }, count: 1L }
+				{ id: "34020203000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_leggings_ii_test" }, count: 1L }
+				{ id: "34020204000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44020200000000", type: "xp", xp: 120 }
+				{ id: "44020201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24020300000000"
+			dependencies: ["24020200000000"]
+			hide_until_deps_complete: true
+			x: -4d
+			y: -4.6000000000000005d
+			tasks: [
+				{ id: "34020300000000", type: "item", item: { count: 1, id: "kubejs:engineer_module_iii" }, count: 1L }
+				{ id: "34020301000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_helmet_iii_test" }, count: 1L }
+				{ id: "34020302000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_chestplate_iii_test" }, count: 1L }
+				{ id: "34020303000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_leggings_iii_test" }, count: 1L }
+				{ id: "34020304000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44020300000000", type: "xp", xp: 160 }
+				{ id: "44020301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24020400000000"
+			dependencies: ["24020300000000"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: -5.4d
+			tasks: [
+				{ id: "34020400000000", type: "item", item: { count: 1, id: "kubejs:engineer_module_iv" }, count: 1L }
+				{ id: "34020401000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_helmet_iv_test" }, count: 1L }
+				{ id: "34020402000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_chestplate_iv_test" }, count: 1L }
+				{ id: "34020403000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_leggings_iv_test" }, count: 1L }
+				{ id: "34020404000000", type: "item", item: { count: 1, id: "koshpackengineerhelmet:engineer_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44020400000000", type: "xp", xp: 200 }
+				{ id: "44020401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24030100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -7d
+			y: -1.8d
+			tasks: [
+				{ id: "34030100000000", type: "item", item: { count: 1, id: "kubejs:scout_module_i" }, count: 1L }
+				{ id: "34030101000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_helmet_i_test" }, count: 1L }
+				{ id: "34030102000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_chestplate_i_test" }, count: 1L }
+				{ id: "34030103000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_leggings_i_test" }, count: 1L }
+				{ id: "34030104000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44030100000000", type: "xp", xp: 80 }
+				{ id: "44030101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24030200000000"
+			dependencies: ["24030100000000"]
+			hide_until_deps_complete: true
+			x: -6d
+			y: -2.6d
+			tasks: [
+				{ id: "34030200000000", type: "item", item: { count: 1, id: "kubejs:scout_module_ii" }, count: 1L }
+				{ id: "34030201000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_helmet_ii_test" }, count: 1L }
+				{ id: "34030202000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_chestplate_ii_test" }, count: 1L }
+				{ id: "34030203000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_leggings_ii_test" }, count: 1L }
+				{ id: "34030204000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44030200000000", type: "xp", xp: 120 }
+				{ id: "44030201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24030300000000"
+			dependencies: ["24030200000000"]
+			hide_until_deps_complete: true
+			x: -6d
+			y: -1d
+			tasks: [
+				{ id: "34030300000000", type: "item", item: { count: 1, id: "kubejs:scout_module_iii" }, count: 1L }
+				{ id: "34030301000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_helmet_iii_test" }, count: 1L }
+				{ id: "34030302000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_chestplate_iii_test" }, count: 1L }
+				{ id: "34030303000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_leggings_iii_test" }, count: 1L }
+				{ id: "34030304000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44030300000000", type: "xp", xp: 160 }
+				{ id: "44030301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24030400000000"
+			dependencies: ["24030300000000"]
+			hide_until_deps_complete: true
+			x: -5d
+			y: -1.8d
+			tasks: [
+				{ id: "34030400000000", type: "item", item: { count: 1, id: "kubejs:scout_module_iv" }, count: 1L }
+				{ id: "34030401000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_helmet_iv_test" }, count: 1L }
+				{ id: "34030402000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_chestplate_iv_test" }, count: 1L }
+				{ id: "34030403000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_leggings_iv_test" }, count: 1L }
+				{ id: "34030404000000", type: "item", item: { count: 1, id: "koshpackscouthelmet:scout_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44030400000000", type: "xp", xp: 200 }
+				{ id: "44030401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24040100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -1d
+			y: -5.4d
+			tasks: [
+				{ id: "34040100000000", type: "item", item: { count: 1, id: "kubejs:builder_module_i" }, count: 1L }
+				{ id: "34040101000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_helmet_i_test" }, count: 1L }
+				{ id: "34040102000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_chestplate_i_test" }, count: 1L }
+				{ id: "34040103000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_leggings_i_test" }, count: 1L }
+				{ id: "34040104000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44040100000000", type: "xp", xp: 80 }
+				{ id: "44040101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24040200000000"
+			dependencies: ["24040100000000"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -6.2d
+			tasks: [
+				{ id: "34040200000000", type: "item", item: { count: 1, id: "kubejs:builder_module_ii" }, count: 1L }
+				{ id: "34040201000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_helmet_ii_test" }, count: 1L }
+				{ id: "34040202000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_chestplate_ii_test" }, count: 1L }
+				{ id: "34040203000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_leggings_ii_test" }, count: 1L }
+				{ id: "34040204000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44040200000000", type: "xp", xp: 120 }
+				{ id: "44040201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24040300000000"
+			dependencies: ["24040200000000"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -4.6000000000000005d
+			tasks: [
+				{ id: "34040300000000", type: "item", item: { count: 1, id: "kubejs:builder_module_iii" }, count: 1L }
+				{ id: "34040301000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_helmet_iii_test" }, count: 1L }
+				{ id: "34040302000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_chestplate_iii_test" }, count: 1L }
+				{ id: "34040303000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_leggings_iii_test" }, count: 1L }
+				{ id: "34040304000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44040300000000", type: "xp", xp: 160 }
+				{ id: "44040301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24040400000000"
+			dependencies: ["24040300000000"]
+			hide_until_deps_complete: true
+			x: 1d
+			y: -5.4d
+			tasks: [
+				{ id: "34040400000000", type: "item", item: { count: 1, id: "kubejs:builder_module_iv" }, count: 1L }
+				{ id: "34040401000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_helmet_iv_test" }, count: 1L }
+				{ id: "34040402000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_chestplate_iv_test" }, count: 1L }
+				{ id: "34040403000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_leggings_iv_test" }, count: 1L }
+				{ id: "34040404000000", type: "item", item: { count: 1, id: "koshpackbuilderhelmet:builder_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44040400000000", type: "xp", xp: 200 }
+				{ id: "44040401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24050100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -5d
+			y: 5.4d
+			tasks: [
+				{ id: "34050100000000", type: "item", item: { count: 1, id: "kubejs:medic_module_i" }, count: 1L }
+				{ id: "34050101000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_helmet_i_test" }, count: 1L }
+				{ id: "34050102000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_chestplate_i_test" }, count: 1L }
+				{ id: "34050103000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_leggings_i_test" }, count: 1L }
+				{ id: "34050104000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44050100000000", type: "xp", xp: 80 }
+				{ id: "44050101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24050200000000"
+			dependencies: ["24050100000000"]
+			hide_until_deps_complete: true
+			x: -4d
+			y: 4.6000000000000005d
+			tasks: [
+				{ id: "34050200000000", type: "item", item: { count: 1, id: "kubejs:medic_module_ii" }, count: 1L }
+				{ id: "34050201000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_helmet_ii_test" }, count: 1L }
+				{ id: "34050202000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_chestplate_ii_test" }, count: 1L }
+				{ id: "34050203000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_leggings_ii_test" }, count: 1L }
+				{ id: "34050204000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44050200000000", type: "xp", xp: 120 }
+				{ id: "44050201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24050300000000"
+			dependencies: ["24050200000000"]
+			hide_until_deps_complete: true
+			x: -4d
+			y: 6.2d
+			tasks: [
+				{ id: "34050300000000", type: "item", item: { count: 1, id: "kubejs:medic_module_iii" }, count: 1L }
+				{ id: "34050301000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_helmet_iii_test" }, count: 1L }
+				{ id: "34050302000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_chestplate_iii_test" }, count: 1L }
+				{ id: "34050303000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_leggings_iii_test" }, count: 1L }
+				{ id: "34050304000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44050300000000", type: "xp", xp: 160 }
+				{ id: "44050301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24050400000000"
+			dependencies: ["24050300000000"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: 5.4d
+			tasks: [
+				{ id: "34050400000000", type: "item", item: { count: 1, id: "kubejs:medic_module_iv" }, count: 1L }
+				{ id: "34050401000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_helmet_iv_test" }, count: 1L }
+				{ id: "34050402000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_chestplate_iv_test" }, count: 1L }
+				{ id: "34050403000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_leggings_iv_test" }, count: 1L }
+				{ id: "34050404000000", type: "item", item: { count: 1, id: "koshpackmedichelmet:medic_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44050400000000", type: "xp", xp: 200 }
+				{ id: "44050401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24060100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 3d
+			y: -5.4d
+			tasks: [
+				{ id: "34060100000000", type: "item", item: { count: 1, id: "kubejs:farmer_module_i" }, count: 1L }
+				{ id: "34060101000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_helmet_i_test" }, count: 1L }
+				{ id: "34060102000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_chestplate_i_test" }, count: 1L }
+				{ id: "34060103000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_leggings_i_test" }, count: 1L }
+				{ id: "34060104000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44060100000000", type: "xp", xp: 80 }
+				{ id: "44060101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24060200000000"
+			dependencies: ["24060100000000"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: -6.2d
+			tasks: [
+				{ id: "34060200000000", type: "item", item: { count: 1, id: "kubejs:farmer_module_ii" }, count: 1L }
+				{ id: "34060201000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_helmet_ii_test" }, count: 1L }
+				{ id: "34060202000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_chestplate_ii_test" }, count: 1L }
+				{ id: "34060203000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_leggings_ii_test" }, count: 1L }
+				{ id: "34060204000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44060200000000", type: "xp", xp: 120 }
+				{ id: "44060201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24060300000000"
+			dependencies: ["24060200000000"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: -4.6000000000000005d
+			tasks: [
+				{ id: "34060300000000", type: "item", item: { count: 1, id: "kubejs:farmer_module_iii" }, count: 1L }
+				{ id: "34060301000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_helmet_iii_test" }, count: 1L }
+				{ id: "34060302000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_chestplate_iii_test" }, count: 1L }
+				{ id: "34060303000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_leggings_iii_test" }, count: 1L }
+				{ id: "34060304000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44060300000000", type: "xp", xp: 160 }
+				{ id: "44060301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24060400000000"
+			dependencies: ["24060300000000"]
+			hide_until_deps_complete: true
+			x: 5d
+			y: -5.4d
+			tasks: [
+				{ id: "34060400000000", type: "item", item: { count: 1, id: "kubejs:farmer_module_iv" }, count: 1L }
+				{ id: "34060401000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_helmet_iv_test" }, count: 1L }
+				{ id: "34060402000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_chestplate_iv_test" }, count: 1L }
+				{ id: "34060403000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_leggings_iv_test" }, count: 1L }
+				{ id: "34060404000000", type: "item", item: { count: 1, id: "koshpackfarmerhelmet:farmer_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44060400000000", type: "xp", xp: 200 }
+				{ id: "44060401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24070100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 7d
+			y: -5.4d
+			tasks: [
+				{ id: "34070100000000", type: "item", item: { count: 1, id: "kubejs:blacksmith_module_i" }, count: 1L }
+				{ id: "34070101000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_helmet_i_test" }, count: 1L }
+				{ id: "34070102000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_chestplate_i_test" }, count: 1L }
+				{ id: "34070103000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_leggings_i_test" }, count: 1L }
+				{ id: "34070104000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44070100000000", type: "xp", xp: 80 }
+				{ id: "44070101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24070200000000"
+			dependencies: ["24070100000000"]
+			hide_until_deps_complete: true
+			x: 8d
+			y: -6.2d
+			tasks: [
+				{ id: "34070200000000", type: "item", item: { count: 1, id: "kubejs:blacksmith_module_ii" }, count: 1L }
+				{ id: "34070201000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_helmet_ii_test" }, count: 1L }
+				{ id: "34070202000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_chestplate_ii_test" }, count: 1L }
+				{ id: "34070203000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_leggings_ii_test" }, count: 1L }
+				{ id: "34070204000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44070200000000", type: "xp", xp: 120 }
+				{ id: "44070201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24070300000000"
+			dependencies: ["24070200000000"]
+			hide_until_deps_complete: true
+			x: 8d
+			y: -4.6000000000000005d
+			tasks: [
+				{ id: "34070300000000", type: "item", item: { count: 1, id: "kubejs:blacksmith_module_iii" }, count: 1L }
+				{ id: "34070301000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_helmet_iii_test" }, count: 1L }
+				{ id: "34070302000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_chestplate_iii_test" }, count: 1L }
+				{ id: "34070303000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_leggings_iii_test" }, count: 1L }
+				{ id: "34070304000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44070300000000", type: "xp", xp: 160 }
+				{ id: "44070301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24070400000000"
+			dependencies: ["24070300000000"]
+			hide_until_deps_complete: true
+			x: 9d
+			y: -5.4d
+			tasks: [
+				{ id: "34070400000000", type: "item", item: { count: 1, id: "kubejs:blacksmith_module_iv" }, count: 1L }
+				{ id: "34070401000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_helmet_iv_test" }, count: 1L }
+				{ id: "34070402000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_chestplate_iv_test" }, count: 1L }
+				{ id: "34070403000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_leggings_iv_test" }, count: 1L }
+				{ id: "34070404000000", type: "item", item: { count: 1, id: "koshpackblacksmithhelmet:blacksmith_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44070400000000", type: "xp", xp: 200 }
+				{ id: "44070401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24080100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: -1.8d
+			tasks: [
+				{ id: "34080100000000", type: "item", item: { count: 1, id: "kubejs:fisher_module_i" }, count: 1L }
+				{ id: "34080101000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_helmet_i_test" }, count: 1L }
+				{ id: "34080102000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_chestplate_i_test" }, count: 1L }
+				{ id: "34080103000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_leggings_i_test" }, count: 1L }
+				{ id: "34080104000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44080100000000", type: "xp", xp: 80 }
+				{ id: "44080101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24080200000000"
+			dependencies: ["24080100000000"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -2.6d
+			tasks: [
+				{ id: "34080200000000", type: "item", item: { count: 1, id: "kubejs:fisher_module_ii" }, count: 1L }
+				{ id: "34080201000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_helmet_ii_test" }, count: 1L }
+				{ id: "34080202000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_chestplate_ii_test" }, count: 1L }
+				{ id: "34080203000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_leggings_ii_test" }, count: 1L }
+				{ id: "34080204000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44080200000000", type: "xp", xp: 120 }
+				{ id: "44080201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24080300000000"
+			dependencies: ["24080200000000"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -1d
+			tasks: [
+				{ id: "34080300000000", type: "item", item: { count: 1, id: "kubejs:fisher_module_iii" }, count: 1L }
+				{ id: "34080301000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_helmet_iii_test" }, count: 1L }
+				{ id: "34080302000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_chestplate_iii_test" }, count: 1L }
+				{ id: "34080303000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_leggings_iii_test" }, count: 1L }
+				{ id: "34080304000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44080300000000", type: "xp", xp: 160 }
+				{ id: "44080301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24080400000000"
+			dependencies: ["24080300000000"]
+			hide_until_deps_complete: true
+			x: -1d
+			y: -1.8d
+			tasks: [
+				{ id: "34080400000000", type: "item", item: { count: 1, id: "kubejs:fisher_module_iv" }, count: 1L }
+				{ id: "34080401000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_helmet_iv_test" }, count: 1L }
+				{ id: "34080402000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_chestplate_iv_test" }, count: 1L }
+				{ id: "34080403000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_leggings_iv_test" }, count: 1L }
+				{ id: "34080404000000", type: "item", item: { count: 1, id: "koshpackfisherhelmet:fisher_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44080400000000", type: "xp", xp: 200 }
+				{ id: "44080401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24090100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 1d
+			y: -1.8d
+			tasks: [
+				{ id: "34090100000000", type: "item", item: { count: 1, id: "kubejs:lumberjack_module_i" }, count: 1L }
+				{ id: "34090101000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_helmet_i_test" }, count: 1L }
+				{ id: "34090102000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_chestplate_i_test" }, count: 1L }
+				{ id: "34090103000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_leggings_i_test" }, count: 1L }
+				{ id: "34090104000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44090100000000", type: "xp", xp: 80 }
+				{ id: "44090101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24090200000000"
+			dependencies: ["24090100000000"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -2.6d
+			tasks: [
+				{ id: "34090200000000", type: "item", item: { count: 1, id: "kubejs:lumberjack_module_ii" }, count: 1L }
+				{ id: "34090201000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_helmet_ii_test" }, count: 1L }
+				{ id: "34090202000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_chestplate_ii_test" }, count: 1L }
+				{ id: "34090203000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_leggings_ii_test" }, count: 1L }
+				{ id: "34090204000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44090200000000", type: "xp", xp: 120 }
+				{ id: "44090201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24090300000000"
+			dependencies: ["24090200000000"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -1d
+			tasks: [
+				{ id: "34090300000000", type: "item", item: { count: 1, id: "kubejs:lumberjack_module_iii" }, count: 1L }
+				{ id: "34090301000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_helmet_iii_test" }, count: 1L }
+				{ id: "34090302000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_chestplate_iii_test" }, count: 1L }
+				{ id: "34090303000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_leggings_iii_test" }, count: 1L }
+				{ id: "34090304000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44090300000000", type: "xp", xp: 160 }
+				{ id: "44090301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24090400000000"
+			dependencies: ["24090300000000"]
+			hide_until_deps_complete: true
+			x: 3d
+			y: -1.8d
+			tasks: [
+				{ id: "34090400000000", type: "item", item: { count: 1, id: "kubejs:lumberjack_module_iv" }, count: 1L }
+				{ id: "34090401000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_helmet_iv_test" }, count: 1L }
+				{ id: "34090402000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_chestplate_iv_test" }, count: 1L }
+				{ id: "34090403000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_leggings_iv_test" }, count: 1L }
+				{ id: "34090404000000", type: "item", item: { count: 1, id: "koshpacklumberjackhelmet:lumberjack_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44090400000000", type: "xp", xp: 200 }
+				{ id: "44090401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24100100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 5d
+			y: -1.8d
+			tasks: [
+				{ id: "34100100000000", type: "item", item: { count: 1, id: "kubejs:diver_module_i" }, count: 1L }
+				{ id: "34100101000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_helmet_i_test" }, count: 1L }
+				{ id: "34100102000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_chestplate_i_test" }, count: 1L }
+				{ id: "34100103000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_leggings_i_test" }, count: 1L }
+				{ id: "34100104000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44100100000000", type: "xp", xp: 80 }
+				{ id: "44100101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24100200000000"
+			dependencies: ["24100100000000"]
+			hide_until_deps_complete: true
+			x: 6d
+			y: -2.6d
+			tasks: [
+				{ id: "34100200000000", type: "item", item: { count: 1, id: "kubejs:diver_module_ii" }, count: 1L }
+				{ id: "34100201000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_helmet_ii_test" }, count: 1L }
+				{ id: "34100202000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_chestplate_ii_test" }, count: 1L }
+				{ id: "34100203000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_leggings_ii_test" }, count: 1L }
+				{ id: "34100204000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44100200000000", type: "xp", xp: 120 }
+				{ id: "44100201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24100300000000"
+			dependencies: ["24100200000000"]
+			hide_until_deps_complete: true
+			x: 6d
+			y: -1d
+			tasks: [
+				{ id: "34100300000000", type: "item", item: { count: 1, id: "kubejs:diver_module_iii" }, count: 1L }
+				{ id: "34100301000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_helmet_iii_test" }, count: 1L }
+				{ id: "34100302000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_chestplate_iii_test" }, count: 1L }
+				{ id: "34100303000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_leggings_iii_test" }, count: 1L }
+				{ id: "34100304000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44100300000000", type: "xp", xp: 160 }
+				{ id: "44100301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24100400000000"
+			dependencies: ["24100300000000"]
+			hide_until_deps_complete: true
+			x: 7d
+			y: -1.8d
+			tasks: [
+				{ id: "34100400000000", type: "item", item: { count: 1, id: "kubejs:diver_module_iv" }, count: 1L }
+				{ id: "34100401000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_helmet_iv_test" }, count: 1L }
+				{ id: "34100402000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_chestplate_iv_test" }, count: 1L }
+				{ id: "34100403000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_leggings_iv_test" }, count: 1L }
+				{ id: "34100404000000", type: "item", item: { count: 1, id: "koshpackdiverhelmet:diver_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44100400000000", type: "xp", xp: 200 }
+				{ id: "44100401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24110100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -9d
+			y: 1.8d
+			tasks: [
+				{ id: "34110100000000", type: "item", item: { count: 1, id: "kubejs:fighter_module_i" }, count: 1L }
+				{ id: "34110101000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_helmet_i_test" }, count: 1L }
+				{ id: "34110102000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_chestplate_i_test" }, count: 1L }
+				{ id: "34110103000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_leggings_i_test" }, count: 1L }
+				{ id: "34110104000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44110100000000", type: "xp", xp: 80 }
+				{ id: "44110101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24110200000000"
+			dependencies: ["24110100000000"]
+			hide_until_deps_complete: true
+			x: -8d
+			y: 1d
+			tasks: [
+				{ id: "34110200000000", type: "item", item: { count: 1, id: "kubejs:fighter_module_ii" }, count: 1L }
+				{ id: "34110201000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_helmet_ii_test" }, count: 1L }
+				{ id: "34110202000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_chestplate_ii_test" }, count: 1L }
+				{ id: "34110203000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_leggings_ii_test" }, count: 1L }
+				{ id: "34110204000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44110200000000", type: "xp", xp: 120 }
+				{ id: "44110201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24110300000000"
+			dependencies: ["24110200000000"]
+			hide_until_deps_complete: true
+			x: -8d
+			y: 2.6d
+			tasks: [
+				{ id: "34110300000000", type: "item", item: { count: 1, id: "kubejs:fighter_module_iii" }, count: 1L }
+				{ id: "34110301000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_helmet_iii_test" }, count: 1L }
+				{ id: "34110302000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_chestplate_iii_test" }, count: 1L }
+				{ id: "34110303000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_leggings_iii_test" }, count: 1L }
+				{ id: "34110304000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44110300000000", type: "xp", xp: 160 }
+				{ id: "44110301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24110400000000"
+			dependencies: ["24110300000000"]
+			hide_until_deps_complete: true
+			x: -7d
+			y: 1.8d
+			tasks: [
+				{ id: "34110400000000", type: "item", item: { count: 1, id: "kubejs:fighter_module_iv" }, count: 1L }
+				{ id: "34110401000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_helmet_iv_test" }, count: 1L }
+				{ id: "34110402000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_chestplate_iv_test" }, count: 1L }
+				{ id: "34110403000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_leggings_iv_test" }, count: 1L }
+				{ id: "34110404000000", type: "item", item: { count: 1, id: "koshpackfighterarmor:fighter_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44110400000000", type: "xp", xp: 200 }
+				{ id: "44110401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24120100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -5d
+			y: 1.8d
+			tasks: [
+				{ id: "34120100000000", type: "item", item: { count: 1, id: "kubejs:archer_module_i" }, count: 1L }
+				{ id: "34120101000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_helmet_i_test" }, count: 1L }
+				{ id: "34120102000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_chestplate_i_test" }, count: 1L }
+				{ id: "34120103000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_leggings_i_test" }, count: 1L }
+				{ id: "34120104000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44120100000000", type: "xp", xp: 80 }
+				{ id: "44120101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24120200000000"
+			dependencies: ["24120100000000"]
+			hide_until_deps_complete: true
+			x: -4d
+			y: 1d
+			tasks: [
+				{ id: "34120200000000", type: "item", item: { count: 1, id: "kubejs:archer_module_ii" }, count: 1L }
+				{ id: "34120201000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_helmet_ii_test" }, count: 1L }
+				{ id: "34120202000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_chestplate_ii_test" }, count: 1L }
+				{ id: "34120203000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_leggings_ii_test" }, count: 1L }
+				{ id: "34120204000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44120200000000", type: "xp", xp: 120 }
+				{ id: "44120201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24120300000000"
+			dependencies: ["24120200000000"]
+			hide_until_deps_complete: true
+			x: -4d
+			y: 2.6d
+			tasks: [
+				{ id: "34120300000000", type: "item", item: { count: 1, id: "kubejs:archer_module_iii" }, count: 1L }
+				{ id: "34120301000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_helmet_iii_test" }, count: 1L }
+				{ id: "34120302000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_chestplate_iii_test" }, count: 1L }
+				{ id: "34120303000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_leggings_iii_test" }, count: 1L }
+				{ id: "34120304000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44120300000000", type: "xp", xp: 160 }
+				{ id: "44120301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24120400000000"
+			dependencies: ["24120300000000"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: 1.8d
+			tasks: [
+				{ id: "34120400000000", type: "item", item: { count: 1, id: "kubejs:archer_module_iv" }, count: 1L }
+				{ id: "34120401000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_helmet_iv_test" }, count: 1L }
+				{ id: "34120402000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_chestplate_iv_test" }, count: 1L }
+				{ id: "34120403000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_leggings_iv_test" }, count: 1L }
+				{ id: "34120404000000", type: "item", item: { count: 1, id: "koshpackarcherarmor:archer_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44120400000000", type: "xp", xp: 200 }
+				{ id: "44120401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24130100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -1d
+			y: 1.8d
+			tasks: [
+				{ id: "34130100000000", type: "item", item: { count: 1, id: "kubejs:shooter_module_i" }, count: 1L }
+				{ id: "34130101000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_helmet_i_test" }, count: 1L }
+				{ id: "34130102000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_chestplate_i_test" }, count: 1L }
+				{ id: "34130103000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_leggings_i_test" }, count: 1L }
+				{ id: "34130104000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44130100000000", type: "xp", xp: 80 }
+				{ id: "44130101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24130200000000"
+			dependencies: ["24130100000000"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 1d
+			tasks: [
+				{ id: "34130200000000", type: "item", item: { count: 1, id: "kubejs:shooter_module_ii" }, count: 1L }
+				{ id: "34130201000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_helmet_ii_test" }, count: 1L }
+				{ id: "34130202000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_chestplate_ii_test" }, count: 1L }
+				{ id: "34130203000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_leggings_ii_test" }, count: 1L }
+				{ id: "34130204000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44130200000000", type: "xp", xp: 120 }
+				{ id: "44130201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24130300000000"
+			dependencies: ["24130200000000"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 2.6d
+			tasks: [
+				{ id: "34130300000000", type: "item", item: { count: 1, id: "kubejs:shooter_module_iii" }, count: 1L }
+				{ id: "34130301000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_helmet_iii_test" }, count: 1L }
+				{ id: "34130302000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_chestplate_iii_test" }, count: 1L }
+				{ id: "34130303000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_leggings_iii_test" }, count: 1L }
+				{ id: "34130304000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44130300000000", type: "xp", xp: 160 }
+				{ id: "44130301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24130400000000"
+			dependencies: ["24130300000000"]
+			hide_until_deps_complete: true
+			x: 1d
+			y: 1.8d
+			tasks: [
+				{ id: "34130400000000", type: "item", item: { count: 1, id: "kubejs:shooter_module_iv" }, count: 1L }
+				{ id: "34130401000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_helmet_iv_test" }, count: 1L }
+				{ id: "34130402000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_chestplate_iv_test" }, count: 1L }
+				{ id: "34130403000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_leggings_iv_test" }, count: 1L }
+				{ id: "34130404000000", type: "item", item: { count: 1, id: "koshpackshooterarmor:shooter_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44130400000000", type: "xp", xp: 200 }
+				{ id: "44130401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24140100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 3d
+			y: 1.8d
+			tasks: [
+				{ id: "34140100000000", type: "item", item: { count: 1, id: "kubejs:artillery_module_i" }, count: 1L }
+				{ id: "34140101000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_helmet_i_test" }, count: 1L }
+				{ id: "34140102000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_chestplate_i_test" }, count: 1L }
+				{ id: "34140103000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_leggings_i_test" }, count: 1L }
+				{ id: "34140104000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44140100000000", type: "xp", xp: 80 }
+				{ id: "44140101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24140200000000"
+			dependencies: ["24140100000000"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: 1d
+			tasks: [
+				{ id: "34140200000000", type: "item", item: { count: 1, id: "kubejs:artillery_module_ii" }, count: 1L }
+				{ id: "34140201000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_helmet_ii_test" }, count: 1L }
+				{ id: "34140202000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_chestplate_ii_test" }, count: 1L }
+				{ id: "34140203000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_leggings_ii_test" }, count: 1L }
+				{ id: "34140204000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44140200000000", type: "xp", xp: 120 }
+				{ id: "44140201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24140300000000"
+			dependencies: ["24140200000000"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: 2.6d
+			tasks: [
+				{ id: "34140300000000", type: "item", item: { count: 1, id: "kubejs:artillery_module_iii" }, count: 1L }
+				{ id: "34140301000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_helmet_iii_test" }, count: 1L }
+				{ id: "34140302000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_chestplate_iii_test" }, count: 1L }
+				{ id: "34140303000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_leggings_iii_test" }, count: 1L }
+				{ id: "34140304000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44140300000000", type: "xp", xp: 160 }
+				{ id: "44140301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24140400000000"
+			dependencies: ["24140300000000"]
+			hide_until_deps_complete: true
+			x: 5d
+			y: 1.8d
+			tasks: [
+				{ id: "34140400000000", type: "item", item: { count: 1, id: "kubejs:artillery_module_iv" }, count: 1L }
+				{ id: "34140401000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_helmet_iv_test" }, count: 1L }
+				{ id: "34140402000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_chestplate_iv_test" }, count: 1L }
+				{ id: "34140403000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_leggings_iv_test" }, count: 1L }
+				{ id: "34140404000000", type: "item", item: { count: 1, id: "koshpackartilleryarmor:artillery_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44140400000000", type: "xp", xp: 200 }
+				{ id: "44140401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24150100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 7d
+			y: 1.8d
+			tasks: [
+				{ id: "34150100000000", type: "item", item: { count: 1, id: "kubejs:hunter_module_i" }, count: 1L }
+				{ id: "34150101000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_helmet_i_test" }, count: 1L }
+				{ id: "34150102000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_chestplate_i_test" }, count: 1L }
+				{ id: "34150103000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_leggings_i_test" }, count: 1L }
+				{ id: "34150104000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44150100000000", type: "xp", xp: 80 }
+				{ id: "44150101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24150200000000"
+			dependencies: ["24150100000000"]
+			hide_until_deps_complete: true
+			x: 8d
+			y: 1d
+			tasks: [
+				{ id: "34150200000000", type: "item", item: { count: 1, id: "kubejs:hunter_module_ii" }, count: 1L }
+				{ id: "34150201000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_helmet_ii_test" }, count: 1L }
+				{ id: "34150202000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_chestplate_ii_test" }, count: 1L }
+				{ id: "34150203000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_leggings_ii_test" }, count: 1L }
+				{ id: "34150204000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44150200000000", type: "xp", xp: 120 }
+				{ id: "44150201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24150300000000"
+			dependencies: ["24150200000000"]
+			hide_until_deps_complete: true
+			x: 8d
+			y: 2.6d
+			tasks: [
+				{ id: "34150300000000", type: "item", item: { count: 1, id: "kubejs:hunter_module_iii" }, count: 1L }
+				{ id: "34150301000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_helmet_iii_test" }, count: 1L }
+				{ id: "34150302000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_chestplate_iii_test" }, count: 1L }
+				{ id: "34150303000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_leggings_iii_test" }, count: 1L }
+				{ id: "34150304000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44150300000000", type: "xp", xp: 160 }
+				{ id: "44150301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24150400000000"
+			dependencies: ["24150300000000"]
+			hide_until_deps_complete: true
+			x: 9d
+			y: 1.8d
+			tasks: [
+				{ id: "34150400000000", type: "item", item: { count: 1, id: "kubejs:hunter_module_iv" }, count: 1L }
+				{ id: "34150401000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_helmet_iv_test" }, count: 1L }
+				{ id: "34150402000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_chestplate_iv_test" }, count: 1L }
+				{ id: "34150403000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_leggings_iv_test" }, count: 1L }
+				{ id: "34150404000000", type: "item", item: { count: 1, id: "koshpackhunterarmor:hunter_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44150400000000", type: "xp", xp: 200 }
+				{ id: "44150401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24160100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: -1d
+			y: 5.4d
+			tasks: [
+				{ id: "34160100000000", type: "item", item: { count: 1, id: "kubejs:researcher_module_i" }, count: 1L }
+				{ id: "34160101000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_helmet_i_test" }, count: 1L }
+				{ id: "34160102000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_chestplate_i_test" }, count: 1L }
+				{ id: "34160103000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_leggings_i_test" }, count: 1L }
+				{ id: "34160104000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44160100000000", type: "xp", xp: 80 }
+				{ id: "44160101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24160200000000"
+			dependencies: ["24160100000000"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 4.6000000000000005d
+			tasks: [
+				{ id: "34160200000000", type: "item", item: { count: 1, id: "kubejs:researcher_module_ii" }, count: 1L }
+				{ id: "34160201000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_helmet_ii_test" }, count: 1L }
+				{ id: "34160202000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_chestplate_ii_test" }, count: 1L }
+				{ id: "34160203000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_leggings_ii_test" }, count: 1L }
+				{ id: "34160204000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44160200000000", type: "xp", xp: 120 }
+				{ id: "44160201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24160300000000"
+			dependencies: ["24160200000000"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 6.2d
+			tasks: [
+				{ id: "34160300000000", type: "item", item: { count: 1, id: "kubejs:researcher_module_iii" }, count: 1L }
+				{ id: "34160301000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_helmet_iii_test" }, count: 1L }
+				{ id: "34160302000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_chestplate_iii_test" }, count: 1L }
+				{ id: "34160303000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_leggings_iii_test" }, count: 1L }
+				{ id: "34160304000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44160300000000", type: "xp", xp: 160 }
+				{ id: "44160301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24160400000000"
+			dependencies: ["24160300000000"]
+			hide_until_deps_complete: true
+			x: 1d
+			y: 5.4d
+			tasks: [
+				{ id: "34160400000000", type: "item", item: { count: 1, id: "kubejs:researcher_module_iv" }, count: 1L }
+				{ id: "34160401000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_helmet_iv_test" }, count: 1L }
+				{ id: "34160402000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_chestplate_iv_test" }, count: 1L }
+				{ id: "34160403000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_leggings_iv_test" }, count: 1L }
+				{ id: "34160404000000", type: "item", item: { count: 1, id: "koshpackresearcherarmor:researcher_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44160400000000", type: "xp", xp: 200 }
+				{ id: "44160401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
+			]
+		}
+		{
+			id: "24170100000000"
+			dependencies: ["2201000000000010"]
+			hide_until_deps_complete: true
+			x: 3d
+			y: 5.4d
+			tasks: [
+				{ id: "34170100000000", type: "item", item: { count: 1, id: "kubejs:pilot_module_i" }, count: 1L }
+				{ id: "34170101000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_helmet_i_test" }, count: 1L }
+				{ id: "34170102000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_chestplate_i_test" }, count: 1L }
+				{ id: "34170103000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_leggings_i_test" }, count: 1L }
+				{ id: "34170104000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_boots_i_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44170100000000", type: "xp", xp: 80 }
+				{ id: "44170101000000", type: "item", item: { count: 1, id: "minecraft:leather" }, count: 2 }
+			]
+		}
+		{
+			id: "24170200000000"
+			dependencies: ["24170100000000"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: 4.6000000000000005d
+			tasks: [
+				{ id: "34170200000000", type: "item", item: { count: 1, id: "kubejs:pilot_module_ii" }, count: 1L }
+				{ id: "34170201000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_helmet_ii_test" }, count: 1L }
+				{ id: "34170202000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_chestplate_ii_test" }, count: 1L }
+				{ id: "34170203000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_leggings_ii_test" }, count: 1L }
+				{ id: "34170204000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_boots_ii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44170200000000", type: "xp", xp: 120 }
+				{ id: "44170201000000", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "24170300000000"
+			dependencies: ["24170200000000"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: 6.2d
+			tasks: [
+				{ id: "34170300000000", type: "item", item: { count: 1, id: "kubejs:pilot_module_iii" }, count: 1L }
+				{ id: "34170301000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_helmet_iii_test" }, count: 1L }
+				{ id: "34170302000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_chestplate_iii_test" }, count: 1L }
+				{ id: "34170303000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_leggings_iii_test" }, count: 1L }
+				{ id: "34170304000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_boots_iii_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44170300000000", type: "xp", xp: 160 }
+				{ id: "44170301000000", type: "item", item: { count: 1, id: "minecraft:experience_bottle" }, count: 2 }
+			]
+		}
+		{
+			id: "24170400000000"
+			dependencies: ["24170300000000"]
+			hide_until_deps_complete: true
+			x: 5d
+			y: 5.4d
+			tasks: [
+				{ id: "34170400000000", type: "item", item: { count: 1, id: "kubejs:pilot_module_iv" }, count: 1L }
+				{ id: "34170401000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_helmet_iv_test" }, count: 1L }
+				{ id: "34170402000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_chestplate_iv_test" }, count: 1L }
+				{ id: "34170403000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_leggings_iv_test" }, count: 1L }
+				{ id: "34170404000000", type: "item", item: { count: 1, id: "koshpackpilothelmet:pilot_boots_iv_test" }, count: 1L }
+			]
+			rewards: [
+				{ id: "44170400000000", type: "xp", xp: 200 }
+				{ id: "44170401000000", type: "item", item: { count: 1, id: "minecraft:gold_ingot" }, count: 1 }
 			]
 		}
 	]

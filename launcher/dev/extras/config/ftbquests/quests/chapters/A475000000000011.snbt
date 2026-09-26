@@ -1,0 +1,131 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A475000000000011"
+	group: "4D4552494449414E"
+	icon: { id: "createbigcannons:autocannon_barrel_cast_mould" }
+	id: "1475000000000011"
+	images: [ ]
+	order_index: 9
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2475000000000001"
+			dependencies: ["2201000000000010", "2301000000000010"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: -3d
+			tasks: [{ id: "3475000000000001", type: "item", item: { count: 1, id: "createbigcannons:small_cast_mould" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000001", type: "xp", xp: 100 }
+				{ id: "4475000000001001", type: "item", item: { count: 1, id: "minecraft:clay_ball" }, count: 8 }
+			]
+		}
+		{
+			id: "2475000000000002"
+			dependencies: ["2475000000000001"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -1.5d
+			tasks: [{ id: "3475000000000002", type: "item", item: { count: 1, id: "createbigcannons:autocannon_barrel_cast_mould" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000002", type: "xp", xp: 100 }
+				{ id: "4475000000001002", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 3 }
+			]
+		}
+		{
+			id: "2475000000000003"
+			dependencies: ["2475000000000001"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -1.5d
+			tasks: [{ id: "3475000000000003", type: "item", item: { count: 1, id: "createbigcannons:autocannon_breech_cast_mould" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000003", type: "xp", xp: 100 }
+				{ id: "4475000000001003", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 3 }
+			]
+		}
+		{
+			id: "2475000000000004"
+			dependencies: ["2475000000000002", "2475000000000003"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 0d
+			tasks: [{ id: "3475000000000004", type: "item", item: { count: 1, id: "createbigcannons:autocannon_recoil_spring_cast_mould" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000004", type: "xp", xp: 110 }
+				{ id: "4475000000001004", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 4 }
+			]
+		}
+		{
+			id: "2475000000000005"
+			dependencies: ["2475000000000004"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 1.5d
+			tasks: [{ id: "3475000000000005", type: "item", item: { count: 1, id: "createbigcannons:autocannon_cartridge_sheet" }, count: 2L }]
+			rewards: [
+				{ id: "4475000000000005", type: "xp", xp: 100 }
+				{ id: "4475000000001005", type: "item", item: { count: 1, id: "minecraft:gunpowder" }, count: 4 }
+			]
+		}
+		{
+			id: "2475000000000006"
+			dependencies: ["2475000000000004"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 1.5d
+			tasks: [{ id: "3475000000000006", type: "item", item: { count: 1, id: "createbigcannons:spring_wire" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000006", type: "xp", xp: 100 }
+				{ id: "4475000000001006", type: "item", item: { count: 1, id: "minecraft:iron_nugget" }, count: 8 }
+			]
+		}
+		{
+			id: "2475000000000007"
+			dependencies: ["2475000000000005", "2475000000000006"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: -2d
+			y: 3d
+			tasks: [{ id: "3475000000000007", type: "item", item: { count: 1, id: "cbc_at:autocannon_muzzle_brake_mould" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000007", type: "xp", xp: 120 }
+				{ id: "4475000000001007", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 4 }
+			]
+		}
+		{
+			id: "2475000000000008"
+			dependencies: ["2475000000000005", "2475000000000006"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 2d
+			y: 3d
+			tasks: [{ id: "3475000000000008", type: "item", item: { count: 1, id: "cbc_at:autocannon_silencer_mould" }, count: 1L }]
+			rewards: [
+				{ id: "4475000000000008", type: "xp", xp: 120 }
+				{ id: "4475000000001008", type: "item", item: { count: 1, id: "minecraft:coal" }, count: 8 }
+			]
+		}
+		{
+			id: "2475000000000009"
+			dependencies: ["2475000000000007", "2475000000000008"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 4.6d
+			tasks: [
+				{ id: "3475000000000009", type: "item", item: { count: 1, id: "createbigcannons:autocannon_barrel_cast_mould" }, count: 1L }
+				{ id: "3475000000001009", type: "item", item: { count: 1, id: "createbigcannons:autocannon_breech_cast_mould" }, count: 1L }
+				{ id: "3475000000002009", type: "item", item: { count: 1, id: "createbigcannons:autocannon_recoil_spring_cast_mould" }, count: 1L }
+				{ id: "3475000000003009", type: "item", item: { count: 1, id: "createbigcannons:autocannon_cartridge_sheet" }, count: 4L }
+			]
+			rewards: [
+				{ id: "4475000000000009", type: "xp", xp: 180 }
+				{ id: "4475000000001009", type: "item", item: { count: 1, id: "minecraft:gunpowder" }, count: 8 }
+			]
+		}
+	]
+}

@@ -1,0 +1,214 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A350000000000007"
+	group: "4D4552494449414E"
+	icon: { id: "create:belt_connector" }
+	id: "1350000000000007"
+	images: [ ]
+	order_index: 4
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2351000000000001"
+			dependencies: ["2301000000000007"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -4d
+			tasks: [{ id: "3351000000000001", type: "item", item: { count: 1, id: "create:belt_connector" }, count: 3L }]
+			rewards: [
+				{ id: "4351000000000001", type: "xp", xp: 60 }
+				{ id: "4351000000001001", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 2 }
+			]
+		}
+		{
+			id: "2351000000000002"
+			dependencies: ["2351000000000001"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -2.5d
+			tasks: [{ id: "3351000000000002", type: "item", item: { count: 1, id: "create:andesite_funnel" }, count: 2L }]
+			rewards: [
+				{ id: "4351000000000002", type: "xp", xp: 65 }
+				{ id: "4351000000001002", type: "item", item: { count: 1, id: "minecraft:chest" }, count: 2 }
+			]
+		}
+		{
+			id: "2351000000000003"
+			dependencies: ["2351000000000001"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -2.5d
+			tasks: [{ id: "3351000000000003", type: "item", item: { count: 1, id: "create:filter" }, count: 1L }]
+			rewards: [
+				{ id: "4351000000000003", type: "xp", xp: 65 }
+				{ id: "4351000000001003", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 6 }
+			]
+		}
+		{
+			id: "2351000000000004"
+			dependencies: ["2351000000000002", "2351000000000003"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: -1d
+			tasks: [{ id: "3351000000000004", type: "item", item: { count: 1, id: "create:brass_funnel" }, count: 2L }]
+			rewards: [
+				{ id: "4351000000000004", type: "xp", xp: 75 }
+				{ id: "4351000000001004", type: "item", item: { count: 1, id: "create:andesite_alloy" }, count: 4 }
+			]
+		}
+		{
+			id: "2351000000000005"
+			dependencies: ["2351000000000004"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: 0.6d
+			tasks: [{ id: "3351000000000005", type: "item", item: { count: 1, id: "create:fluid_pipe" }, count: 8L }]
+			rewards: [
+				{ id: "4351000000000005", type: "xp", xp: 80 }
+				{ id: "4351000000001005", type: "item", item: { count: 1, id: "minecraft:bucket" }, count: 1 }
+			]
+		}
+		{
+			id: "2351000000000006"
+			dependencies: ["2351000000000005"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: 2.2d
+			tasks: [{ id: "3351000000000006", type: "item", item: { count: 1, id: "create:mechanical_pump" }, count: 1L }]
+			rewards: [
+				{ id: "4351000000000006", type: "xp", xp: 80 }
+				{ id: "4351000000001006", type: "item", item: { count: 1, id: "minecraft:glass" }, count: 8 }
+			]
+		}
+		{
+			id: "2351000000000007"
+			dependencies: ["2351000000000004", "2351000000000006"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: -1.5d
+			y: 3.7d
+			tasks: [
+				{ id: "3351000000000007", type: "item", item: { count: 1, id: "create:belt_connector" }, count: 6L }
+				{ id: "3351000000001007", type: "item", item: { count: 1, id: "create:andesite_funnel" }, count: 2L }
+				{ id: "3351000000002007", type: "item", item: { count: 1, id: "create:filter" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4351000000000007", type: "xp", xp: 100 }
+				{ id: "4351000000001007", type: "item", item: { count: 1, id: "minecraft:hopper" }, count: 2 }
+			]
+		}
+		{
+			id: "2351000000000008"
+			dependencies: ["2351000000000007"]
+			hide_until_deps_complete: true
+			x: -1.5d
+			y: 5.2d
+			tasks: [{ id: "3351000000000008", type: "item", item: { count: 1, id: "create:smart_chute" }, count: 1L }]
+			rewards: [
+				{ id: "4351000000000008", type: "xp", xp: 110 }
+				{ id: "4351000000001008", type: "item", item: { count: 1, id: "create:shaft" }, count: 8 }
+			]
+		}
+		{
+			id: "2352000000000001"
+			dependencies: ["2351000000000004"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 0.5d
+			icon: { id: "create:clutch" }
+			tasks: [
+				{ id: "3352000000000001", type: "item", item: { count: 1, id: "create:clutch" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000001", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000002"
+			dependencies: ["2352000000000001"]
+			hide_until_deps_complete: true
+			x: 3.6d
+			y: 0.6d
+			icon: { id: "create:gearshift" }
+			tasks: [
+				{ id: "3352000000000002", type: "item", item: { count: 1, id: "create:gearshift" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000002", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000003"
+			dependencies: ["2352000000000002"]
+			hide_until_deps_complete: true
+			x: 4.6d
+			y: 2d
+			icon: { id: "create:redstone_link" }
+			tasks: [
+				{ id: "3352000000000003", type: "item", item: { count: 1, id: "create:redstone_link" }, count: 2L }
+			]
+			rewards: [{ id: "4352000000000003", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000004"
+			dependencies: ["2352000000000003"]
+			hide_until_deps_complete: true
+			x: 4.1d
+			y: 3.5d
+			icon: { id: "create:pulse_extender" }
+			tasks: [
+				{ id: "3352000000000004", type: "item", item: { count: 1, id: "create:pulse_extender" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000004", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000005"
+			dependencies: ["2352000000000004"]
+			hide_until_deps_complete: true
+			x: 2.7d
+			y: 4.4d
+			icon: { id: "create:pulse_repeater" }
+			tasks: [
+				{ id: "3352000000000005", type: "item", item: { count: 1, id: "create:pulse_repeater" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000005", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000006"
+			dependencies: ["2352000000000005"]
+			hide_until_deps_complete: true
+			x: 1.2d
+			y: 3.6d
+			icon: { id: "create:powered_toggle_latch" }
+			tasks: [
+				{ id: "3352000000000006", type: "item", item: { count: 1, id: "create:powered_toggle_latch" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000006", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000007"
+			dependencies: ["2352000000000006"]
+			hide_until_deps_complete: true
+			x: 0.7d
+			y: 2.1d
+			icon: { id: "create:analog_lever" }
+			tasks: [
+				{ id: "3352000000000007", type: "item", item: { count: 1, id: "create:analog_lever" }, count: 1L }
+				{ id: "3352000000000107", type: "item", item: { count: 1, id: "create:nixie_tube" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000007", type: "xp", xp: 60 }]
+		}
+		{
+			id: "2352000000000008"
+			dependencies: ["2352000000000007"]
+			hide_until_deps_complete: true
+			x: 2.3d
+			y: 2.2d
+			icon: { id: "create:display_link" }
+			tasks: [
+				{ id: "3352000000000008", type: "item", item: { count: 1, id: "create:display_link" }, count: 1L }
+				{ id: "3352000000000108", type: "item", item: { count: 1, id: "minecraft:oak_sign" }, count: 1L }
+			]
+			rewards: [{ id: "4352000000000008", type: "xp", xp: 60 }]
+		}
+	]
+}
+

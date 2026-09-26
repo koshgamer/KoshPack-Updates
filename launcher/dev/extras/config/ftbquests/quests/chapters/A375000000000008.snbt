@@ -1,0 +1,128 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A375000000000008"
+	group: "4D4552494449414E"
+	icon: { id: "create:steam_engine" }
+	id: "1375000000000008"
+	images: [ ]
+	order_index: 5
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2375000000000001"
+			dependencies: ["2501000000000002"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -3.6d
+			tasks: [
+				{ id: "3375000000000001", type: "item", item: { count: 1, id: "create:fluid_tank" }, count: 4L }
+			]
+			rewards: [
+				{ id: "4375000000000001", type: "xp", xp: 60 }
+				{ id: "4375000000001001", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 4 }
+			]
+		}
+		{
+			id: "2375000000000002"
+			dependencies: ["2375000000000001"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: -2.1d
+			tasks: [
+				{ id: "3375000000000002", type: "item", item: { count: 1, id: "create:fluid_pipe" }, count: 8L }
+			]
+			rewards: [
+				{ id: "4375000000000002", type: "xp", xp: 65 }
+				{ id: "4375000000001002", type: "item", item: { count: 1, id: "minecraft:bucket" }, count: 1 }
+			]
+		}
+		{
+			id: "2375000000000003"
+			dependencies: ["2375000000000002"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -0.8d
+			tasks: [
+				{ id: "3375000000000003", type: "item", item: { count: 1, id: "create:mechanical_pump" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4375000000000003", type: "xp", xp: 70 }
+				{ id: "4375000000001003", type: "item", item: { count: 1, id: "create:shaft" }, count: 4 }
+			]
+		}
+		{
+			id: "2375000000000004"
+			dependencies: ["2375000000000003"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: -2.1d
+			tasks: [
+				{ id: "3375000000000004", type: "item", item: { count: 1, id: "create:blaze_burner" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4375000000000004", type: "xp", xp: 75 }
+				{ id: "4375000000001004", type: "item", item: { count: 1, id: "minecraft:coal" }, count: 8 }
+			]
+		}
+		{
+			id: "2375000000000005"
+			dependencies: ["2375000000000004"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: 0.8d
+			tasks: [
+				{ id: "3375000000000005", type: "item", item: { count: 1, id: "create:steam_engine" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4375000000000005", type: "xp", xp: 90 }
+				{ id: "4375000000001005", type: "item", item: { count: 1, id: "create:shaft" }, count: 8 }
+			]
+		}
+		{
+			id: "2375000000000006"
+			dependencies: ["2375000000000005"]
+			hide_until_deps_complete: true
+			x: -2d
+			y: 2.3d
+			tasks: [
+				{ id: "3375000000000006", type: "item", item: { count: 1, id: "create:stressometer" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4375000000000006", type: "xp", xp: 90 }
+				{ id: "4375000000001006", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 6 }
+			]
+		}
+		{
+			id: "2375000000000007"
+			dependencies: ["2375000000000005"]
+			hide_until_deps_complete: true
+			x: 2d
+			y: 2.3d
+			tasks: [
+				{ id: "3375000000000007", type: "item", item: { count: 1, id: "create:goggles" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4375000000000007", type: "xp", xp: 90 }
+				{ id: "4375000000001007", type: "item", item: { count: 1, id: "minecraft:gold_nugget" }, count: 8 }
+			]
+		}
+		{
+			id: "2375000000000008"
+			dependencies: ["2375000000000006", "2375000000000007"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: 3.8d
+			tasks: [
+				{ id: "3375000000000008", type: "item", item: { count: 1, id: "create:steam_engine" }, count: 2L }
+				{ id: "3375000000001008", type: "item", item: { count: 1, id: "create:fluid_tank" }, count: 9L }
+				{ id: "3375000000002008", type: "item", item: { count: 1, id: "create:mechanical_pump" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4375000000000008", type: "xp", xp: 140 }
+				{ id: "4375000000001008", type: "item", item: { count: 1, id: "create:andesite_alloy" }, count: 4 }
+			]
+		}
+	]
+}

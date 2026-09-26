@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: dev-manifest-writers
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -59,10 +63,10 @@ jobs:
           armor = data.setdefault("armor", {})
           armor["version"] = "alpha-0.120"
           armor["note"] = (
-              "Alpha 0.120: добавлен настоящий backend FTB Quests для нового интерфейса Meridian. "
-              "Стартовый пакет содержит 5 глав и 29 узлов: Освоение, Металлургия, "
-              "Механизация, Профессии и За гранью. Есть зависимости, реальные item/dimension "
-              "задачи, ручные технологические чекпоинты, награды XP и русская локализация."
+              "Alpha 0.120: полный backend Meridian Quest Book: 12 глав и 186 квестов. "
+              "Добавлены подробные русские и английские обучения, зависимости, "
+              "предметные и dimension-задачи, ручные технологические чекпоинты "
+              "и награды XP."
           )
           data["hotfixRevision"] = int(data.get("hotfixRevision", 0)) + 1
 

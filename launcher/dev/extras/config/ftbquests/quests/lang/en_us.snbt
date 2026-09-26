@@ -3,16 +3,30 @@
 
 	chapter.1100000000000001.title: "Settlement"
 	chapter.1200000000000002.title: "Metallurgy"
+	chapter.1250000000000006.title: "Storage"
 	chapter.1300000000000003.title: "Mechanization"
+	chapter.1350000000000007.title: "Logistics"
 	chapter.1400000000000004.title: "Professions"
+	chapter.1450000000000010.title: "Forge Bench"
+	chapter.1475000000000011.title: "Artillery Manufacturing"
+	chapter.1480000000000012.title: "Aeronautics"
 	chapter.1500000000000005.title: "Beyond"
+	chapter.1375000000000008.title: "Steam Power"
+	chapter.1425000000000009.title: "Electricity"
 
 	quest.2101000000000001.title: "Start Somewhere"
 	quest.2101000000000001.quest_subtitle: "Your first workstation"
 	quest.2101000000000001.quest_desc: ["Craft a crafting table. Meridian does not define your backstory — the world is already here, and surviving it is up to you."]
 	quest.2101000000000002.title: "Stone at Hand"
-	quest.2101000000000002.quest_subtitle: "Basic tools"
-	quest.2101000000000002.quest_desc: ["Make a stone pickaxe and start gathering resources."]
+	quest.2101000000000002.quest_subtitle: "Первые материалы через инструмент с блюпринтом"
+	quest.2101000000000002.quest_desc: [
+		"Для зачёта собери 16 булыжника в обычном инвентаре. Каменная ванильная кирка не требуется: её рецепт в этой сборке отключён."
+		"Шаг 1. Найди в JEI блюпринт кирки Silent Gear и открой его рецепт. Сделай шаблон и используй совместимые деревянные материалы для первой рабочей части; собери инструмент по рецептам JEI."
+		"Шаг 2. Добудь камень деревянной киркой и подбери выпавший булыжник. Сначала накопи 16 блоков, чтобы задача успела засчитаться."
+		"Шаг 3. Через блюпринт сделай каменную рабочую часть и собери либо обнови кирку по рецепту сборки. Дерево и камень проходят через верстак с шаблоном; металлические части дальше получаются литьём."
+		"Проверка. Посмотри материал и уровень добычи в подсказке инструмента. Одна только форма кирки не означает, что ею можно добывать любую руду."
+		"Булыжник не расходуется при зачёте. Часть запаса пригодится для печи в следующем задании."
+	]
 	quest.2101000000000003.title: "First Heat"
 	quest.2101000000000003.quest_subtitle: "A furnace"
 	quest.2101000000000003.quest_desc: ["Build a furnace. The world will soon demand much more metal."]
@@ -27,29 +41,75 @@
 	quest.2101000000000006.quest_desc: ["Create a place that can genuinely be called a base."]
 	task.3101000000000006.title: "The base is ready"
 
-	quest.2201000000000001.title: "The Foundry"
-	quest.2201000000000001.quest_subtitle: "Assemble the metallurgy setup"
-	quest.2201000000000001.quest_desc: ["Move beyond the vanilla furnace and assemble Meridian's foundry."]
+	quest.2201000000000001.title: "Foundry Basics"
+	quest.2201000000000001.quest_subtitle: "How Productive Metalworks actually works"
+	quest.2201000000000001.quest_desc: [
+		"Productive Metalworks is Meridian's main metallurgy route. Metal first becomes fluid, then gets cast into a part."
+		""
+		"The minimum Foundry is 3x3x2. The bottom layer is heating coils. Leave an air block in the center of the upper layer and place a Foundry Controller, Foundry Tank and at least one Foundry Drain in the shell."
+		""
+		"A liquid-fuel Foundry using lava reaches 1500 C. That is enough for iron and copper at 1000 C, but not for every late recipe."
+		""
+		"Remember the chain: raw material -> heat -> molten metal -> drain -> tap -> casting table/basin -> mold -> part."
+	]
 	task.3201000000000001.title: "Foundry assembled"
-	quest.2201000000000002.title: "HV3000"
-	quest.2201000000000002.quest_subtitle: "Bring the heat online"
-	quest.2201000000000002.quest_desc: ["Connect and start the HV3000 heater."]
+	quest.2201000000000002.title: "Build a Working Foundry"
+	quest.2201000000000002.quest_subtitle: "Controller, Tank, Drain and heating"
+	quest.2201000000000002.quest_desc: [
+		"Build the smallest working Foundry step by step."
+		""
+		"1. Make a 3x3 bottom layer of the correct heating coils."
+		"2. Build the upper shell and keep the center as air."
+		"3. Put the Controller, Tank and Drain into the shell."
+		"4. Supply the heating system with the fuel or power it actually requires."
+		""
+		"If the Controller does not recognize the structure, check size, the center air block, coil type and the three mandatory Foundry blocks first."
+	]
 	task.3201000000000002.title: "Heater online"
 	quest.2201000000000003.title: "First Melt"
-	quest.2201000000000003.quest_subtitle: "Melt a metal"
-	quest.2201000000000003.quest_desc: ["Produce your first proper melt in the crucible."]
+	quest.2201000000000003.quest_subtitle: "Temperature is part of the recipe"
+	quest.2201000000000003.quest_desc: [
+		"Make your first melt and learn to read temperature requirements."
+		""
+		"Example: one iron ingot needs about 1000 C and produces 90 mB of molten iron. A lava-heated Foundry is hot enough for this test."
+		""
+		"Insert material through the Controller or drop it into the active Foundry. If it does not melt, check JEI for a valid recipe and minimum temperature."
+	]
 	task.3201000000000003.title: "Melt produced"
-	quest.2201000000000004.title: "Casting"
-	quest.2201000000000004.quest_subtitle: "Use a mold"
-	quest.2201000000000004.quest_desc: ["Cast a component through the spout and a mold."]
+	quest.2201000000000004.title: "First Casting"
+	quest.2201000000000004.quest_subtitle: "Drain, Tap and Casting Table"
+	quest.2201000000000004.quest_desc: [
+		"Move molten metal out of the Foundry and cast a real part."
+		""
+		"1. Attach a Tap to the Foundry Drain."
+		"2. Put a Casting Table below it for items/parts; use a Casting Basin for blocks."
+		"3. Place the mold required by the JEI recipe into the cast slot."
+		"4. Open the Tap and wait for pouring and full cooling."
+		""
+		"A result cannot be removed while it is still cooling. If nothing pours, check the fluid, mold, required amount and block placement."
+	]
 	task.3201000000000004.title: "First casting complete"
-	quest.2201000000000005.title: "Alloy"
-	quest.2201000000000005.quest_subtitle: "Mix metals"
-	quest.2201000000000005.quest_desc: ["Create your first alloy in the foundry."]
+	quest.2201000000000005.title: "Molds Are the Foundry's Language"
+	quest.2201000000000005.quest_subtitle: "The same melt can become different parts"
+	quest.2201000000000005.quest_desc: [
+		"The mold determines what the same molten material becomes."
+		""
+		"One ingot is 90 mB and a 9-ingot block is 810 mB. Silent Gear and weapon parts can use different amounts, so read the actual JEI recipe."
+		""
+		"Compare at least two casting recipes for the same metal. Before opening the Tap, name the mold, required amount and expected output."
+	]
 	task.3201000000000005.title: "First alloy created"
-	quest.2201000000000006.title: "Weapon Casting"
-	quest.2201000000000006.quest_subtitle: "Cast a complete weapon"
-	quest.2201000000000006.quest_desc: ["Use a large mold to cast a weapon and finish the first metallurgy path."]
+	quest.2201000000000006.title: "First Alloy"
+	quest.2201000000000006.quest_subtitle: "Alloying is a separate production step"
+	quest.2201000000000006.quest_desc: [
+		"Key alloys in Meridian use the Productive Metalworks Foundry; shortcut Mixer and Alloy Forge routes are intentionally disabled."
+		""
+		"Example: the Foundry's Invar demonstration uses 2 parts iron to 1 part nickel. Use the actual fluid amounts shown in JEI."
+		""
+		"Compatible fluids may react inside the Foundry. A Stability Upgrade completely disables automatic alloying, which is useful when melts must stay separate."
+		""
+		"If an alloy does not form, check ratio, temperature and whether Stability is installed."
+	]
 	task.3201000000000006.title: "Weapon cast"
 
 	quest.2301000000000001.title: "Engineer's Tool"
@@ -67,12 +127,9 @@
 	quest.2301000000000005.title: "Automated Line"
 	quest.2301000000000005.quest_subtitle: "Connect the processes"
 	quest.2301000000000005.quest_desc: ["Link several machines into a genuinely automatic production line."]
-	task.3301000000000005.title: "The line runs automatically"
 	quest.2301000000000006.title: "Infrastructure"
 	quest.2301000000000006.quest_subtitle: "Production becomes a system"
 	quest.2301000000000006.quest_desc: ["Build a stable network for production and transport."]
-	task.3301000000000006.title: "Infrastructure online"
-
 	quest.2401000000000001.title: "Specialization"
 	quest.2401000000000001.quest_subtitle: "Choose a profession"
 	quest.2401000000000001.quest_desc: ["Decide how your character contributes to the settlement. A profession defines a specialty, not a backstory."]
@@ -95,21 +152,1008 @@
 	task.3401000000000005.title: "Set IV assembled"
 
 	quest.2501000000000001.title: "Nether Protection"
-	quest.2501000000000001.quest_subtitle: "Access ring"
-	quest.2501000000000001.quest_desc: ["Prepare the protection ring. Nether travel is locked without it."]
+	quest.2501000000000001.quest_subtitle: "A personal authorized Curios ring is required"
+	quest.2501000000000001.quest_desc: [
+		"Nether travel requires a personal authorized ring. Merely owning an item with the correct ID is not enough."
+		""
+		"1. A real player must perform the final craft. Automated output is a permanently inert shell."
+		"2. Check the tooltip for your operator name, IDENTIFICATION CONFIRMED and PROTECTION CIRCUIT AUTHORIZED."
+		"3. Equip the ring in a Curios slot. A ring sitting in normal inventory does not authorize the portal."
+		""
+		"The FTB item task only confirms possession. The real portal separately checks owner data and Curios equipment."
+	]
 	quest.2501000000000002.title: "The Nether"
 	quest.2501000000000002.quest_subtitle: "First crossing"
 	quest.2501000000000002.quest_desc: ["Enter the Nether after preparing for it."]
 	quest.2501000000000003.title: "Blaze"
 	quest.2501000000000003.quest_subtitle: "Blaze rods"
 	quest.2501000000000003.quest_desc: ["Obtain blaze rods for the path toward the End."]
-	quest.2501000000000004.title: "Twelve Eyes"
-	quest.2501000000000004.quest_subtitle: "Prepare the portal"
-	quest.2501000000000004.quest_desc: ["Collect 12 Eyes of Ender."]
 	quest.2501000000000005.title: "End Protection"
-	quest.2501000000000005.quest_subtitle: "Second access ring"
-	quest.2501000000000005.quest_desc: ["Prepare the protection ring for the End."]
+	quest.2501000000000005.quest_subtitle: "A separate personal ring is required"
+	quest.2501000000000005.quest_desc: [
+		"The End uses a separate personal ring; the Nether ring does not replace it."
+		""
+		"Craft it personally, verify the authorized tooltip and equip it in a Curios slot before entering."
+		""
+		"End access also requires your own Nether visit history and all twelve required route eyes."
+		""
+		"The FTB item task confirms possession only. A foreign, inert or unequipped ring will still fail the real gate."
+	]
 	quest.2501000000000006.title: "The End"
 	quest.2501000000000006.quest_subtitle: "The next horizon"
 	quest.2501000000000006.quest_desc: ["Enter the End and advance the world's technological progression."]
+	quest.2251000000000001.title: "Organized Storage"
+	quest.2251000000000001.quest_subtitle: "Separate resources before the factory grows"
+	quest.2251000000000001.quest_desc: [
+		"Build at least four storage containers and give them clear roles: ores/metals, machinery, building materials and rare components."
+		""
+		"Test the layout by carrying one item from each category and putting all four away quickly. If you must open every chest to remember where things go, the system is not organized yet."
+		""
+		"FTB tracks the four chests; the sorting experiment is the part that actually teaches the habit."
+	]
+	quest.2251000000000002.title: "Backpack"
+	quest.2251000000000002.quest_subtitle: "Learn storage slots and upgrade slots"
+	quest.2251000000000002.quest_desc: [
+		"Build a Sophisticated Backpacks backpack and learn its two main areas."
+		""
+		"The main inventory grid stores items. A basic leather backpack has 27 inventory slots by default."
+		"The upgrade slots are separate and hold behavior modules. A basic backpack has 1 upgrade slot by default; higher tiers have more."
+		""
+		"Test it with one purpose-built loadout, such as food, torches and spare blocks for mining. Do not confuse normal storage slots with upgrade slots."
+	]
+	quest.2251000000000003.title: "Storage Upgrades"
+	quest.2251000000000003.quest_subtitle: "Install, configure and test one upgrade"
+	quest.2251000000000003.quest_desc: [
+		"An upgrade changes storage behavior; it is not just an icon."
+		""
+		"Examples include Pickup, Magnet, Filter, Deposit and Refill. Install one, configure at least one rule and verify that its behavior actually changes."
+		""
+		"Disable or remove the upgrade and confirm the behavior disappears. That proves you know which module is doing the work."
+	]
+	task.3251000000000003.title: "Upgrade tested"
+	quest.2251000000000004.title: "Filtering"
+	quest.2251000000000004.quest_subtitle: "Test one accepted and one rejected item"
+	quest.2251000000000004.quest_desc: [
+		"Configure a filter using a concrete test."
+		""
+		"Example: allow cobblestone. Send cobblestone and an iron ingot through the same input. Cobblestone should enter the target storage while iron should be rejected or routed elsewhere."
+		""
+		"If everything passes, check whitelist/blacklist mode. If nothing passes, check input direction, free space and the filter entry."
+	]
+	task.3251000000000004.title: "Filter verified"
+	quest.2251000000000005.title: "Readable Warehouse"
+	quest.2251000000000005.quest_subtitle: "Storage should make sense to other players"
+	quest.2251000000000005.quest_desc: [
+		"Make the warehouse readable without a guided tour."
+		""
+		"Label sections with signs, item frames or another obvious visual system. Use broad, useful categories rather than dozens of arbitrary chest names."
+		""
+		"Test three targets: iron, food and mechanical parts. Another player should be able to find them without you telling them which container to open."
+	]
+	task.3251000000000005.title: "Warehouse organized"
+	quest.2251000000000006.title: "Input and Output"
+	quest.2251000000000006.quest_subtitle: "Prepare storage for automation"
+	quest.2251000000000006.quest_desc: [
+		"Separate where raw materials enter storage from where production consumes them."
+		""
+		"A simple example is an input chest for mining loot and a work buffer near the Foundry or factory line. This makes troubleshooting visible: a full input means sorting is falling behind; an empty work buffer means production is outrunning supply."
+		""
+		"You do not need full automation yet. Leave clear connection points for later funnels, belts, hoppers or other logistics."
+	]
+	task.3251000000000006.title: "Input and output separated"
+	quest.2251000000000007.title: "Buffer"
+	quest.2251000000000007.quest_subtitle: "Machines do not always run at the same speed"
+	quest.2251000000000007.quest_desc: [
+		"A buffer is intermediate storage between two stages that run at different speeds."
+		""
+		"Let the first stage run, stop the second stage briefly, and verify that the buffer accepts the accumulated items. Restart the second stage and watch the stored amount decrease."
+		""
+		"If the buffer only fills forever, it is hiding a permanent throughput mismatch rather than solving a short interruption."
+	]
+	task.3251000000000007.title: "Buffer online"
+	quest.2251000000000008.title: "Central Warehouse"
+	quest.2251000000000008.quest_subtitle: "A storage system that can grow"
+	quest.2251000000000008.quest_desc: [
+		"Build a central warehouse that can expand without demolishing half the room."
+		""
+		"Leave space for more containers, walkways and future input/output lines. Keep manual player access separate from the area where automation will connect."
+		""
+		"Expansion test: imagine your metal storage must double tomorrow. If you can add capacity without rebuilding the whole warehouse, the layout is doing its job."
+	]
+	task.3251000000000008.title: "Central warehouse online"
+
+	quest.2351000000000001.title: "Move It Automatically"
+	quest.2351000000000001.quest_subtitle: "A belt becomes a transport line"
+	quest.2351000000000001.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 3 механических ремня. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Поставь два вала параллельно: их оси должны смотреть в одну сторону. Для первого опыта расположи их на одинаковой высоте по прямой."
+		"Шаг 2. Держа механический ремень, выбери первый вал, затем второй. Подай вращение на один из них."
+		"Шаг 3. Брось один ненужный предмет на движущуюся поверхность и проследи, до какого конца он доедет. Сначала проверь направление, потом подключай постоянную подачу."
+		"Если ремень не создаётся, уменьши расстояние и проверь ориентацию валов. Если стоит — проверь привод и перегрузку. Не соединяй его с двумя конфликтующими источниками вращения."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000002.title: "Automatic Loading"
+	quest.2351000000000002.quest_subtitle: "Feed the line from storage"
+	quest.2351000000000002.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 2 андезитовых шлюза. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Поставь сундук рядом с рабочим ремнём, оставив место для андезитового шлюза на обращённой к ремню стороне."
+		"Шаг 2. Через Ponder посмотри варианты установки шлюза. Настрой первый на выдачу из сундука к ремню, второй у конечного сундука — на приём."
+		"Шаг 3. Положи в исходный сундук несколько предметов и проверь весь путь. Они должны попадать в конечный сундук."
+		"Если предметы стоят у выхода, проверь свободные слоты конечного сундука, направление шлюза и отсутствие блокирующего сигнала. Андезитовый шлюз не заменяет латунный фильтрующий."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000003.title: "Split the Stream"
+	quest.2351000000000003.quest_subtitle: "Two items, two destinations"
+	quest.2351000000000003.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 1 фильтр предметов. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Сделай фильтр и открой его интерфейс ПКМ. Добавь образцы двух разных предметов и выбери режим допуска либо запрета."
+		"Шаг 2. Для применения нужен блок с настоящим слотом фильтрации: например, латунный шлюз из следующего задания. Обычный андезитовый шлюз такого слота не имеет."
+		"Шаг 3. Установи подготовленный фильтр в совместимый слот и пропусти небольшую смешанную партию. Сравни, какие предметы прошли."
+		"Если проходит лишнее, проверь режим допуска/запрета и параметры сопоставления фильтра. Если не проходит ничего, сначала проверь направление самого приёмника."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000004.title: "Overflow"
+	quest.2351000000000004.quest_subtitle: "What happens when the main output is full?"
+	quest.2351000000000004.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 2 латунных шлюза. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Получи латунь по цепочке Foundry и сделай латунные шлюзы по JEI. Подготовь движущийся ремень и два сундука-приёмника."
+		"Шаг 2. Поставь у каждого приёмника латунный шлюз. В их фильтрующих слотах задай разные предметы: например, железные и медные слитки."
+		"Шаг 3. Подай маленькую смешанную партию. Убедись, что каждый приёмник принимает только свой материал."
+		"Шаг 4. Временно заполни один сундук и посмотри, где задерживается его поток. Фильтр выбирает допустимый предмет, но сам по себе не создаёт запасной маршрут."
+		"Для простого остаточного потока поставь дальше по ремню отдельный приёмник без фильтра. Не допускай возврата неразобранных предметов на вход бесконечным кругом."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000005.title: "Fluids"
+	quest.2351000000000005.quest_subtitle: "Pipes are logistics too"
+	quest.2351000000000005.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 8 жидкостных труб. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Наметь короткий путь между источником воды и ёмкостью. Соедини их жидкостными трубами, оставив участок под механическую помпу."
+		"Шаг 2. Труба сама не создаёт поток и не служит баком. В следующем задании добавишь помпу и вращение."
+		"Шаг 3. Проверь, что конец у источника действительно может забрать воду, а конец у приёмника касается совместимого входа ёмкости."
+		"Если потом поток не появится, проверь не только целостность трубы, но и источник, свободный объём приёмника и направление помпы. Разные жидкости проверяй на отдельных линиях."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000006.title: "Separate Pipe Networks"
+	quest.2351000000000006.quest_subtitle: "Make different fluid routes obvious"
+	quest.2351000000000006.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 1 механическую помпу. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Встрой механическую помпу в подготовленный водяной трубопровод и подай вращение на её вал."
+		"Шаг 2. Стрелка должна смотреть от источника к приёмнику. Направление потока меняется гаечным ключом; изменение направления вращения само по себе не разворачивает перекачку."
+		"Шаг 3. Для проверки используй короткую линию и воду. Наблюдай, как растёт уровень в принимающем баке."
+		"Если перекачка остановилась, проверь наличие воды, заполнение бака и привод. Одна помпа действует на ограниченную длину труб; длинную сеть разделяй дополнительными помпами."
+		"Цветные трубы — отдельное расширение. Две независимые линии сначала научись разделять физически: обычная помпа не окрашивает и не фильтрует жидкость."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000007.title: "Production Line"
+	quest.2351000000000007.quest_subtitle: "Raw material in, product out"
+	quest.2351000000000007.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 6 механических ремней, 2 андезитовых шлюза и 1 фильтр предметов. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Выбери один доступный рецепт механического пресса в JEI. Подготовь только небольшую партию его исходного материала."
+		"Шаг 2. Соедини входной сундук, ремень под прессом и выходной сундук. Подведи вращение к ремню и прессу."
+		"Шаг 3. Пропусти один предмет. Он должен пройти нужную обработку и попасть в выходной сундук. После этого подай небольшую партию."
+		"Шаг 4. Если нужны фильтры, используй латунные шлюзы или другие совместимые блоки. Андезитовые шлюзы из комплекта годятся для простого ввода/вывода, но не принимают фильтр."
+		"Если сырьё уезжает необработанным, проверь рецепт, положение пресса над ремнём и его вращение. Если предмет остановился, проверь выход и свободное место."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2351000000000008.title: "Find the Bottleneck"
+	quest.2351000000000008.quest_subtitle: "Good automation is understandable"
+	quest.2351000000000008.quest_desc: [
+		"Для зачёта получи в обычный инвентарь 1 умный жёлоб. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Зачёт проверяет предметы. Сборка и работа описанного механизма автоматически не проверяются; опыт ниже помогает научиться пользоваться полученным оборудованием."
+		""
+		"Шаг 1. Найди умный жёлоб в JEI и открой Ponder. Он нужен для контролируемой вертикальной передачи предметов и поддерживает фильтрацию."
+		"Шаг 2. Для первого опыта поставь его между верхним и нижним хранилищем. Настрой фильтр на один из двух тестовых предметов."
+		"Шаг 3. Положи оба предмета сверху. Проверь, что вниз проходит выбранный материал, а второй остаётся в источнике."
+		"Шаг 4. Заполни нижний инвентарь и проверь остановку передачи. Освободи место: поток должен возобновиться."
+		"При поиске затора проверяй путь от конца к началу: заполненный приёмник, фильтр, сигнал блокировки, затем источник. Изменяй по одному условию за раз."
+		""
+		"Наглядно: открой Ponder нужного блока по подсказке в JEI и рассмотри стороны подключения."
+	]
+	quest.2375000000000001.title: "Boiler Body"
+	quest.2375000000000001.quest_subtitle: "Fluid Tanks form the boiler"
+	quest.2375000000000001.quest_desc: ["Prepare several Fluid Tanks. A Create steam boiler is assembled from tanks rather than crafted as one block."]
+	quest.2375000000000002.title: "Fluid Pipes"
+	quest.2375000000000002.quest_subtitle: "Give water a path"
+	quest.2375000000000002.quest_desc: ["Prepare Fluid Pipes for a continuous water supply."]
+	quest.2375000000000003.title: "Mechanical Pump"
+	quest.2375000000000003.quest_subtitle: "Move water in the correct direction"
+	quest.2375000000000003.quest_desc: ["A Mechanical Pump requires rotation and determines the direction of fluid flow."]
+	quest.2375000000000004.title: "Heat Source"
+	quest.2375000000000004.quest_subtitle: "Steam requires a captured Blaze"
+	quest.2375000000000004.quest_desc: ["Prepare for a Blaze Burner. Capture a live Blaze with an empty burner; the Blaze Rod task only tracks that you have reached the relevant Nether stage."]
+	quest.2375000000000005.title: "Steam Engine"
+	quest.2375000000000005.quest_subtitle: "Turn boiler output into rotation"
+	quest.2375000000000005.quest_desc: ["Attach a Steam Engine to a working boiler and connect its output to a shaft."]
+	quest.2375000000000006.title: "Stressometer"
+	quest.2375000000000006.quest_subtitle: "Measure the mechanical network"
+	quest.2375000000000006.quest_desc: ["Use a Stressometer to watch SU usage and available capacity."]
+	quest.2375000000000007.title: "Engineer's Goggles"
+	quest.2375000000000007.quest_subtitle: "Read technical information directly"
+	quest.2375000000000007.quest_desc: [
+		"Engineer's Goggles turn 'the network feels overloaded' into readable information."
+		""
+		"Create rotation speed and load are different values: RPM is speed, while stress capacity and stress impact describe how much load the network can supply and consume."
+		""
+		"Wear the goggles, read a Stressometer, connect one more machine and compare the remaining capacity. Use those numbers before deciding that a steam plant needs another engine."
+	]
+	quest.2375000000000008.title: "Steam Plant"
+	quest.2375000000000008.quest_subtitle: "Prepare a practical first boiler"
+	quest.2375000000000008.quest_desc: ["The task tracks only reliable inventory milestones: 9 Fluid Tanks, 2 Steam Engines and a Mechanical Pump. Assemble them with water supply and heat into a working steam system."]
+
+	quest.2425000000000001.title: "Magnetic Field"
+	quest.2425000000000001.quest_subtitle: "Electricity starts with the generator"
+	quest.2425000000000001.quest_desc: ["Prepare Magnetite Blocks. Magnets around a Generator Coil determine conversion efficiency."]
+	quest.2425000000000002.title: "Generator Coil"
+	quest.2425000000000002.quest_subtitle: "Convert rotation into electricity"
+	quest.2425000000000002.quest_desc: ["Rotate a Generator Coil and surround it with magnets."]
+	quest.2425000000000003.title: "Carbon Brushes"
+	quest.2425000000000003.quest_subtitle: "Collect generated electricity"
+	quest.2425000000000003.quest_desc: [
+		"Carbon Brushes collect electrical power from a working Generator Coil. A spinning coil without correctly placed brushes is not yet a usable network source."
+		""
+		"First provide Create rotation to the coil, then verify the magnets around it, then place the brushes so they can collect the generated energy."
+		""
+		"If the coil does not rotate, diagnose the mechanical drive. If it rotates but produces no usable power, check magnets and brush contact before blaming the connectors or motor."
+	]
+	quest.2425000000000004.title: "Electrical Connector"
+	quest.2425000000000004.quest_subtitle: "Connect source and consumer with a wire"
+	quest.2425000000000004.quest_desc: [
+		"An Electrical Connector is a network endpoint. A single connector does not create a network; endpoints must be linked with wire."
+		""
+		"1. Put one connector next to the source and another next to the consumer."
+		"2. Link them with wire. The default maximum length of one connection is 16 blocks."
+		"3. If the source is an energy storage, set its connector to PULL with the wrench. INERT does not actively extract energy."
+		"4. Consumers do not need a separate Push mode."
+		""
+		"For troubleshooting, verify the wire first, then PULL at the source, then the consumer itself."
+	]
+	quest.2425000000000005.title: "Electric Motor"
+	quest.2425000000000005.quest_subtitle: "Turn electricity back into rotation"
+	quest.2425000000000005.quest_desc: ["Supply a Basic Motor with electricity and connect its rotational output to a shaft."]
+	quest.2425000000000006.title: "Motor Extension"
+	quest.2425000000000006.quest_subtitle: "More mechanical capacity costs more electricity"
+	quest.2425000000000006.quest_desc: ["A motor extension increases available stress capacity and raises electrical consumption."]
+	quest.2425000000000007.title: "Energiser"
+	quest.2425000000000007.quest_subtitle: "Electricity and rotation in one process"
+	quest.2425000000000007.quest_desc: ["The Energiser requires both electrical energy and rotation to process items on a depot or belt."]
+	quest.2425000000000008.title: "Close the Energy Loop"
+	quest.2425000000000008.quest_subtitle: "Rotation -> electricity -> rotation"
+	quest.2425000000000008.quest_desc: [
+		"Build and test the full learning chain:"
+		""
+		"SU source -> generator coil + magnets -> carbon brushes -> connector -> wire -> connector -> electric motor -> shaft"
+		""
+		"Test it in stages: first coil rotation, then magnets and brushes, then the wire link and source-side PULL, and only then the motor and mechanical load."
+		""
+		"The quest can detect the components you own, not the correctness of the structure. A good proof is simple: breaking the wire should stop the powered motor."
+	]
+
+
+	quest.2481000000000001.title: "Physics Assembler"
+	quest.2481000000000001.quest_subtitle: "Learn physical contraptions before building an aircraft"
+	quest.2481000000000001.quest_desc: [
+		"The Physics Assembler turns a glued block structure into a real Simulated physical contraption."
+		""
+		"Build a small test platform, connect it with Super Glue or Honey Glue, and assemble it through the Ponder procedure. Diagonal-edge connections can become part of the same physical structure, so inspect the glued boundary first."
+		""
+		"After assembly the blocks remain interactive. For disassembly, stop the body and bring it close to terrain; excessive speed, tilt or poor grid alignment can prevent safe placement back into blocks."
+		""
+		"Practice the full cycle once: assemble, move slightly, stop, and disassemble."
+	]
+
+	quest.2481000000000002.title: "Swivel Bearing"
+	quest.2481000000000002.quest_subtitle: "A rotating joint that can pass rotational power through itself"
+	quest.2481000000000002.quest_desc: [
+		"The Swivel Bearing assembles a glued structure in front of it and allows that physical section to rotate."
+		""
+		"Rotational power can pass through the center shaft while the bearing itself turns. Redstone can unlock the joint for free rotation, with the lock behavior configurable through the value panel."
+		""
+		"Test it with a shaft entering one side and a mechanism on the other. Rotate the joint and verify the downstream mechanism keeps receiving rotation."
+	]
+
+	quest.2481000000000003.title: "Rope System"
+	quest.2481000000000003.quest_subtitle: "Winch, connectors and a physical link between bodies"
+	quest.2481000000000003.quest_desc: [
+		"Make Rope Couplings, a Rope Winch and two Rope Connectors."
+		""
+		"A Winch can connect to a Connector, and two Connectors can link to each other. Two Winches cannot be linked directly."
+		""
+		"Rotating the Winch reels the rope in or out. Shears remove rope links, and a wrench can be used while sliding along a rope."
+		""
+		"Build a short lifting test: suspend a small load, raise it, then lower it again."
+	]
+
+	quest.2481000000000004.title: "Docking Connectors"
+	quest.2481000000000004.quest_subtitle: "Join two contraptions without turning them into one body"
+	quest.2481000000000004.quest_desc: [
+		"Build two Docking Connectors and place them facing each other on separate physical contraptions."
+		""
+		"Extended connectors try to align automatically. When alignment is sufficient they create a rigid joint, while both sides remain separate physical bodies."
+		""
+		"Items and fluids can pass through a dock, but insertion and extraction still need to be arranged on both sides. Retracting either connector undocks the pair; a comparator can report docking progress."
+	]
+
+	quest.2481000000000005.title: "Portable Engine"
+	quest.2481000000000005.quest_subtitle: "Local rotational power on a moving physical contraption"
+	quest.2481000000000005.quest_desc: [
+		"Build a Portable Engine of any color. Because the engine has many color variants, this lesson uses a manual checkmark after the real test rather than forcing one item ID."
+		""
+		"The engine burns fuel to create rotational force and can be configured for either direction. Fuel can be automated."
+		""
+		"Install one on a small physical contraption, fuel it, connect a shaft, and verify the shaft rotates without a stationary external network."
+		""
+		"A Blaze Cake can superheat the engine for more output; test normal operation first."
+	]
+	task.3481000000000005.title: "Portable Engine tested"
+
+	quest.2481000000000006.title: "Altitude, Velocity and Tilt"
+	quest.2481000000000006.quest_subtitle: "Three sensors instead of flying by guesswork"
+	quest.2481000000000006.quest_desc: [
+		"Build an Altitude Sensor, Velocity Sensor and Gimbal Sensor."
+		""
+		"The Altitude Sensor converts height into redstone and, with Engineer's Goggles, also exposes exact altitude and air pressure. The Velocity Sensor measures only the velocity component along its facing axis. The Gimbal Sensor reacts to orientation, with its axes handled independently."
+		""
+		"Mount all three on a small test body. Raise it, move along the velocity sensor axis, and tilt it slightly so each sensor can be observed reacting to its own quantity."
+	]
+
+	quest.2481000000000007.title: "Vision and Navigation"
+	quest.2481000000000007.quest_subtitle: "Detect obstacles and point toward a target"
+	quest.2481000000000007.quest_desc: [
+		"An Optical Sensor detects blocks interrupting its laser path and outputs a distance-based redstone signal. A filter can limit which blocks count."
+		""
+		"A Navigation Table accepts a navigation target item and outputs redstone toward that target while accounting for the real rotation of a moving physical contraption."
+		""
+		"Test the sensor with a removable obstacle, then place a valid target in the Navigation Table and slowly rotate the platform to watch the directional output change."
+	]
+
+	quest.2481000000000008.title: "Propeller Bearing"
+	quest.2481000000000008.quest_subtitle: "Thrust comes from a valid propeller, not RPM alone"
+	quest.2481000000000008.quest_desc: [
+		"The Propeller Bearing assembles the structure in front of it into a propeller and creates thrust."
+		""
+		"A valid propeller needs at least two sail-like blocks. More useful sail area increases thrust nonlinearly and also increases mechanical load."
+		""
+		"Reversing rotation reverses thrust. Engineer's Goggles show thrust and airflow."
+		""
+		"Build a small propeller, record its readings, enlarge it and compare both thrust and Create stress load."
+	]
+
+	quest.2481000000000009.title: "Small Propellers"
+	quest.2481000000000009.quest_subtitle: "Compact thrust without a large sail rotor"
+	quest.2481000000000009.quest_desc: [
+		"Build a Wooden Propeller and an Andesite Propeller."
+		""
+		"Small propellers are useful when a full Propeller Bearing rotor does not fit. Test one on a small platform at a fixed rotational speed, then reverse the rotation and verify the thrust direction changes."
+		""
+		"Multiple propellers do not automatically make a stable craft: asymmetric thrust around the center of mass can rotate the whole body."
+	]
+
+	quest.2481000000000010.title: "Gyroscopic Propeller Bearing"
+	quest.2481000000000010.quest_subtitle: "Thrust attempts to stay aligned to local gravity"
+	quest.2481000000000010.quest_desc: [
+		"The Gyroscopic Propeller Bearing automatically adjusts a limited thrust angle to stabilize orientation relative to local gravity."
+		""
+		"Its tilt range and response speed are limited, and very low RPM reduces its ability to correct. A redstone signal returns it toward its original block normal."
+		""
+		"Compare a normal and gyroscopic bearing on similar small platforms and observe how their thrust directions react to a small change in body orientation."
+	]
+
+	quest.2481000000000011.title: "Balloon Envelope"
+	quest.2481000000000011.quest_subtitle: "Lift needs an enclosed volume, not just a burner"
+	quest.2481000000000011.quest_desc: [
+		"Build at least eight Envelope blocks and a Balloon Burner."
+		""
+		"Envelope blocks must enclose a volume. Hot air fills that volume from the source, while leaks destroy the useful gas volume. Blocks inside the envelope reduce available volume."
+		""
+		"Build a small sealed test balloon, activate the burner and observe lift. Then deliberately open one envelope block and compare the behavior."
+	]
+
+	quest.2481000000000012.title: "Steam Vent"
+	quest.2481000000000012.quest_subtitle: "A steam boiler can become a source of lift"
+	quest.2481000000000012.quest_desc: [
+		"The Steam Vent fills a balloon with steam using familiar boiler infrastructure."
+		""
+		"It needs adequate heat, water and boiler output. Redstone strength controls the target fill percentage, and multiple vents can contribute to one envelope."
+		""
+		"Connect one vent to a working steam setup and sealed envelope. Start with a low signal and increase it in steps while observing filling and lift."
+	]
+
+	quest.2481000000000016.title: "Smart Propeller"
+	quest.2481000000000016.quest_subtitle: "Compact thrust with self-leveling behavior"
+	quest.2481000000000016.quest_desc: [
+		"The Smart Propeller creates thrust while also trying to correct its own tilt on one axis."
+		""
+		"A wrench can change its thrust direction. Test it on a small tilting platform with stable rotational input and watch the propeller itself react to body angle."
+		""
+		"It is an actuator, not an autopilot: controlled flight still needs sensors and logic."
+	]
+
+	quest.2481000000000017.title: "Steering and Control"
+	quest.2481000000000017.quest_subtitle: "Connect player input, sensors and actuators"
+	quest.2481000000000017.quest_desc: [
+		"Build a Steering Wheel and create a simple control chain for a physical craft."
+		""
+		"Start with one player command, one sensor and one actuator rather than a complicated aircraft."
+		""
+		"For example, a steering command changes thrust behavior while a Gimbal Sensor shows the resulting tilt and an Altitude Sensor reports whether the craft is climbing or descending."
+		""
+		"When every input produces a predictable reaction you can explain from sensor readings, the craft is ready for a test flight."
+	]
+
+	quest.2481000000000013.title: "Controlled Test Flight"
+	quest.2481000000000013.quest_subtitle: "Low, slow and with a known way to stop"
+	quest.2481000000000013.quest_desc: [
+		"Build a small controllable physical craft using the systems learned in this chapter."
+		""
+		"Before launch, check glue connectivity, center of mass, thrust direction, mechanical capacity, fuel and sensor readings. Keep a reliable way to remove thrust completely."
+		""
+		"Perform the first flight close to the ground with no cargo: lift slightly, stabilize, make a short horizontal movement, turn or redirect, return and land."
+		""
+		"Only attempt disassembly after the body is fully stopped. Mark the task complete after the craft flies and lands without emergency destruction."
+	]
+	task.3481000000000013.title: "Controlled test flight completed"
+
+	quest.2481000000000014.title: "Wheel Mount"
+	quest.2481000000000014.quest_subtitle: "Offroad converts Create rotation into ground movement"
+	quest.2481000000000014.quest_desc: [
+		"Build two Wheel Mounts and two standard Tires."
+		""
+		"A tire is installed on the front of the mount. Without a Tire-like item the mount does not act as a physical wheel."
+		""
+		"Create rotation becomes forward drive. Redstone from above acts as braking, while side signals steer."
+		""
+		"Build a simple two-wheel cart and separately test low-speed drive, top-signal braking and side-signal steering."
+	]
+
+	quest.2481000000000015.title: "Borehead Bearing"
+	quest.2481000000000015.quest_subtitle: "A physical mining machine also needs storage"
+	quest.2481000000000015.quest_desc: [
+		"Build a Borehead Bearing and at least two Rock Cutting Wheels."
+		""
+		"Rock Cutting Wheels mine an area around themselves rather than only one block directly ahead. Mined items enter attached storage."
+		""
+		"A full storage system intentionally stalls the borehead. Free space or extract items through the bearing to resume operation."
+		""
+		"Mining slows as one bearing must break more blocks at once; multiple bearings can divide the load. Run a short safe test and verify items actually reach storage."
+	]
+
+	quest.2511000000000001.title: "Sands of the Past"
+	quest.2511000000000001.quest_subtitle: "Hint: Desert Pyramid"
+	quest.2511000000000001.quest_desc: ["Search Desert Pyramid chests for this eye."]
+	quest.2511000000000002.title: "Redstone Under Vines"
+	quest.2511000000000002.quest_subtitle: "Hint: Jungle Temple"
+	quest.2511000000000002.quest_desc: ["Search Jungle Temple chests for this eye."]
+	quest.2511000000000003.title: "Under the Snow"
+	quest.2511000000000003.quest_subtitle: "Hint: Igloo"
+	quest.2511000000000003.quest_desc: ["Search Igloo chests for this eye."]
+	quest.2511000000000004.title: "Foreign Watch"
+	quest.2511000000000004.quest_subtitle: "Hint: Pillager Outpost"
+	quest.2511000000000004.quest_desc: ["Search Pillager Outpost chests for this eye."]
+	quest.2511000000000005.title: "What the Sea Did Not Take"
+	quest.2511000000000005.quest_subtitle: "Hint: Buried Treasure"
+	quest.2511000000000005.quest_desc: ["Search Buried Treasure chests for this eye."]
+	quest.2511000000000006.title: "Forgotten Tunnels"
+	quest.2511000000000006.quest_subtitle: "Hint: Abandoned Mineshaft"
+	quest.2511000000000006.quest_desc: ["Search minecart chests in Abandoned Mineshafts."]
+	quest.2511000000000007.title: "Evoker's Gaze"
+	quest.2511000000000007.quest_subtitle: "Hint: Evoker"
+	quest.2511000000000007.quest_desc: ["Defeat an Evoker to obtain this eye."]
+	quest.2511000000000008.title: "From the Ocean Floor"
+	quest.2511000000000008.quest_subtitle: "Hint: Elder Guardian"
+	quest.2511000000000008.quest_desc: ["Defeat an Elder Guardian to obtain this eye."]
+	quest.2511000000000009.title: "Behind Fortress Walls"
+	quest.2511000000000009.quest_subtitle: "Hint: Nether Fortress"
+	quest.2511000000000009.quest_desc: ["Search Nether Fortress chests for this eye."]
+	quest.2511000000000010.title: "Bastion Treasure"
+	quest.2511000000000010.quest_subtitle: "Hint: Treasure Bastion"
+	quest.2511000000000010.quest_desc: ["Search Bastion Treasure chests for this eye."]
+	quest.2511000000000011.title: "Made Calamity"
+	quest.2511000000000011.quest_subtitle: "Hint: Wither"
+	quest.2511000000000011.quest_desc: ["Summon and defeat the Wither to obtain this eye."]
+	quest.2511000000000012.title: "Ominous Trial"
+	quest.2511000000000012.quest_subtitle: "Hint: Ominous Trial Chamber reward"
+	quest.2511000000000012.quest_desc: ["Search the rare ominous reward loot in Trial Chambers. This is Meridian's custom source for the Trial Eye."]
+
+	quest.2450000000000001.title: "Forge Bench"
+	quest.2450000000000001.quest_subtitle: "Modify equipment instead of constantly replacing it"
+	quest.2450000000000001.quest_desc: ["Craft the Meridian Forge Bench and inspect the available modifier slots on supported equipment."]
+	quest.2450000000000002.title: "Base Abrasive"
+	quest.2450000000000002.quest_subtitle: "The first forging consumable"
+	quest.2450000000000002.quest_desc: ["Craft Base Abrasive from flint and sand for early modifier levels."]
+	quest.2450000000000003.title: "First Modifier"
+	quest.2450000000000003.quest_subtitle: "Install one compatible modifier"
+	quest.2450000000000003.quest_desc: ["Install a compatible modifier on a supported item. This is manually confirmed because modifier state is stored inside the item data."]
+	task.3450000000000003.title: "Modifier installed"
+	quest.2450000000000004.title: "Industrial Abrasive"
+	quest.2450000000000004.quest_subtitle: "More serious processing"
+	quest.2450000000000004.quest_desc: ["Craft Industrial Abrasive from amethyst and flint."]
+	quest.2450000000000005.title: "Heat-Resistant Binder"
+	quest.2450000000000005.quest_subtitle: "Nether materials unlock higher tiers"
+	quest.2450000000000005.quest_desc: ["Craft Heat-Resistant Binder from magma cream and blaze powder."]
+	quest.2450000000000006.title: "Finishing Abrasive"
+	quest.2450000000000006.quest_subtitle: "Late-game finishing material"
+	quest.2450000000000006.quest_desc: ["Craft Finishing Abrasive from popped chorus fruit and amethyst."]
+	quest.2450000000000007.title: "Build a Specialization"
+	quest.2450000000000007.quest_subtitle: "Use slots deliberately"
+	quest.2450000000000007.quest_desc: ["Build one item with several deliberate, compatible modifiers rather than filling slots randomly."]
+	task.3450000000000007.title: "Specialized item ready"
+
+	quest.24010100000000.title: "Шахтёр • I"
+	quest.24010100000000.quest_subtitle: "Build a complete profession set"
+	quest.24010100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24010200000000.title: "Шахтёр • II"
+	quest.24010200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24010200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24010300000000.title: "Шахтёр • III"
+	quest.24010300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24010300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24010400000000.title: "Шахтёр • IV"
+	quest.24010400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24010400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24020100000000.title: "Инженер • I"
+	quest.24020100000000.quest_subtitle: "Build a complete profession set"
+	quest.24020100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24020200000000.title: "Инженер • II"
+	quest.24020200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24020200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24020300000000.title: "Инженер • III"
+	quest.24020300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24020300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24020400000000.title: "Инженер • IV"
+	quest.24020400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24020400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24030100000000.title: "Разведчик • I"
+	quest.24030100000000.quest_subtitle: "Build a complete profession set"
+	quest.24030100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24030200000000.title: "Разведчик • II"
+	quest.24030200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24030200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24030300000000.title: "Разведчик • III"
+	quest.24030300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24030300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24030400000000.title: "Разведчик • IV"
+	quest.24030400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24030400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24040100000000.title: "Строитель • I"
+	quest.24040100000000.quest_subtitle: "Build a complete profession set"
+	quest.24040100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24040200000000.title: "Строитель • II"
+	quest.24040200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24040200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24040300000000.title: "Строитель • III"
+	quest.24040300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24040300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24040400000000.title: "Строитель • IV"
+	quest.24040400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24040400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24050100000000.title: "Медик • I"
+	quest.24050100000000.quest_subtitle: "Build a complete profession set"
+	quest.24050100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24050200000000.title: "Медик • II"
+	quest.24050200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24050200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24050300000000.title: "Медик • III"
+	quest.24050300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24050300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24050400000000.title: "Медик • IV"
+	quest.24050400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24050400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24060100000000.title: "Фермер • I"
+	quest.24060100000000.quest_subtitle: "Build a complete profession set"
+	quest.24060100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24060200000000.title: "Фермер • II"
+	quest.24060200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24060200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24060300000000.title: "Фермер • III"
+	quest.24060300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24060300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24060400000000.title: "Фермер • IV"
+	quest.24060400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24060400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24070100000000.title: "Кузнец • I"
+	quest.24070100000000.quest_subtitle: "Build a complete profession set"
+	quest.24070100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24070200000000.title: "Кузнец • II"
+	quest.24070200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24070200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24070300000000.title: "Кузнец • III"
+	quest.24070300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24070300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24070400000000.title: "Кузнец • IV"
+	quest.24070400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24070400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24080100000000.title: "Рыбак • I"
+	quest.24080100000000.quest_subtitle: "Build a complete profession set"
+	quest.24080100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24080200000000.title: "Рыбак • II"
+	quest.24080200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24080200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24080300000000.title: "Рыбак • III"
+	quest.24080300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24080300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24080400000000.title: "Рыбак • IV"
+	quest.24080400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24080400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24090100000000.title: "Лесоруб • I"
+	quest.24090100000000.quest_subtitle: "Build a complete profession set"
+	quest.24090100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24090200000000.title: "Лесоруб • II"
+	quest.24090200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24090200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24090300000000.title: "Лесоруб • III"
+	quest.24090300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24090300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24090400000000.title: "Лесоруб • IV"
+	quest.24090400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24090400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24100100000000.title: "Водолаз • I"
+	quest.24100100000000.quest_subtitle: "Build a complete profession set"
+	quest.24100100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24100200000000.title: "Водолаз • II"
+	quest.24100200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24100200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24100300000000.title: "Водолаз • III"
+	quest.24100300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24100300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24100400000000.title: "Водолаз • IV"
+	quest.24100400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24100400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24110100000000.title: "Боец • I"
+	quest.24110100000000.quest_subtitle: "Build a complete profession set"
+	quest.24110100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24110200000000.title: "Боец • II"
+	quest.24110200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24110200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24110300000000.title: "Боец • III"
+	quest.24110300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24110300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24110400000000.title: "Боец • IV"
+	quest.24110400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24110400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24120100000000.title: "Лучник • I"
+	quest.24120100000000.quest_subtitle: "Build a complete profession set"
+	quest.24120100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24120200000000.title: "Лучник • II"
+	quest.24120200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24120200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24120300000000.title: "Лучник • III"
+	quest.24120300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24120300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24120400000000.title: "Лучник • IV"
+	quest.24120400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24120400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24130100000000.title: "Стрелок • I"
+	quest.24130100000000.quest_subtitle: "Build a complete profession set"
+	quest.24130100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24130200000000.title: "Стрелок • II"
+	quest.24130200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24130200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24130300000000.title: "Стрелок • III"
+	quest.24130300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24130300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24130400000000.title: "Стрелок • IV"
+	quest.24130400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24130400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24140100000000.title: "Артиллерист • I"
+	quest.24140100000000.quest_subtitle: "Build a complete profession set"
+	quest.24140100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24140200000000.title: "Артиллерист • II"
+	quest.24140200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24140200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24140300000000.title: "Артиллерист • III"
+	quest.24140300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24140300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24140400000000.title: "Артиллерист • IV"
+	quest.24140400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24140400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24150100000000.title: "Охотник • I"
+	quest.24150100000000.quest_subtitle: "Build a complete profession set"
+	quest.24150100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24150200000000.title: "Охотник • II"
+	quest.24150200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24150200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24150300000000.title: "Охотник • III"
+	quest.24150300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24150300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24150400000000.title: "Охотник • IV"
+	quest.24150400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24150400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24160100000000.title: "Исследователь • I"
+	quest.24160100000000.quest_subtitle: "Build a complete profession set"
+	quest.24160100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24160200000000.title: "Исследователь • II"
+	quest.24160200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24160200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24160300000000.title: "Исследователь • III"
+	quest.24160300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24160300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24160400000000.title: "Исследователь • IV"
+	quest.24160400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24160400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24170100000000.title: "Пилот • I"
+	quest.24170100000000.quest_subtitle: "Build a complete profession set"
+	quest.24170100000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24170200000000.title: "Пилот • II"
+	quest.24170200000000.quest_subtitle: "Upgrade the complete set"
+	quest.24170200000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24170300000000.title: "Пилот • III"
+	quest.24170300000000.quest_subtitle: "Upgrade the complete set"
+	quest.24170300000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+	quest.24170400000000.title: "Пилот • IV"
+	quest.24170400000000.quest_subtitle: "Upgrade the complete set"
+	quest.24170400000000.quest_desc: ["Profession bonuses require all four matching pieces. Mixed tiers work, but the lowest equipped tier determines the effective set tier. Normal tier upgrades preserve the armor material."]
+
+	quest.21F1000000000001.title: "Uneven Mark"
+	quest.21F1000000000001.quest_subtitle: "It does not look like an accidental scratch"
+	quest.21F1000000000001.quest_desc: ["Inspect the unusual mark and continue working. There is not enough information to draw conclusions yet."]
+
+	quest.2201000000000007.title: "Diagnostics: Why Won't It Pour?"
+	quest.2201000000000007.quest_subtitle: "Find the cause instead of moving blocks at random"
+	quest.2201000000000007.quest_desc: [
+		"Diagnose Foundry problems in a fixed order."
+		""
+		"1. Structure: 3x3x2, center air, Controller + Tank + Drain."
+		"2. Heat: correct coils, fuel/power present, temperature high enough."
+		"3. Fluid: correct melt and enough volume."
+		"4. Alloying: no unwanted reaction and Stability is not blocking a wanted one."
+		"5. Casting: correct mold, Table/Basin, cooling completed."
+		"6. Output: Drain and Tap are placed correctly and the receiver is not occupied."
+	]
+	quest.2201000000000008.title: "Silent Gear and Material"
+	quest.2201000000000008.quest_subtitle: "The material itself changes equipment stats"
+	quest.2201000000000008.quest_desc: [
+		"Silent Gear stores material properties in the part itself."
+		""
+		"Cast the same kind of part from two different materials. Compare durability, speed/damage and material traits before assembling the final item."
+		""
+		"This remains a manual confirmation because FTB can see an item but cannot prove that you actually compared its stats."
+	]
+	quest.2201000000000009.title: "From Part to Tool"
+	quest.2201000000000009.quest_subtitle: "Use a cast component in real equipment"
+	quest.2201000000000009.quest_desc: [
+		"Complete the whole production chain: raw material -> Foundry melt -> mold -> cast part -> finished tool or weapon."
+		""
+		"Open the part recipe in JEI first, prepare the required molten amount and mold, wait for cooling, then use the cast part in the assembly recipe."
+		""
+		"A metal tool obtained through an old vanilla shortcut does not count as learning the intended Meridian route."
+	]
+	quest.2201000000000010.title: "The Foundry as a System"
+	quest.2201000000000010.quest_subtitle: "Repeat the complete process without guessing"
+	quest.2201000000000010.quest_desc: [
+		"Repeat the complete casting cycle with a different metal, mold or final item."
+		""
+		"Before starting, state four things: required temperature, fluid amount, mold and expected output."
+		""
+		"If the process stops, use the diagnostic order from the previous lesson instead of moving blocks at random."
+	]
+
+	quest.2301000000000007.title: "Mechanical Belt"
+	quest.2301000000000007.quest_subtitle: "Move items and rotation"
+	quest.2301000000000007.quest_desc: ["Connect two shafts with a belt and move an item along it."]
+	quest.2301000000000008.title: "Mechanical Mixer"
+	quest.2301000000000008.quest_subtitle: "Mixing in a Basin"
+	quest.2301000000000008.quest_desc: ["Place a Basin under a Mechanical Mixer, supply rotation and complete a real mixing recipe."]
+	quest.2301000000000009.title: "Automatic Line"
+	quest.2301000000000009.quest_subtitle: "Raw materials should move without manual transfers"
+	quest.2301000000000009.quest_desc: ["Build a small line with input, transport, processing and automatic output."]
+	quest.2301000000000010.title: "Infrastructure"
+	quest.2301000000000010.quest_subtitle: "Machines should work as one understandable system"
+	quest.2301000000000010.quest_desc: ["Check power reserve, access for maintenance, clear inputs and outputs, and room for expansion."]
+	quest.23F1000000000001.title: "Extra Impulse"
+	quest.23F1000000000001.quest_subtitle: "The Stressometer briefly showed something unexpected"
+	quest.23F1000000000001.quest_desc: ["Check the mechanical network and remember the observation."]
+
+	quest.2475000000000001.title: "Casting Tooling"
+	quest.2475000000000001.quest_subtitle: "A cannon starts with the correct mould"
+	quest.2475000000000001.quest_desc: ["Make a Small Cast Mould and reuse the casting knowledge from metallurgy."]
+	quest.2475000000000002.title: "Autocannon Barrel Mould"
+	quest.2475000000000002.quest_subtitle: "Prepare the barrel tooling"
+	quest.2475000000000002.quest_desc: [
+		"Prepare the Autocannon Barrel Cast Mould. In stock CBC, cast mould tooling is cut from a log with a Mechanical Saw."
+		""
+		"Check the JEI recipe, make the mould, and keep it as reusable workshop tooling. The mould is not a barrel itself; casting and later machining/processing can be separate stages."
+		""
+		"Remember that a working autocannon must form one continuous compatible assembly."
+	]
+	quest.2475000000000003.title: "Autocannon Breech Mould"
+	quest.2475000000000003.quest_subtitle: "Prepare the loading end"
+	quest.2475000000000003.quest_desc: [
+		"Make the Autocannon Breech Cast Mould; stock CBC makes these moulds by cutting a log with a Mechanical Saw."
+		""
+		"The breech is not just another barrel segment. An assembled autocannon needs exactly one correctly oriented breech to handle ammunition."
+		""
+		"Before casting, compare the barrel and breech in JEI/Ponder so you can recognize their different roles during assembly."
+	]
+	quest.2475000000000004.title: "Recoil Spring Mould"
+	quest.2475000000000004.quest_subtitle: "Autocannon operation needs a recoil system"
+	quest.2475000000000004.quest_desc: [
+		"Prepare the Autocannon Recoil Spring Cast Mould. The stock mould is also cut from a log with a Mechanical Saw."
+		""
+		"The Recoil Spring is a functional recoil component, not a decorative barrel section. Keep its mould and the smaller spring-wire stock organized separately so one missing part does not stop the workshop."
+	]
+	quest.2475000000000005.title: "Autocannon Cartridge Sheet"
+	quest.2475000000000005.quest_subtitle: "Ammunition is a production chain too"
+	quest.2475000000000005.quest_desc: [
+		"Autocannon Cartridge Sheets are cut from metal plates."
+		""
+		"In stock CBC an iron or copper plate yields 3 sheets, brass yields 6, and gold yields 3 guaranteed sheets with a chance for extra output. If Meridian later overrides the recipe, JEI is the final authority."
+		""
+		"The sheet is still only an ammunition blank. Stabilize production of empty components before automating loaded ammunition."
+	]
+	quest.2475000000000006.title: "Spring Wire"
+	quest.2475000000000006.quest_subtitle: "Small components can bottleneck the whole shop"
+	quest.2475000000000006.quest_desc: [
+		"Spring Wire is a small weapon-mechanism component cut from metal plates."
+		""
+		"Stock CBC yields 1 Spring Wire from an iron plate and 3 from a steel plate. Check JEI and keep a dedicated stock: small components often become the real bottleneck in a large weapons line."
+	]
+	quest.2475000000000007.title: "Autocannon Muzzle Brake"
+	quest.2475000000000007.quest_subtitle: "Advanced Technology extends the base system"
+	quest.2475000000000007.quest_desc: [
+		"CBC Advanced Technology adds optional tooling on top of the base autocannon production path."
+		""
+		"Make the Autocannon Muzzle Brake Mould using the current JEI recipe. Treat it as an additional module, not a replacement for the required barrel, breech and recoil system."
+		""
+		"Learn and fire the stock autocannon first; add specialized muzzle components only after the base assembly works."
+	]
+	quest.2475000000000008.title: "Autocannon Silencer"
+	quest.2475000000000008.quest_subtitle: "Another specialized production branch"
+	quest.2475000000000008.quest_desc: [
+		"Make the CBC Advanced Technology Autocannon Silencer Mould using its current JEI recipe."
+		""
+		"This lesson is about workshop integration: add-on tooling can share the same production area, but label it separately from the mandatory base CBC moulds so the assembly path remains obvious."
+	]
+	quest.2475000000000009.title: "Weapons Workshop"
+	quest.2475000000000009.quest_subtitle: "Build repeatable production rather than a one-off prototype"
+	quest.2475000000000009.quest_desc: [
+		"Build a repeatable weapons workshop rather than a museum display."
+		""
+		"Keep the barrel, breech and recoil-spring moulds in permanent labeled locations. Keep cartridge sheets and Spring Wire in a separate small-parts stock. Give raw materials a clear input and finished components a clear output buffer."
+		""
+		"Repeatability test: imagine an order for a second autocannon. If you can start another batch without searching the whole base for tooling or rebuilding the Foundry/Create line, the workshop is organized."
+	]
+
+
+	quest.2352000000000001.title: "Остановить отдельную машину"
+	quest.2352000000000001.quest_subtitle: "Сцепление разрывает передачу вращения"
+	quest.2352000000000001.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Сцепление — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Сцепление позволяет обслуживать одну ветку, пока остальная сеть продолжает работать. Для опыта используй отдельный вал без второго подключения к приводу."
+		"Шаг 1. Сделай сцепление. Обычный рецепт Create: андезитовый корпус, вал и редстоуновая пыль; раскладку и доступные замены проверь в JEI."
+		"Шаг 2. Вставь сцепление между вращающимся входным валом и выходным валом. Поставь рычаг так, чтобы его сигнал питал сцепление."
+		"Шаг 3. Включи рычаг: выход должен остановиться. Выключи: вращение снова проходит. Сигнал здесь означает остановку, а не запуск."
+		"Самопроверка. Вход вращается в обоих положениях, выход — только без сигнала. Если вращается всегда, найди обходной вал или шестерню. Если не вращается никогда, проверь питание и перегрузку."
+		"Применение. Поставь сцепление перед отдельной линией, чтобы отключать её для перенастройки."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000002.title: "Изменить направление"
+	quest.2352000000000002.quest_subtitle: "Реверсивная передача управляет выходным валом"
+	quest.2352000000000002.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Реверсивная передача — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Реверсивная передача меняет направление выходного вращения по сигналу. Она нужна там, где механизм должен уметь двигаться в обе стороны."
+		"Шаг 1. Сделай реверсивную передачу из андезитового корпуса, шестерни и редстоуновой пыли. Проверь текущий рецепт в JEI."
+		"Шаг 2. Собери независимый участок: привод, входной вал, реверсивная передача, выходной вал. Подведи к передаче сигнал от рычага."
+		"Шаг 3. Сравни выход до и после переключения рычага. Вход продолжает вращаться как прежде, а направление выхода меняется."
+		"Самопроверка. Если сеть ломается или останавливается, отключи обходные связи: две ветки не должны одновременно навязывать одному валу противоположные направления."
+		"Применение. Сначала научись менять направление на пустом валу, затем используй этот приём для возвратного движения механизма."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000003.title: "Управление на расстоянии"
+	quest.2352000000000003.quest_subtitle: "Два передатчика — одна согласованная частота"
+	quest.2352000000000003.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Редстоуновый передатчик сигнала — 2 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Редстоуновый передатчик сигнала заменяет длинный провод. Для первой проверки достаточно двух блоков рядом на одной площадке."
+		"Шаг 1. Получи два передатчика по рецепту JEI. Один оставь передатчиком, второй переключи в приёмник: ПКМ крадучись или гаечным ключом."
+		"Шаг 2. Задай обоим одинаковую пару предметов в одинаковых слотах частоты. Например, сверху булыжник, снизу палка. Разные пары разделяют каналы."
+		"Шаг 3. Подай сигнал рычагом на передатчик. Выход приёмника подключи к редстоуновой лампе коротким проводом. Включай и выключай рычаг."
+		"Самопроверка. Лампа должна повторять рычаг. Если нет, сравни оба слота частоты, режимы блоков и подключение выхода. Начни рядом и в загруженной области."
+		"Применение. После проверки подключи приёмник к сцеплению. Помни: включённый сигнал остановит его выход."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000004.title: "Короткое нажатие — длинный сигнал"
+	quest.2352000000000004.quest_subtitle: "Редстоуновый удлинитель импульса"
+	quest.2352000000000004.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Редстоуновый удлинитель импульса — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Кнопка выдаёт короткий сигнал. Удлинитель удерживает выход дольше, чтобы исполнительный механизм успел отработать."
+		"Шаг 1. Получи редстоуновый удлинитель импульса. Его рецепт использует латунный лист; латунь в Meridian получай по изученному пути через Foundry, затем обрабатывай по JEI."
+		"Шаг 2. Подключи кнопку к входу удлинителя, а лампу — к выходу. В Ponder проверь, где вход и выход, затем настрой панель времени на несколько секунд."
+		"Шаг 3. Нажми кнопку один раз и подожди. Лампа должна оставаться включённой дольше сигнала самой кнопки, а затем погаснуть."
+		"Самопроверка. Если лампа горит постоянно, проверь, не запитан ли вход непрерывно. Если реакции нет, проверь ориентацию и провод от выхода."
+		"Применение. Это способ удерживать управляющий сигнал; он не изменяет скорость вращения машин."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000005.title: "Сначала подождать"
+	quest.2352000000000005.quest_subtitle: "Редстоуновый повторитель импульса"
+	quest.2352000000000005.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Редстоуновый повторитель импульса — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Повторитель импульса даёт короткий выход после настроенной задержки. Это другая задача, чем удерживать сигнал включённым."
+		"Шаг 1. Сделай редстоуновый повторитель импульса по JEI. Подключи кнопку ко входу, лампу к выходу."
+		"Шаг 2. Через панель параметров задай небольшую задержку. Для первого опыта выбери несколько секунд, а не минуты."
+		"Шаг 3. Нажми кнопку один раз. До истечения задержки лампа не должна включиться; после неё появится короткий импульс."
+		"Самопроверка. Дождись завершения одного опыта перед следующим. Если лампа включается сразу, проверь, не получает ли она сигнал обходным проводом."
+		"Применение. Задержкой можно разнести команды по времени. Сначала проверяй последовательность на лампах, затем подключай машины."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000006.title: "Кнопка запоминает состояние"
+	quest.2352000000000006.quest_subtitle: "Редстоуновый триггер-защёлка"
+	quest.2352000000000006.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Редстоуновый триггер-защёлка — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Триггер-защёлка сохраняет состояние выхода между нажатиями: один импульс включает, следующий выключает."
+		"Шаг 1. Сделай редстоуновый триггер-защёлку по JEI. Подведи кнопку к заднему входу, лампу — к выходу. Ориентацию посмотри в Ponder."
+		"Шаг 2. Нажми кнопку и дождись её отпускания. Выход должен остаться в новом состоянии."
+		"Шаг 3. Нажми ещё раз. Выход переключится обратно. Повтори опыт несколько раз, не удерживая постоянное питание."
+		"Самопроверка. Если лампа следует за кнопкой без памяти, проверь, не соединены ли они напрямую. Если сигнал приходит не сзади, переставь вход."
+		"Применение. Подключи выход к сцеплению, когда нужен пуск и остановка одной кнопкой. Подпиши состояние: сигнал на сцеплении означает остановку."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000007.title: "Увидеть силу сигнала"
+	quest.2352000000000007.quest_subtitle: "Аналоговый рычаг и газоразрядный индикатор"
+	quest.2352000000000007.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Аналоговый рычаг — 1 шт.; Газоразрядный индикатор — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Редстоун бывает не только включённым или выключенным: сила сигнала меняется от 0 до 15. Индикатор помогает увидеть её числом."
+		"Шаг 1. Сделай аналоговый рычаг и газоразрядный индикатор. В JEI индикатор получается из двух электронных ламп."
+		"Шаг 2. Соедини рычаг с индикатором коротким проводом. ПКМ повышает значение рычага, ПКМ крадучись — понижает."
+		"Шаг 3. Пройди несколько значений вверх и вниз. Сравни показания индикатора с силой сигнала у источника."
+		"Самопроверка. На длинной редстоуновой линии сигнал ослабевает. Если число меньше ожидаемого, сначала сократи провод. Обычный повторитель восстанавливает сигнал до полного и не сохраняет его исходную величину."
+		"Применение. Такой стенд помогает проверять устройства, которым важна сила сигнала. Не путай значение 0–15 с RPM механической сети."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
+	quest.2352000000000008.title: "Показания рядом с механизмом"
+	quest.2352000000000008.quest_subtitle: "Передатчик информации и обычная табличка"
+	quest.2352000000000008.quest_desc: [
+		"Для зачёта держи в обычном инвентаре: Передатчик информации — 1 шт.; Дубовая табличка — 1 шт.. Предметы не расходуются. После открытия задания подожди несколько секунд."
+		"Игра проверяет получение комплекта. Описанный опыт выполни для обучения: работа схемы автоматически не проверяется."
+		""
+		"Передатчик информации выводит показания совместимого блока на экран или табличку. Для первой проверки большого механического табло не требуется."
+		"Шаг 1. Получи передатчик информации и дубовую табличку. Подключи стрессометр к вращающейся сети; он станет источником данных."
+		"Шаг 2. Поставь табличку поблизости. Держа передатчик информации в руке, нажми ПКМ по табличке для выбора цели, затем прикрепи передатчик к стрессометру."
+		"Шаг 3. Открой интерфейс установленного передатчика. Выбери доступный показатель нагрузки и строку назначения."
+		"Шаг 4. Подключи или отключи потребитель через сцепление и подожди обновления показаний. Сравни табличку с показаниями стрессометра."
+		"Самопроверка. Не каждый блок отдаёт данные. Если список пуст, проверь источник. Если данные застыли, проверь редстоуновое питание самого передатчика: оно может приостанавливать обновления."
+		"Применение. Подписанные показания помогают понять причину остановки производства без разбора всей сети."
+		""
+		"Наглядно: найди блок в JEI и открой его Ponder по подсказке на предмете. В сцене можно рассмотреть стороны подключения и порядок действий."
+	]
 }

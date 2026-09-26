@@ -1,0 +1,246 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "A480000000000012"
+	group: "4D4552494449414E"
+	icon: { id: "aeronautics:propeller_bearing" }
+	id: "1480000000000012"
+	images: [ ]
+	order_index: 10
+	quest_links: [ ]
+	quests: [
+		{
+			id: "2481000000000001"
+			dependencies: ["2201000000000010", "2301000000000010"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0d
+			y: -5d
+			tasks: [{ id: "3481000000000001", type: "item", item: { count: 1, id: "simulated:physics_assembler" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000001", type: "xp", xp: 120 }
+				{ id: "4481000000001001", type: "item", item: { count: 1, id: "minecraft:slime_ball" }, count: 2 }
+			]
+		}
+		{
+			id: "2481000000000002"
+			dependencies: ["2481000000000001"]
+			hide_until_deps_complete: true
+			x: 0d
+			y: -3.4d
+			tasks: [{ id: "3481000000000002", type: "item", item: { count: 1, id: "simulated:swivel_bearing" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000002", type: "xp", xp: 100 }
+				{ id: "4481000000001002", type: "item", item: { count: 1, id: "create:shaft" }, count: 4 }
+			]
+		}
+		{
+			id: "2481000000000003"
+			dependencies: ["2481000000000002"]
+			hide_until_deps_complete: true
+			x: -3d
+			y: -1.8d
+			tasks: [
+				{ id: "3481000000000003", type: "item", item: { count: 1, id: "simulated:rope_coupling" }, count: 2L }
+				{ id: "3481000000001003", type: "item", item: { count: 1, id: "simulated:rope_winch" }, count: 1L }
+				{ id: "3481000000002003", type: "item", item: { count: 1, id: "simulated:rope_connector" }, count: 2L }
+			]
+			rewards: [
+				{ id: "4481000000000003", type: "xp", xp: 110 }
+				{ id: "4481000000001003", type: "item", item: { count: 1, id: "minecraft:string" }, count: 8 }
+			]
+		}
+		{
+			id: "2481000000000004"
+			dependencies: ["2481000000000002"]
+			hide_until_deps_complete: true
+			x: -1d
+			y: -1.8d
+			tasks: [{ id: "3481000000000004", type: "item", item: { count: 1, id: "simulated:docking_connector" }, count: 2L }]
+			rewards: [
+				{ id: "4481000000000004", type: "xp", xp: 120 }
+				{ id: "4481000000001004", type: "item", item: { count: 1, id: "minecraft:comparator" }, count: 2 }
+			]
+		}
+		{
+			id: "2481000000000005"
+			dependencies: ["2481000000000002"]
+			hide_until_deps_complete: true
+			x: 1d
+			y: -1.8d
+			tasks: [{ id: "3481000000000005", type: "checkmark" }]
+			rewards: [
+				{ id: "4481000000000005", type: "xp", xp: 120 }
+				{ id: "4481000000001005", type: "item", item: { count: 1, id: "minecraft:coal" }, count: 8 }
+			]
+		}
+		{
+			id: "2481000000000006"
+			dependencies: ["2481000000000001"]
+			hide_until_deps_complete: true
+			x: 3d
+			y: -3.4d
+			tasks: [
+				{ id: "3481000000000006", type: "item", item: { count: 1, id: "simulated:altitude_sensor" }, count: 1L }
+				{ id: "3481000000001006", type: "item", item: { count: 1, id: "simulated:velocity_sensor" }, count: 1L }
+				{ id: "3481000000002006", type: "item", item: { count: 1, id: "simulated:gimbal_sensor" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4481000000000006", type: "xp", xp: 130 }
+				{ id: "4481000000001006", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 8 }
+			]
+		}
+		{
+			id: "2481000000000007"
+			dependencies: ["2481000000000006"]
+			hide_until_deps_complete: true
+			x: 4.2d
+			y: -1.8d
+			tasks: [
+				{ id: "3481000000000007", type: "item", item: { count: 1, id: "simulated:optical_sensor" }, count: 1L }
+				{ id: "3481000000001007", type: "item", item: { count: 1, id: "simulated:navigation_table" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4481000000000007", type: "xp", xp: 120 }
+				{ id: "4481000000001007", type: "item", item: { count: 1, id: "minecraft:compass" }, count: 1 }
+			]
+		}
+		{
+			id: "2481000000000008"
+			dependencies: ["2481000000000002", "2481000000000006"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 2d
+			y: 0d
+			tasks: [{ id: "3481000000000008", type: "item", item: { count: 1, id: "aeronautics:propeller_bearing" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000008", type: "xp", xp: 140 }
+				{ id: "4481000000001008", type: "item", item: { count: 1, id: "create:white_sail" }, count: 4 }
+			]
+		}
+		{
+			id: "2481000000000009"
+			dependencies: ["2481000000000008"]
+			hide_until_deps_complete: true
+			x: 0.2d
+			y: 1.5d
+			tasks: [
+				{ id: "3481000000000009", type: "item", item: { count: 1, id: "aeronautics:wooden_propeller" }, count: 1L }
+				{ id: "3481000000001009", type: "item", item: { count: 1, id: "aeronautics:andesite_propeller" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4481000000000009", type: "xp", xp: 100 }
+				{ id: "4481000000001009", type: "item", item: { count: 1, id: "create:andesite_alloy" }, count: 4 }
+			]
+		}
+		{
+			id: "2481000000000010"
+			dependencies: ["2481000000000008", "2481000000000006"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 2d
+			y: 1.6d
+			tasks: [{ id: "3481000000000010", type: "item", item: { count: 1, id: "aeronautics:gyroscopic_propeller_bearing" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000010", type: "xp", xp: 150 }
+				{ id: "4481000000001010", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 8 }
+			]
+		}
+		{
+			id: "2481000000000011"
+			dependencies: ["2481000000000008"]
+			hide_until_deps_complete: true
+			x: 4d
+			y: 1.5d
+			tasks: [
+				{ id: "3481000000000011", type: "item", item: { count: 1, id: "aeronautics:white_envelope" }, count: 8L }
+				{ id: "3481000000001011", type: "item", item: { count: 1, id: "aeronautics:adjustable_burner" }, count: 1L }
+			]
+			rewards: [
+				{ id: "4481000000000011", type: "xp", xp: 140 }
+				{ id: "4481000000001011", type: "item", item: { count: 1, id: "minecraft:glass" }, count: 8 }
+			]
+		}
+		{
+			id: "2481000000000012"
+			dependencies: ["2481000000000011", "2375000000000008"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 4d
+			y: 3.2d
+			tasks: [{ id: "3481000000000012", type: "item", item: { count: 1, id: "aeronautics:steam_vent" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000012", type: "xp", xp: 140 }
+				{ id: "4481000000001012", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 4 }
+			]
+		}
+		{
+			id: "2481000000000016"
+			dependencies: ["2481000000000009"]
+			hide_until_deps_complete: true
+			x: -1.3d
+			y: 3d
+			tasks: [{ id: "3481000000000016", type: "item", item: { count: 1, id: "aeronautics:smart_propeller" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000016", type: "xp", xp: 120 }
+				{ id: "4481000000001016", type: "item", item: { count: 1, id: "minecraft:redstone" }, count: 4 }
+			]
+		}
+		{
+			id: "2481000000000017"
+			dependencies: ["2481000000000016", "2481000000000007"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 0.2d
+			y: 4.5d
+			tasks: [{ id: "3481000000000017", type: "item", item: { count: 1, id: "simulated:steering_wheel" }, count: 1L }]
+			rewards: [
+				{ id: "4481000000000017", type: "xp", xp: 130 }
+				{ id: "4481000000001017", type: "item", item: { count: 1, id: "minecraft:lever" }, count: 2 }
+			]
+		}
+		{
+			id: "2481000000000013"
+			dependencies: ["2481000000000010", "2481000000000011", "2481000000000012", "2481000000000017"]
+			dependency_requirement: "all_completed"
+			hide_until_deps_complete: true
+			x: 2.2d
+			y: 5.2d
+			tasks: [{ id: "3481000000000013", type: "checkmark" }]
+			rewards: [
+				{ id: "4481000000000013", type: "xp", xp: 220 }
+				{ id: "4481000000001013", type: "item", item: { count: 1, id: "minecraft:feather" }, count: 8 }
+			]
+		}
+		{
+			id: "2481000000000014"
+			dependencies: ["2481000000000005"]
+			hide_until_deps_complete: true
+			x: -2.8d
+			y: 0.4d
+			tasks: [
+				{ id: "3481000000000014", type: "item", item: { count: 1, id: "offroad:wheel_mount" }, count: 2L }
+				{ id: "3481000000001014", type: "item", item: { count: 1, id: "offroad:tire" }, count: 2L }
+			]
+			rewards: [
+				{ id: "4481000000000014", type: "xp", xp: 120 }
+				{ id: "4481000000001014", type: "item", item: { count: 1, id: "minecraft:slime_ball" }, count: 4 }
+			]
+		}
+		{
+			id: "2481000000000015"
+			dependencies: ["2481000000000014"]
+			hide_until_deps_complete: true
+			x: -2.8d
+			y: 2.2d
+			tasks: [
+				{ id: "3481000000000015", type: "item", item: { count: 1, id: "offroad:borehead_bearing" }, count: 1L }
+				{ id: "3481000000001015", type: "item", item: { count: 1, id: "offroad:rockcutting_wheel" }, count: 2L }
+			]
+			rewards: [
+				{ id: "4481000000000015", type: "xp", xp: 160 }
+				{ id: "4481000000001015", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 4 }
+			]
+		}
+	]
+}

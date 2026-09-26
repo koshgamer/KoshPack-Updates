@@ -11,130 +11,97 @@
 	quests: [
 		{
 			id: "2101000000000001"
-			x: -4.0d
-			y: 0.0d
+			x: 0d
+			y: -3.2d
 			tasks: [
-				{
-					id: "3101000000000001"
-					type: "item"
-					item: { count: 1, id: "minecraft:crafting_table" }
-					count: 1L
-				}
+				{ id: "3101000000000001", type: "item", item: { count: 1, id: "minecraft:crafting_table" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4101000000000001"
-					type: "xp"
-					xp: 25
-				}
+				{ id: "4101000000000001", type: "xp", xp: 25 }
+				{ id: "4101000000001001", type: "item", item: { count: 1, id: "minecraft:torch" }, count: 8 }
 			]
 		}
 		{
 			id: "2101000000000002"
 			dependencies: ["2101000000000001"]
-			x: -2.0d
-			y: 0.0d
+			hide_until_deps_complete: true
+			x: -1.8d
+			y: -1.8d
 			tasks: [
-				{
-					id: "3101000000000002"
-					type: "item"
-					item: { count: 1, id: "minecraft:stone_pickaxe" }
-					count: 1L
-				}
+				{ id: "3101000000000002", type: "item", item: { count: 1, id: "minecraft:cobblestone" }, count: 16L }
 			]
 			rewards: [
-				{
-					id: "4101000000000002"
-					type: "xp"
-					xp: 35
-				}
+				{ id: "4101000000000002", type: "xp", xp: 35 }
+				{ id: "4101000000001002", type: "item", item: { count: 1, id: "minecraft:bread" }, count: 4 }
 			]
 		}
 		{
 			id: "2101000000000003"
 			dependencies: ["2101000000000002"]
-			x: 0.0d
-			y: 0.0d
+			hide_until_deps_complete: true
+			x: 0d
+			y: -0.4d
 			tasks: [
-				{
-					id: "3101000000000003"
-					type: "item"
-					item: { count: 1, id: "minecraft:furnace" }
-					count: 1L
-				}
+				{ id: "3101000000000003", type: "item", item: { count: 1, id: "minecraft:furnace" }, count: 1L }
 			]
 			rewards: [
-				{
-					id: "4101000000000003"
-					type: "xp"
-					xp: 40
-				}
+				{ id: "4101000000000003", type: "xp", xp: 40 }
+				{ id: "4101000000001003", type: "item", item: { count: 1, id: "minecraft:coal" }, count: 8 }
 			]
 		}
 		{
 			id: "2101000000000004"
 			dependencies: ["2101000000000003"]
-			x: 2.0d
-			y: -1.0d
+			hide_until_deps_complete: true
+			x: -1.8d
+			y: 1.2d
 			tasks: [
-				{
-					id: "3101000000000004"
-					type: "item"
-					item: { count: 1, id: "minecraft:iron_ingot" }
-					count: 8L
-				}
+				{ id: "3101000000000004", type: "item", item: { count: 1, id: "minecraft:iron_ingot" }, count: 8L }
 			]
 			rewards: [
-				{
-					id: "4101000000000004"
-					type: "xp"
-					xp: 60
-				}
+				{ id: "4101000000000004", type: "xp", xp: 60 }
+				{ id: "4101000000001004", type: "item", item: { count: 1, id: "minecraft:bucket" }, count: 1 }
 			]
 		}
 		{
 			id: "2101000000000005"
 			dependencies: ["2101000000000003"]
-			x: 2.0d
-			y: 1.0d
+			hide_until_deps_complete: true
+			x: 1.8d
+			y: 1.2d
 			tasks: [
-				{
-					id: "3101000000000005"
-					type: "item"
-					item: { count: 1, id: "minecraft:copper_ingot" }
-					count: 8L
-				}
+				{ id: "3101000000000005", type: "item", item: { count: 1, id: "minecraft:copper_ingot" }, count: 8L }
 			]
 			rewards: [
-				{
-					id: "4101000000000005"
-					type: "xp"
-					xp: 60
-				}
+				{ id: "4101000000000005", type: "xp", xp: 60 }
+				{ id: "4101000000001005", type: "item", item: { count: 1, id: "minecraft:lightning_rod" }, count: 1 }
 			]
 		}
 		{
 			id: "2101000000000006"
-			dependencies: [
-				"2101000000000004"
-				"2101000000000005"
-			]
+			dependencies: ["2101000000000004", "2101000000000005"]
 			dependency_requirement: "all_completed"
-			x: 4.0d
-			y: 0.0d
+			hide_until_deps_complete: true
+			x: 0d
+			y: 2.8d
 			tasks: [
-				{
-					id: "3101000000000006"
-					type: "checkmark"
-				}
+				{ id: "3101000000000006", type: "checkmark" }
 			]
 			rewards: [
-				{
-					id: "4101000000000006"
-					type: "xp"
-					xp: 100
-				}
+				{ id: "4101000000000006", type: "xp", xp: 100 }
+				{ id: "4101000000001006", type: "item", item: { count: 1, id: "minecraft:compass" }, count: 1 }
+				{ id: "4101000000001007", type: "item", item: { count: 1, id: "minecraft:cooked_beef" }, count: 8 }
 			]
+		}
+		{
+			id: "21F1000000000001"
+			dependencies: ["2101000000000006"]
+			hide_until_deps_complete: true
+			x: 2.4d
+			y: 2.8d
+			tasks: [{ id: "31F1000000000001", type: "checkmark" }]
+			rewards: [ ]
 		}
 	]
 }
+
