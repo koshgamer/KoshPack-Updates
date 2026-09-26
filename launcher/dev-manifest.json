@@ -196,10 +196,10 @@
     },
     {
       "path": "mods/meridian_quests_ui-dev.jar",
-      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_quests_ui-dev.jar",
-      "size": 105162,
-      "sha256": "8e55bb228908dfa31269fab306428e357fd8863fc48a60f7d740c8b9fad7a2d6"
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_quests_ui-dev.jar",
+      "size": 110874,
+      "sha256": "03e3631bda12343ca0e1ba161c5bb4c8d84d9daa80470b5133c24fca33845591"
     }
   ],
-  "hotfixRevision": 68
+  "hotfixRevision": 69
 }
