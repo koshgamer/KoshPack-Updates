@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "launcher/dev/meridian_quests_ui-dev.jar.b64"
+      - "launcher/dev/meridian_quests_ui-dev.jar"
       - ".github/workflows/publish-meridian-quests-ui.yml"
 
 permissions:
@@ -24,20 +24,23 @@ jobs:
         with:
           ref: main
 
-      - name: Decode Meridian Quests UI jar
+      - name: Inspect Meridian Quests UI jar
         run: |
-          tr -d '\r\n' < launcher/dev/meridian_quests_ui-dev.jar.b64 | base64 -d > meridian_quests_ui-dev.jar
-          echo "SIZE=$(stat -c%s meridian_quests_ui-dev.jar)" >> "$GITHUB_ENV"
-          echo "SHA256=$(sha256sum meridian_quests_ui-dev.jar | awk '{print $1}')" >> "$GITHUB_ENV"
-          test "$(stat -c%s meridian_quests_ui-dev.jar)" -gt 1000
+          set -euo pipefail
+          JAR="launcher/dev/meridian_quests_ui-dev.jar"
+          test -f "$JAR"
+          echo "SIZE=$(stat -c%s "$JAR")" >> "$GITHUB_ENV"
+          echo "SHA256=$(sha256sum "$JAR" | awk '{print $1}')" >> "$GITHUB_ENV"
+          test "$(stat -c%s "$JAR")" -gt 1000
 
       - name: Upload to public DEV release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload armor-dev-current meridian_quests_ui-dev.jar --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload armor-dev-current launcher/dev/meridian_quests_ui-dev.jar \
+            --repo "$GITHUB_REPOSITORY" --clobber
 
-      - name: Add Meridian Quests UI to DEV manifest
+      - name: Keep DEV manifest synchronized
         run: |
           python3 - <<'PY'
           import json, os
@@ -49,7 +52,7 @@ jobs:
           rel = "mods/meridian_quests_ui-dev.jar"
           entry = {
               "path": rel,
-              "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_quests_ui-dev.jar",
+              "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_quests_ui-dev.jar",
               "size": int(os.environ["SIZE"]),
               "sha256": os.environ["SHA256"],
           }
@@ -57,14 +60,12 @@ jobs:
           extras = [e for e in data.get("extras", []) if e.get("path") != rel]
           extras.append(entry)
           data["extras"] = extras
-          data["hotfixRevision"] = max(int(data.get("hotfixRevision", 0)) + 1, 49)
+          data["hotfixRevision"] = int(data.get("hotfixRevision", 0)) + 1
 
           p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
-          print("Published", rel, entry["size"], entry["sha256"])
-          print("hotfixRevision", data["hotfixRevision"])
           PY
 
-      - name: Commit manifest
+      - name: Commit manifest if needed
         run: |
           git config user.name "Project Meridian CI"
           git config user.email "actions@users.noreply.github.com"
@@ -73,6 +74,6 @@ jobs:
             echo "Manifest already current."
             exit 0
           fi
-          git commit -m "dev: add Meridian Quests UI to launcher feed"
+          git commit -m "dev: sync Meridian Quests UI launcher feed"
           git pull --rebase origin main
           git push origin HEAD:main
