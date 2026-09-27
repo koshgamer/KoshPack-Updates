@@ -67,6 +67,19 @@ jobs:
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'ru/koshpack/forgebridge/artilleryarmor/ArtilleryArmorAddon.class'
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_artillery_test.mcfunction'
           jar tf dist/KoshPack_Armor_DEV.jar | grep -q 'data/koshpackarmor/function/spawn_diver_test.mcfunction'
+          unzip -p dist/KoshPack_Armor_DEV.jar META-INF/neoforge.mods.toml | grep -q 'modId="koshpackarmor"'
+          if unzip -p dist/KoshPack_Armor_DEV.jar META-INF/neoforge.mods.toml | grep -q 'modId="koshpack_forge_ui"'; then
+            echo "Armor JAR must not embed koshpack_forge_ui"
+            exit 1
+          fi
+          if jar tf dist/KoshPack_Armor_DEV.jar | grep -q '^ru/koshpack/forgeui/'; then
+            echo "Armor JAR must not contain Forge UI classes"
+            exit 1
+          fi
+          if jar tf dist/KoshPack_Armor_DEV.jar | grep -q '^data/koshpack_forge_ui/'; then
+            echo "Armor JAR must not contain Forge UI data"
+            exit 1
+          fi
 
       - name: Publish DEV release assets
         env:

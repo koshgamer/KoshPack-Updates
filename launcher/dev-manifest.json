@@ -9,8 +9,8 @@
     "version": "alpha-0.120",
     "file": "KoshPack_Armor_DEV.jar",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar",
-    "size": 1212661,
-    "sha256": "71101929758884070965453e40a21e67a2cd050f6adfb29cd3519092313a67a7",
+    "size": 1186428,
+    "sha256": "29351caaca61a98d370a57c3b8aa5287fe4ac4f89fa79fd254cb81a284f9877c",
     "note": "Alpha 0.120: полный backend Meridian Quest Book: 12 глав и 186 квестов. Добавлены подробные русские и английские обучения, зависимости, предметные и dimension-задачи, ручные технологические чекпоинты и награды XP."
   },
   "extras": [
@@ -199,7 +199,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_quests_ui-dev.jar",
       "size": 110874,
       "sha256": "03e3631bda12343ca0e1ba161c5bb4c8d84d9daa80470b5133c24fca33845591"
+    },
+    {
+      "path": "mods/KoshPack_Forge_UI_DEV.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV.jar",
+      "size": 104463,
+      "sha256": "f86fdf31bc83059632cdada109680ea9561db0887f89ca2f0204eca0147409de"
     }
   ],
-  "hotfixRevision": 70
+  "hotfixRevision": 71
 }
