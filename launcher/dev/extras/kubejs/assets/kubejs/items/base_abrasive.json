@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "kubejs:item/base_abrasive"
+  }
+}

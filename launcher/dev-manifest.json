@@ -41,8 +41,80 @@
     {
       "path": "kubejs/startup_scripts/koshpack_forge_bench.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/startup_scripts/koshpack_forge_bench.js",
-      "size": 1411,
-      "sha256": "6effed24d20fe056ffacc02b4675e684100a3938a56be52ec0904d8c3394afba"
+      "size": 1454,
+      "sha256": "9ddf295953f43d9c91a5561e394ba92d924186eda49d0ae9f72bb6ddd64e69ac"
+    },
+    {
+      "path": "kubejs/assets/kubejs/items/base_abrasive.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/items/base_abrasive.json",
+      "size": 93,
+      "sha256": "328c51ceb7cffee765ad3591177f0a4ef4b2351273f05bd3e3904339541f67dd"
+    },
+    {
+      "path": "kubejs/assets/kubejs/models/item/base_abrasive.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/models/item/base_abrasive.json",
+      "size": 106,
+      "sha256": "301182df23753f5a30594684b0936dc65855f6afa9065ecdfcfc4866fce3d82d"
+    },
+    {
+      "path": "kubejs/assets/kubejs/textures/item/base_abrasive.png",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/textures/item/base_abrasive.png",
+      "size": 309,
+      "sha256": "48904da3c7ad0c4a0bb262b8c7614a130fcd32c834dfaeab4d458cdf04de4425"
+    },
+    {
+      "path": "kubejs/assets/kubejs/items/industrial_abrasive.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/items/industrial_abrasive.json",
+      "size": 99,
+      "sha256": "178d79b17913acb0c8b4d43943071fe4895b428500006cc153dce2634153c51a"
+    },
+    {
+      "path": "kubejs/assets/kubejs/models/item/industrial_abrasive.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/models/item/industrial_abrasive.json",
+      "size": 112,
+      "sha256": "15361bd03cc49945b011720add6152b2da2bf86a87d2a6c96aa71b5bc61c4c43"
+    },
+    {
+      "path": "kubejs/assets/kubejs/textures/item/industrial_abrasive.png",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/textures/item/industrial_abrasive.png",
+      "size": 381,
+      "sha256": "ef31896282d422b9c7fdd1b2daced19e4afbaacdb2127170ff031cf695593b0e"
+    },
+    {
+      "path": "kubejs/assets/kubejs/items/heat_resistant_binder.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/items/heat_resistant_binder.json",
+      "size": 101,
+      "sha256": "60a0f370cc124ef60a728b53e6df8994e9c848a0e7a29190e09d86e64720dcc0"
+    },
+    {
+      "path": "kubejs/assets/kubejs/models/item/heat_resistant_binder.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/models/item/heat_resistant_binder.json",
+      "size": 114,
+      "sha256": "6e9a9651c8e0b5266e571b827bd8e55b9341ffc8b94d84a10ac4cde5eafcd8c7"
+    },
+    {
+      "path": "kubejs/assets/kubejs/textures/item/heat_resistant_binder.png",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/textures/item/heat_resistant_binder.png",
+      "size": 364,
+      "sha256": "bcb4969887e9d20270db75baff708cd1b8833623b82b1dd4b044e3f4c74a789d"
+    },
+    {
+      "path": "kubejs/assets/kubejs/items/finishing_abrasive.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/items/finishing_abrasive.json",
+      "size": 98,
+      "sha256": "a25984cfe1479c4204c98f9039cdcc3e2b2f6fc7dc56532a6e7362f83eb65221"
+    },
+    {
+      "path": "kubejs/assets/kubejs/models/item/finishing_abrasive.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/models/item/finishing_abrasive.json",
+      "size": 111,
+      "sha256": "3849db16b0693a736e090c0309caa139baa898fa0f3b442daca9e002c4bae9b5"
+    },
+    {
+      "path": "kubejs/assets/kubejs/textures/item/finishing_abrasive.png",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/assets/kubejs/textures/item/finishing_abrasive.png",
+      "size": 340,
+      "sha256": "da3453862c8861b34fb7984fac64d8c478d8132dd342bb0f3b9cbccd1e470771"
     },
     {
       "path": "kubejs/server_scripts/koshpack_forge_bench_recipes.js",
@@ -219,5 +291,5 @@
       "sha256": "d4fc3e1eb83bd7bbb19ea5854de73251bd7b9f9d76354dd7cd69d2356d89591c"
     }
   ],
-  "hotfixRevision": 77
+  "hotfixRevision": 78
 }
