@@ -215,9 +215,9 @@
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV.jar",
-      "size": 101614,
-      "sha256": "792d382c865075b4ee80e696a56d7a4d93dd22d23c0d718e44b8edcf65e9be27"
+      "size": 103556,
+      "sha256": "3589ad14a1cd578eccd33a51c1f4d2e7c8b3015bc18b5d6411459096f1832632"
     }
   ],
-  "hotfixRevision": 75
+  "hotfixRevision": 76
 }
