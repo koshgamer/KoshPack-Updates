@@ -48,6 +48,7 @@ jobs:
               "kubejs/server_scripts/koshpack_gear_material_swap.js",
               "kubejs/server_scripts/koshpack_alloy_progression.js",
               "kubejs/client_scripts/koshpack_alloy_tooltips.js",
+              "kubejs/server_scripts/koshpack_no_enchantments.js",
           ]
           for rel in rels:
               src = Path("launcher/dev/extras") / rel
@@ -62,7 +63,12 @@ jobs:
           data["channel"] = "dev-armor"
           # Do not overwrite armor version/note here: the integrated armor/GUI
           # publisher owns those fields. This workflow only refreshes extras.
-          data["extras"] = entries
+          managed = set(rels)
+          preserved = [
+              entry for entry in data.get("extras", [])
+              if entry.get("path") not in managed
+          ]
+          data["extras"] = entries + preserved
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
           PY
 
