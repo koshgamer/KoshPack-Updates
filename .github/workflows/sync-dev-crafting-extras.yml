@@ -49,6 +49,7 @@ jobs:
               "kubejs/server_scripts/koshpack_alloy_progression.js",
               "kubejs/client_scripts/koshpack_alloy_tooltips.js",
               "kubejs/server_scripts/koshpack_no_enchantments.js",
+              "kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
           ]
           for rel in rels:
               src = Path("launcher/dev/extras") / rel
