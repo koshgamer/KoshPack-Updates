@@ -203,9 +203,15 @@
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV.jar",
-      "size": 104463,
-      "sha256": "f86fdf31bc83059632cdada109680ea9561db0887f89ca2f0204eca0147409de"
+      "size": 97712,
+      "sha256": "70180b3f15d3f2a0419ec9dfe81d0865e3fcce45623c433d1da3cf32706ce612"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_no_enchantments.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_no_enchantments.js",
+      "size": 287,
+      "sha256": "dcba26fdb0aac09616d26396386c6f87704ff56336324c760840e629f28b3305"
     }
   ],
-  "hotfixRevision": 71
+  "hotfixRevision": 72
 }
