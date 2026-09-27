@@ -107,8 +107,8 @@
     {
       "path": "kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
-      "size": 320,
-      "sha256": "90e11a7dc26f83b0a7383f43c76d4bc84d8282dd7336fa7ab02e2b7b75164ffb"
+      "size": 343,
+      "sha256": "64d39b6b31a421bb5c44d2e9a01c20b3ed8dc44b59ed9cd22bb23392b9dfd81c"
     },
     {
       "path": "config/ftbquests/quests/chapter_groups.snbt",
