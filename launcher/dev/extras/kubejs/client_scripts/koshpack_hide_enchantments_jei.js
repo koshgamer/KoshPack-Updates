@@ -1,8 +1,8 @@
 // Project Meridian: enchantments do not exist as player progression.
-// Hide the vanilla enchanting UI/items from JEI so the catalog matches gameplay.
+// KubeJS 1.21+: RecipeViewerEvents replaces the old JEIEvents API.
 
-JEIEvents.hideItems(event => {
-  event.hide('minecraft:enchanted_book')
-  event.hide('minecraft:enchanting_table')
-  event.hide('minecraft:enchanted_golden_apple')
+RecipeViewerEvents.removeEntriesCompletely('item', event => {
+  event.remove('minecraft:enchanted_book')
+  event.remove('minecraft:enchanting_table')
+  event.remove('minecraft:enchanted_golden_apple')
 })
