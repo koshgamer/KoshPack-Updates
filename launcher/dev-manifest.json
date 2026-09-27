@@ -105,6 +105,12 @@
       "sha256": "dcba26fdb0aac09616d26396386c6f87704ff56336324c760840e629f28b3305"
     },
     {
+      "path": "kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
+      "size": 320,
+      "sha256": "90e11a7dc26f83b0a7383f43c76d4bc84d8282dd7336fa7ab02e2b7b75164ffb"
+    },
+    {
       "path": "config/ftbquests/quests/chapter_groups.snbt",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/config/ftbquests/quests/chapter_groups.snbt",
       "size": 55,
