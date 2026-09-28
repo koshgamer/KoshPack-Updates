@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "dev-armor",
   "label": "DEV / БРОНЯ",
-  "launcherMinVersion": "0.2.15",
+  "launcherMinVersion": "0.2.20",
   "minecraft": "1.21.1",
-  "neoforge": "21.1.248",
+  "neoforge": "21.1.249",
   "armor": {
     "version": "alpha-0.120",
     "file": "KoshPack_Armor_DEV.jar",
