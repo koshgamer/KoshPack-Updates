@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "current",
-  "launcherMinVersion": "0.2.16",
+  "launcherMinVersion": "0.2.19",
   "pack": "KoshPack",
   "packVersion": "stable-r82",
   "minecraft": "1.21.1",
