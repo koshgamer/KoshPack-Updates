@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "channel": "current",
-  "launcherMinVersion": "0.2.8",
+  "launcherMinVersion": "0.2.16",
   "pack": "KoshPack",
-  "packVersion": "dev-current",
+  "packVersion": "stable-r82",
   "minecraft": "1.21.1",
   "neoforge": "21.1.248",
   "package": {
-    "file": "minecraft.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/current/minecraft.zip",
-    "size": 723665481,
-    "sha256": "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
+    "file": "minecraft-stable-r82.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/current/minecraft-stable-r82.zip",
+    "size": 729357801,
+    "sha256": "aad11dad5747572fa8fc2e053acf73e12b1d7f4f015ab11bbfe62039edf09a3b"
   },
   "launcher": {
     "version": "0.2.16",
