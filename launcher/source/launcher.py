@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.19"
+APP_VERSION = "0.2.20"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -41,7 +41,7 @@ DEV_EXTRA_PATHS: tuple[str, ...] = ()
 PACK_ASSET_NAME = "minecraft-stable-r82.zip"
 EXPECTED_BUNDLED_PACK_SHA256 = "aad11dad5747572fa8fc2e053acf73e12b1d7f4f015ab11bbfe62039edf09a3b"
 MC_VERSION = "1.21.1"
-NEOFORGE_VERSION = "21.1.248"
+NEOFORGE_VERSION = "21.1.249"
 LAUNCH_SPEC = f"neoforge::{NEOFORGE_VERSION}"
 PMC_VERSION = "5.0.5"
 PMC_ARCHIVE_URL = "https://github.com/theorzr/portablemc/releases/download/v5.0.5/portablemc-5.0.5-windows-x86_64-msvc.zip"
