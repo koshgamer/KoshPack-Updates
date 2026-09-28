@@ -53,20 +53,20 @@
     {
       "path": "kubejs/server_scripts/koshpack_forge_bench.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_bench.js",
-      "size": 93486,
-      "sha256": "317b1aed09be59c73646f5a069d9bcf271476bb3a280e971eeabc726d4469964"
+      "size": 110120,
+      "sha256": "6a9581a9b8e86cc5f90cf4da3f93a6ca2e6f6163222532cf16041d646b902b17"
     },
     {
       "path": "kubejs/server_scripts/koshpack_forge_test_kit.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_test_kit.js",
-      "size": 3882,
-      "sha256": "0823a2c1f7651f422782b0428e3be08d32fed2ac1bb02481c23b61f93359d701"
+      "size": 4491,
+      "sha256": "8644d33183222c9b1ab5d2013beebdcd5ab20a8b2fc63934c3f1f1571ea7d1a6"
     },
     {
       "path": "kubejs/server_scripts/koshpack_forge_runtime.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_runtime.js",
-      "size": 22482,
-      "sha256": "4ba1acb3a7734bc6b040780b4977bf30da001ebf70a6ac91734e31a3e0a5f2da"
+      "size": 38043,
+      "sha256": "a649f004b9d4ebf6797d3ac4faf9962586b2b77d29dd8f723a40cec344a0a0c3"
     },
     {
       "path": "kubejs/client_scripts/koshpack_forge_tooltips.js",
@@ -286,10 +286,10 @@
     },
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
-      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV-backtank-restored.jar",
-      "size": 162637,
-      "sha256": "fd0973cba5d3e57e7512422d86b7ccee22c465fbbd74140e3398d5d20d7b431e"
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV-alpha17.jar",
+      "size": 171663,
+      "sha256": "88acf73750a462376eed146d08b50bd2292e2ffa90620900f1207f4b604c51e6"
     }
   ],
-  "hotfixRevision": 80
+  "hotfixRevision": 81
 }

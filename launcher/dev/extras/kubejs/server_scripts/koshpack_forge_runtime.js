@@ -2,12 +2,29 @@
 // Shared runtime for the expanded forge catalog.
 // Numbers are the first live balance pass and are intentionally conservative.
 
-var KOSH_RT_ATTRIBUTES = Java.loadClass('net.minecraft.world.entity.ai.attributes.Attributes')
-var KOSH_RT_ATTRIBUTE_MODIFIER = Java.loadClass('net.minecraft.world.entity.ai.attributes.AttributeModifier')
-var KOSH_RT_RESOURCE_LOCATION = Java.loadClass('net.minecraft.resources.ResourceLocation')
+var KOSH_RT_ATTRIBUTES = null
+var KOSH_RT_ATTRIBUTE_MODIFIER = null
+var KOSH_RT_RESOURCE_LOCATION = null
+var KOSH_RT_BLOCK_POS = null
+var KOSH_RT_BUILTIN_REGISTRIES = null
+var KOSH_RT_MOB_EFFECTS = null
+var KOSH_RT_REACTIVE_LATCH = {}
+var KOSH_RT_DISCHARGE_STATE = {}
 
-var KOSH_RT_OP_ADD = KOSH_RT_ATTRIBUTE_MODIFIER.Operation.ADD_VALUE
-var KOSH_RT_OP_BASE = KOSH_RT_ATTRIBUTE_MODIFIER.Operation.ADD_MULTIPLIED_BASE
+var KOSH_RT_OP_ADD = null
+var KOSH_RT_OP_BASE = null
+var KOSH_RT_TRENCHING_ACTIVE = false
+
+if (typeof Java !== 'undefined') {
+  KOSH_RT_ATTRIBUTES = Java.loadClass('net.minecraft.world.entity.ai.attributes.Attributes')
+  KOSH_RT_ATTRIBUTE_MODIFIER = Java.loadClass('net.minecraft.world.entity.ai.attributes.AttributeModifier')
+  KOSH_RT_RESOURCE_LOCATION = Java.loadClass('net.minecraft.resources.ResourceLocation')
+  KOSH_RT_BLOCK_POS = Java.loadClass('net.minecraft.core.BlockPos')
+  KOSH_RT_BUILTIN_REGISTRIES = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
+  KOSH_RT_MOB_EFFECTS = Java.loadClass('net.minecraft.world.effect.MobEffects')
+  KOSH_RT_OP_ADD = KOSH_RT_ATTRIBUTE_MODIFIER.Operation.ADD_VALUE
+  KOSH_RT_OP_BASE = KOSH_RT_ATTRIBUTE_MODIFIER.Operation.ADD_MULTIPLIED_BASE
+}
 
 function koshRuntimeForgeSlot(stack, slot) {
   try {
@@ -174,6 +191,67 @@ function koshRuntimeRemoveAttr(player, attrName, idPath) {
   try { player.removeAttribute(attr, id) } catch (e) {}
 }
 
+function koshRuntimeRegisteredAttr(attrId) {
+  try {
+    var rl = KOSH_RT_RESOURCE_LOCATION.parse(String(attrId))
+    var attr = KOSH_RT_BUILTIN_REGISTRIES.ATTRIBUTE.get(rl)
+    if (!attr) return null
+    return KOSH_RT_BUILTIN_REGISTRIES.ATTRIBUTE.wrapAsHolder(attr)
+  } catch (e) {}
+  return null
+}
+
+function koshRuntimeSetRegisteredAttr(player, attrId, idPath, amount, op) {
+  var attr = koshRuntimeRegisteredAttr(attrId)
+  var id = koshRuntimeId(idPath)
+  if (!attr || !id) return false
+  try {
+    player.modifyAttribute(attr, id, Number(amount), op)
+    return true
+  } catch (e) {}
+  return false
+}
+
+function koshRuntimeRemoveRegisteredAttr(player, attrId, idPath) {
+  var attr = koshRuntimeRegisteredAttr(attrId)
+  var id = koshRuntimeId(idPath)
+  if (!attr || !id) return
+  try { player.removeAttribute(attr, id) } catch (e) {}
+}
+
+function koshRuntimeStackId(stack) {
+  if (!stack) return ''
+  try { return String(KOSH_RT_BUILTIN_REGISTRIES.ITEM.getKey(stack.getItem())) } catch (e) {}
+  try { return String(stack.id) } catch (e) {}
+  return ''
+}
+
+function koshRuntimeEntityId(entity) {
+  if (!entity) return ''
+  try { return String(KOSH_RT_BUILTIN_REGISTRIES.ENTITY_TYPE.getKey(entity.getType())) } catch (e) {}
+  try { return String(entity.type) } catch (e) {}
+  return ''
+}
+
+function koshRuntimePlayerKey(player) {
+  try { return String(player.uuid) } catch (e) {}
+  try { return String(player.getUUID()) } catch (e) {}
+  return ''
+}
+
+function koshRuntimeBehind(attacker, victim) {
+  try {
+    var look = victim.getLookAngle()
+    var dx = Number(attacker.x) - Number(victim.x)
+    var dz = Number(attacker.z) - Number(victim.z)
+    var len = Math.sqrt(dx * dx + dz * dz)
+    if (len < 0.001) return false
+    var dot = (Number(look.x) * dx + Number(look.z) * dz) / len
+    return dot < -0.45
+  } catch (e) {}
+  return false
+}
+
 function koshRuntimeBelowId(player) {
   try {
     var b = player.level.getBlock(Math.floor(player.x), Math.floor(player.y - 0.15), Math.floor(player.z))
@@ -207,11 +285,149 @@ function koshRuntimeHeldDurabilityChance(stack) {
   return Math.min(0.65, a + b)
 }
 
+function koshRuntimeTableValue(level, values) {
+  var lv = Math.min(values.length - 1, Math.max(0, Number(level) || 0))
+  return Number(values[lv] || 0)
+}
+
+function koshRuntimeForcedMiningSpeed(level) {
+  return koshRuntimeTableValue(level, [0,0.18,0.36,0.54,0.72])
+}
+
+function koshRuntimeWorkPartOptimizationSpeed(level) {
+  return koshRuntimeTableValue(level, [0,0.10,0.20,0.30,0.40])
+}
+
+function koshRuntimeForcedMiningExtraWear(level) {
+  return koshRuntimeTableValue(level, [0,1,1,2,2])
+}
+
+function koshRuntimeTrenchingExtraBlocks(level) {
+  return koshRuntimeTableValue(level, [0,1,2,3,4])
+}
+
+function koshRuntimeIsLooseTrenchingBlock(blockId) {
+  var id = String(blockId || '').toLowerCase()
+  return /(^|:)(dirt|coarse_dirt|rooted_dirt|grass_block|podzol|mycelium|sand|red_sand|gravel|clay|mud|snow|snow_block|soul_sand|soul_soil)$/.test(id)
+}
+
+function koshRuntimeTrenchingLine(origin, direction, level, shiftDown) {
+  var count = koshRuntimeTrenchingExtraBlocks(level)
+  if (shiftDown || count <= 0 || !origin || !direction) return []
+  var dx = Number(direction.x) || 0
+  var dy = Number(direction.y) || 0
+  var dz = Number(direction.z) || 0
+  var out = []
+  for (var i = 1; i <= count; i++) {
+    out.push({
+      x: Math.floor(Number(origin.x) || 0) + dx * i,
+      y: Math.floor(Number(origin.y) || 0) + dy * i,
+      z: Math.floor(Number(origin.z) || 0) + dz * i
+    })
+  }
+  return out
+}
+
+function koshRuntimeDirectionVector(name) {
+  var n = String(name || '').toLowerCase()
+  if (n.indexOf('north') >= 0) return { x: 0, y: 0, z: -1 }
+  if (n.indexOf('south') >= 0) return { x: 0, y: 0, z: 1 }
+  if (n.indexOf('west') >= 0) return { x: -1, y: 0, z: 0 }
+  if (n.indexOf('east') >= 0) return { x: 1, y: 0, z: 0 }
+  return null
+}
+
+function koshRuntimePlayerShiftDown(player) {
+  try { if (player.isShiftKeyDown()) return true } catch (e) {}
+  try { if (player.isCrouching()) return true } catch (e) {}
+  try { if (player.shiftKeyDown) return true } catch (e) {}
+  return false
+}
+
+function koshRuntimePlayerDigDirection(player) {
+  try {
+    var direct = koshRuntimeDirectionVector(player.getDirection())
+    if (direct) return direct
+  } catch (e) {}
+  try {
+    var named = koshRuntimeDirectionVector(player.direction)
+    if (named) return named
+  } catch (e) {}
+  try {
+    var yRot = Number(player.getYRot())
+    if (!isNaN(yRot)) {
+      var quadrant = Math.floor((yRot * 4 / 360) + 0.5) & 3
+      return [
+        { x: 0, y: 0, z: 1 },
+        { x: -1, y: 0, z: 0 },
+        { x: 0, y: 0, z: -1 },
+        { x: 1, y: 0, z: 0 }
+      ][quadrant]
+    }
+  } catch (e) {}
+  return { x: 0, y: 0, z: 1 }
+}
+
+function koshRuntimePositionOrNull(x, y, z) {
+  var nx = Number(x)
+  var ny = Number(y)
+  var nz = Number(z)
+  if (!isNaN(nx) && !isNaN(ny) && !isNaN(nz)) return { x: nx, y: ny, z: nz }
+  return null
+}
+
+function koshRuntimeBlockPosition(block) {
+  try {
+    var direct = koshRuntimePositionOrNull(block.x, block.y, block.z)
+    if (direct) return direct
+  } catch (e) {}
+  try {
+    var pos = block.pos
+    var wrapped = koshRuntimePositionOrNull(pos.x, pos.y, pos.z)
+    if (wrapped) return wrapped
+  } catch (e) {}
+  try {
+    var p = block.blockPosition()
+    return koshRuntimePositionOrNull(p.getX(), p.getY(), p.getZ())
+  } catch (e) {}
+  return null
+}
+
+function koshRuntimeDamageStack(stack, amount) {
+  var extra = Math.max(0, Number(amount) || 0)
+  if (!stack || extra <= 0) return
+  try {
+    var max = Number(stack.getMaxDamage())
+    var damage = Number(stack.getDamageValue())
+    if (max > 0 && !isNaN(damage)) stack.setDamageValue(Math.min(max - 1, damage + extra))
+    return
+  } catch (e) {}
+  try {
+    var max2 = Number(stack.maxDamage)
+    var damage2 = Number(stack.damageValue)
+    if (max2 > 0 && !isNaN(damage2)) stack.damageValue = Math.min(max2 - 1, damage2 + extra)
+  } catch (_e) {}
+}
+
+function koshRuntimeDestroyLooseBlock(level, pos, player) {
+  if (!level || !pos || !KOSH_RT_BLOCK_POS) return false
+  try {
+    var bp = new KOSH_RT_BLOCK_POS(pos.x, pos.y, pos.z)
+    return level.destroyBlock(bp, true, player) === true
+  } catch (e) {}
+  try {
+    var block = level.getBlock(pos.x, pos.y, pos.z)
+    if (!block || !koshRuntimeIsLooseTrenchingBlock(block.id)) return false
+    block.set('minecraft:air')
+    return true
+  } catch (_e) {}
+  return false
+}
+
 function koshRuntimeToolSpeed(stack) {
   var groups = [
-    ['aggressive_geometry',[0,0.10,0.20,0.30,0.40]],
+    ['aggressive_geometry',[0,0.18,0.36,0.54,0.72]],
     ['wide_blade',[0,0.10,0.20,0.30,0.40]],
-    ['trenching_edge',[0,0.08,0.16,0.24,0.32]],
     ['wide_cultivator',[0,0.10,0.20,0.30,0.40]],
     ['light_shaft',[0,0.05,0.10,0.15,0.20]],
     ['dual_angle',[0,0.06,0.12,0.18,0.24]],
@@ -229,10 +445,20 @@ function koshRuntimeToolSpeed(stack) {
     var lv = koshRuntimeForgeLevel(stack, groups[i][0])
     best = Math.max(best, Number(groups[i][1][Math.min(4, lv)] || 0))
   }
-  return Math.min(0.60, best)
+  return Math.min(0.75, best)
 }
 
-EntityEvents.beforeHurt(event => {
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    forcedMiningSpeed: koshRuntimeForcedMiningSpeed,
+    workPartOptimizationSpeed: koshRuntimeWorkPartOptimizationSpeed,
+    forcedMiningExtraWear: koshRuntimeForcedMiningExtraWear,
+    isLooseTrenchingBlock: koshRuntimeIsLooseTrenchingBlock,
+    trenchingLine: koshRuntimeTrenchingLine
+  }
+}
+
+if (typeof EntityEvents !== 'undefined') EntityEvents.beforeHurt(event => {
   var victim = event.entity
 
   // ARMOR DEFENCE
@@ -288,8 +514,11 @@ EntityEvents.beforeHurt(event => {
       var serrated = koshRuntimeForgeLevel(held, 'serrated_edge')
       if (serrated > 0 && /arthropod/.test(koshRuntimeMobType(victim))) bonus += [0,0.06,0.12,0.18,0.24][Math.min(4,serrated)]
 
-      var pen = koshRuntimeForgeLevel(held, 'penetrating_bevel')
-      if (pen > 0 && koshRuntimeArmorValue(victim) > 0) bonus += [0,0.05,0.10,0.15,0.20][Math.min(4,pen)]
+      var backstab = koshRuntimeForgeLevel(held, 'backstab_point')
+      if (backstab > 0 && koshRuntimeBehind(attacker, victim)) {
+        bonus += [0,0.40,0.80,1.20][Math.min(3,backstab)]
+      }
+
     } else {
       var limbs = koshRuntimeForgeLevel(held, 'reinforced_limbs')
       var prod = koshRuntimeForgeLevel(held, 'reinforced_prod')
@@ -298,19 +527,15 @@ EntityEvents.beforeHurt(event => {
         [0,0.06,0.12,0.18,0.24][Math.min(4,prod)]
       )
 
-      var hydro = koshRuntimeForgeLevel(held, 'hydrodynamic_head')
-      if (hydro > 0) {
-        var wet = false
-        try { wet = attacker.isInWater() || victim.isInWater() } catch (e) {}
-        if (wet) bonus += [0,0.08,0.16,0.24,0.32][Math.min(4,hydro)]
-      }
+      var voltaic = koshRuntimeForgeLevel(held, 'voltaic_guide')
+      if (voltaic > 0) bonus += [0,0.05,0.10,0.15,0.20][Math.min(4,voltaic)]
     }
 
     if (bonus !== 0) koshRuntimeSetDamage(event, 1.0 + bonus)
   } catch (e) {}
 })
 
-EntityEvents.afterHurt(event => {
+if (typeof EntityEvents !== 'undefined') EntityEvents.afterHurt(event => {
   var victim = event.entity
   var attacker = koshRuntimeSourceActual(event.source)
 
@@ -383,6 +608,28 @@ EntityEvents.afterHurt(event => {
       } catch (e) {}
     }
 
+    var snare = koshRuntimeForgeLevel(held,'snare_module')
+    if (!projectile && snare > 0 && koshRuntimeRoll(attacker,[0,0.15,0.25,0.35,0.45][Math.min(4,snare)])) {
+      try { victim.potionEffects.add('minecraft:slowness', 30 + snare * 20, snare >= 3 ? 1 : 0, false, true) } catch (e) {}
+    }
+
+    var discharge = koshRuntimeForgeLevel(held,'kinetic_accumulator')
+    if (!projectile && discharge > 0) {
+      var dkey = koshRuntimePlayerKey(attacker)
+      if (dkey) {
+        var ds = KOSH_RT_DISCHARGE_STATE[dkey] || { count: 0, expires: 0 }
+        ds.count += 1
+        try { ds.expires = Number(attacker.tickCount) + 80 } catch (e) { ds.expires = 80 }
+        var threshold = Math.max(2, 6 - discharge)
+        if (ds.count >= threshold) {
+          try { victim.attack(2 + discharge) } catch (e) {}
+          try { attacker.attack(1 + discharge * 0.5) } catch (e) {}
+          ds.count = 0
+        }
+        KOSH_RT_DISCHARGE_STATE[dkey] = ds
+      }
+    }
+
     var wearChance = koshRuntimeHeldDurabilityChance(held)
     if (wearChance > 0) {
       var heldRef = held
@@ -393,7 +640,26 @@ EntityEvents.afterHurt(event => {
   } catch (e) {}
 })
 
-EntityEvents.drops(event => {
+if (typeof EntityEvents !== 'undefined') EntityEvents.spawned(event => {
+  try {
+    var entity = event.entity
+    var owner = null
+    try { owner = entity.getOwner() } catch (e) {}
+    if (!owner || !owner.isPlayer || !owner.isPlayer()) return
+
+    var held = owner.mainHandItem
+    var eid = koshRuntimeEntityId(entity)
+    var heldId = koshRuntimeStackId(held)
+
+    var voltaic = koshRuntimeForgeLevel(held,'voltaic_guide')
+    if (voltaic > 0 && /arrow|bolt|projectile/.test(eid)) {
+      try { entity.setNoGravity(true) } catch (e) {}
+    }
+
+  } catch (e) {}
+})
+
+if (typeof EntityEvents !== 'undefined') EntityEvents.drops(event => {
   try {
     var attacker = koshRuntimeSourceActual(event.source)
     if (!attacker || !attacker.isPlayer || !attacker.isPlayer()) return
@@ -414,7 +680,7 @@ EntityEvents.drops(event => {
   } catch (e) {}
 })
 
-BlockEvents.drops(event => {
+if (typeof BlockEvents !== 'undefined') BlockEvents.drops(event => {
   try {
     var player = event.entity
     var tool = event.tool
@@ -451,6 +717,40 @@ BlockEvents.drops(event => {
             extra.count = 1
             event.addItem(extra)
           }
+        }
+      }
+    }
+
+    var forcedWear = koshRuntimeForcedMiningExtraWear(koshRuntimeForgeLevel(tool, 'aggressive_geometry'))
+    if (forcedWear > 0) {
+      var forcedToolRef = tool
+      player.server.scheduleInTicks(1, function() {
+        koshRuntimeDamageStack(forcedToolRef, forcedWear)
+      })
+    }
+
+    var trenchLv = koshRuntimeForgeLevel(tool, 'trenching_edge')
+    if (!KOSH_RT_TRENCHING_ACTIVE && trenchLv > 0 && !koshRuntimePlayerShiftDown(player)) {
+      var origin = koshRuntimeBlockPosition(event.block)
+      var sourceId = ''
+      try { sourceId = String(event.block.id) } catch (e) {}
+      if (origin && koshRuntimeIsLooseTrenchingBlock(sourceId)) {
+        var level = null
+        try { level = event.level } catch (e) {}
+        try { if (!level) level = player.serverLevel() } catch (e) {}
+        try { if (!level) level = player.level } catch (e) {}
+        var line = koshRuntimeTrenchingLine(origin, koshRuntimePlayerDigDirection(player), trenchLv, false)
+        KOSH_RT_TRENCHING_ACTIVE = true
+        try {
+          for (var li = 0; li < line.length; li++) {
+            var target = line[li]
+            var targetBlock = null
+            try { targetBlock = level.getBlock(target.x, target.y, target.z) } catch (e) {}
+            if (!targetBlock || !koshRuntimeIsLooseTrenchingBlock(targetBlock.id)) continue
+            if (koshRuntimeDestroyLooseBlock(level, target, player)) koshRuntimeDamageStack(tool, 1)
+          }
+        } finally {
+          KOSH_RT_TRENCHING_ACTIVE = false
         }
       }
     }
@@ -492,7 +792,7 @@ function koshRuntimeApplyFrost(player, level) {
   }
 }
 
-PlayerEvents.tick(event => {
+if (typeof PlayerEvents !== 'undefined') PlayerEvents.tick(event => {
   var player = event.player
 
   // Fast attributes refresh every 5 ticks.
@@ -573,6 +873,59 @@ PlayerEvents.tick(event => {
   if (attackSpeed !== 0) koshRuntimeSetAttr(player,'ATTACK_SPEED','forge_attack_speed',attackSpeed,KOSH_RT_OP_BASE)
   else koshRuntimeRemoveAttr(player,'ATTACK_SPEED','forge_attack_speed')
 
+  var sweep = koshRuntimeForgeLevel(held,'wide_sweep')
+  var sweepAmount = [0,0.08,0.12,0.16,0.20][Math.min(4,sweep)]
+  if (sweepAmount > 0) koshRuntimeSetAttr(player,'SWEEPING_DAMAGE_RATIO','forge_sweeping_ratio',sweepAmount,KOSH_RT_OP_ADD)
+  else koshRuntimeRemoveAttr(player,'SWEEPING_DAMAGE_RATIO','forge_sweeping_ratio')
+
+  // Purification replacement: periodically neutralizes poison/wither while equipped.
+  var purification = koshRuntimeArmorMax(player,'purification_filter')
+  if (purification > 0 && (player.tickCount % 20) === 0) {
+    var afflicted = false
+    try { afflicted = player.hasEffect(KOSH_RT_MOB_EFFECTS.POISON) || player.hasEffect(KOSH_RT_MOB_EFFECTS.WITHER) } catch (e) {}
+    if (afflicted && koshRuntimeRoll(player,[0,0.25,0.40,0.55,0.70][Math.min(4,purification)])) {
+      try { player.removeEffect(KOSH_RT_MOB_EFFECTS.POISON) } catch (e) {}
+      try { player.removeEffect(KOSH_RT_MOB_EFFECTS.WITHER) } catch (e) {}
+    }
+  }
+
+  // Physical replacements for Combat Roll enchantments.
+  var rollCount = koshRuntimeForgeLevel(helmet,'roll_capacity')
+  if (rollCount > 0) koshRuntimeSetRegisteredAttr(player,'combat_roll:count','forge_roll_count',rollCount,KOSH_RT_OP_ADD)
+  else koshRuntimeRemoveRegisteredAttr(player,'combat_roll:count','forge_roll_count')
+
+  var rollRecharge = koshRuntimeForgeLevel(chest,'roll_recharge')
+  if (rollRecharge > 0) koshRuntimeSetRegisteredAttr(player,'combat_roll:recharge','forge_roll_recharge',rollRecharge * 0.20,KOSH_RT_OP_BASE)
+  else koshRuntimeRemoveRegisteredAttr(player,'combat_roll:recharge','forge_roll_recharge')
+
+  var rollDistance = koshRuntimeForgeLevel(boots,'roll_distance')
+  if (rollDistance > 0) koshRuntimeSetRegisteredAttr(player,'combat_roll:distance','forge_roll_distance',rollDistance,KOSH_RT_OP_ADD)
+  else koshRuntimeRemoveRegisteredAttr(player,'combat_roll:distance','forge_roll_distance')
+
+  // Hell Strider replacement: only active while actually in lava.
+  var lavaTread = koshRuntimeForgeLevel(boots,'lava_tread')
+  var inLava = false
+  try { inLava = player.isInLava() } catch (e) {}
+  if (lavaTread > 0 && inLava) koshRuntimeSetAttr(player,'MOVEMENT_SPEED','forge_lava_tread',[0,0.25,0.35][Math.min(2,lavaTread)],KOSH_RT_OP_BASE)
+  else koshRuntimeRemoveAttr(player,'MOVEMENT_SPEED','forge_lava_tread')
+
+  // Discharge replacement: accumulated hits temporarily build movement speed.
+  var dischargeLevel = koshRuntimeForgeLevel(held,'kinetic_accumulator')
+  var dischargeKey = koshRuntimePlayerKey(player)
+  var dischargeState = dischargeKey ? KOSH_RT_DISCHARGE_STATE[dischargeKey] : null
+  var nowTick = 0
+  try { nowTick = Number(player.tickCount) } catch (e) {}
+  if (dischargeState && dischargeState.expires > 0 && nowTick > dischargeState.expires) {
+    delete KOSH_RT_DISCHARGE_STATE[dischargeKey]
+    dischargeState = null
+  }
+  if (dischargeLevel > 0 && dischargeState && dischargeState.count > 0) {
+    var dischargeSpeed = Math.min(0.24, dischargeState.count * 0.03 * dischargeLevel)
+    koshRuntimeSetAttr(player,'MOVEMENT_SPEED','forge_discharge_speed',dischargeSpeed,KOSH_RT_OP_BASE)
+  } else {
+    koshRuntimeRemoveAttr(player,'MOVEMENT_SPEED','forge_discharge_speed')
+  }
+
   // Fishing luck portion of Fine Hook.
   var hook = koshRuntimeForgeLevel(held,'fine_hook')
   if (hook > 0) koshRuntimeSetAttr(player,'LUCK','forge_fishing_luck',hook,KOSH_RT_OP_ADD)
@@ -608,6 +961,32 @@ PlayerEvents.tick(event => {
     var offset = [0,0.03,0.06,0.09,0.12][Math.min(4,stream)]
     koshRuntimeSetAttr(player,'MOVEMENT_SPEED','forge_streamline',offset,KOSH_RT_OP_BASE)
   } else koshRuntimeRemoveAttr(player,'MOVEMENT_SPEED','forge_streamline')
+
+  // Reactive Shaft: physical Riptide replacement. Triggers once after a short trident charge.
+  var reactive = koshRuntimeForgeLevel(held,'reactive_shaft')
+  var wet = false
+  try { wet = player.isInWater() || player.isInRain() } catch (e) {
+    try { wet = player.isInWater() } catch (_e) {}
+  }
+  var reactiveKey = ''
+  try { reactiveKey = String(player.uuid) } catch (e) {
+    try { reactiveKey = String(player.getUUID()) } catch (_e) {}
+  }
+  var useTicks = 0
+  try { useTicks = Number(player.getTicksUsingItem()) } catch (e) {}
+  if (reactive > 0 && using && wet && koshRuntimeStackId(held) === 'minecraft:trident') {
+    if (useTicks >= 10 && !KOSH_RT_REACTIVE_LATCH[reactiveKey]) {
+      try {
+        var look = player.getLookAngle()
+        var thrust = [0,1.05,1.25,1.45,1.65][Math.min(4,reactive)]
+        player.addMotion(Number(look.x) * thrust, Number(look.y) * thrust + 0.15, Number(look.z) * thrust)
+        KOSH_RT_REACTIVE_LATCH[reactiveKey] = true
+        try { player.stopUsingItem() } catch (_e) {}
+      } catch (e) {}
+    }
+  } else if (reactiveKey) {
+    delete KOSH_RT_REACTIVE_LATCH[reactiveKey]
+  }
 
   // Frosted ice generation.
   var frost = koshRuntimeForgeLevel(boots,'frost')

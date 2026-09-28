@@ -46,6 +46,7 @@ var KOSH_FORGE_MODS = {
     "pieces": [
       "all"
     ],
+    "conflictGroup": "armor_defense",
     "effectText": [
       "",
       "−2% подходящего входящего урона",
@@ -75,6 +76,7 @@ var KOSH_FORGE_MODS = {
     "pieces": [
       "all"
     ],
+    "conflictGroup": "armor_defense",
     "effectText": [
       "",
       "−4% огня/лавы",
@@ -104,6 +106,7 @@ var KOSH_FORGE_MODS = {
     "pieces": [
       "all"
     ],
+    "conflictGroup": "armor_defense",
     "effectText": [
       "",
       "−4% взрывного урона",
@@ -133,6 +136,7 @@ var KOSH_FORGE_MODS = {
     "pieces": [
       "all"
     ],
+    "conflictGroup": "armor_defense",
     "effectText": [
       "",
       "−4% урона снарядами",
@@ -815,7 +819,8 @@ var KOSH_FORGE_MODS = {
       "glaive",
       "scythe",
       "axe",
-      "hammer"
+      "hammer",
+      "mace"
     ],
     "effectText": [
       "",
@@ -955,7 +960,8 @@ var KOSH_FORGE_MODS = {
       "spear",
       "glaive",
       "axe",
-      "hammer"
+      "hammer",
+      "mace"
     ],
     "effectText": [
       "",
@@ -1025,7 +1031,8 @@ var KOSH_FORGE_MODS = {
       "spear",
       "glaive",
       "axe",
-      "hammer"
+      "hammer",
+      "mace"
     ],
     "effectText": [
       "",
@@ -1509,20 +1516,21 @@ var KOSH_FORGE_MODS = {
     ]
   },
   "aggressive_geometry": {
-    "name": "Агрессивная геометрия зубьев",
+    "name": "Форсированная добыча",
     "category": "tool",
     "icon": "minecraft:iron_pickaxe",
     "max": 4,
-    "description": "Ускоряет добычу подходящим инструментом.",
+    "description": "Сильно ускоряет добычу подходящим инструментом, но повышает расход прочности.",
     "families": [
       "pickaxe"
     ],
+    "conflictGroup": "tool_work_speed",
     "effectText": [
       "",
-      "+10% скорости добычи",
-      "+20% скорости добычи",
-      "+30% скорости добычи",
-      "+40% скорости добычи"
+      "+18% скорости добычи; +1 прочности за блок",
+      "+36% скорости добычи; +1 прочности за блок",
+      "+54% скорости добычи; +2 прочности за блок",
+      "+72% скорости добычи; +2 прочности за блок"
     ],
     "base": [
       {
@@ -1628,20 +1636,26 @@ var KOSH_FORGE_MODS = {
     ]
   },
   "wide_blade": {
-    "name": "Широкое полотно",
+    "name": "Оптимизация рабочей части",
     "category": "tool",
     "icon": "minecraft:iron_shovel",
     "max": 4,
-    "description": "Ускоряет работу с землёй, песком и снегом.",
+    "description": "Ускоряет профильную работу подходящего инструмента без форсированного износа.",
     "families": [
-      "shovel"
+      "pickaxe",
+      "shovel",
+      "hoe",
+      "excavator",
+      "shears",
+      "sickle"
     ],
+    "conflictGroup": "tool_work_speed",
     "effectText": [
       "",
-      "+10% скорости",
-      "+20% скорости",
-      "+30% скорости",
-      "+40% скорости"
+      "+10% профильной скорости",
+      "+20% профильной скорости",
+      "+30% профильной скорости",
+      "+40% профильной скорости"
     ],
     "base": [
       {
@@ -1661,16 +1675,16 @@ var KOSH_FORGE_MODS = {
     "category": "tool",
     "icon": "minecraft:stone_shovel",
     "max": 4,
-    "description": "Ускоряет точную траншейную работу.",
+    "description": "Роет дополнительные рыхлые блоки по прямой; Shift отключает режим.",
     "families": [
       "shovel"
     ],
     "effectText": [
       "",
-      "+8% точной скорости",
-      "+16% точной скорости",
-      "+24% точной скорости",
-      "+32% точной скорости"
+      "+1 блок по прямой; +1 прочности за каждый",
+      "+2 блока по прямой; +1 прочности за каждый",
+      "+3 блока по прямой; +1 прочности за каждый",
+      "+4 блока по прямой; +1 прочности за каждый"
     ],
     "base": [
       {
@@ -2498,6 +2512,453 @@ var KOSH_FORGE_MODS = {
         "label": "Нить"
       }
     ]
+  },
+  "impact_fletching": {
+    "name": "Ударное оперение",
+    "category": "weapon",
+    "icon": "minecraft:arrow",
+    "max": 2,
+    "description": "Усиливает импульс стрелы и отбрасывает поражённую цель.",
+    "families": [
+      "bow"
+    ],
+    "effectText": [
+      "",
+      "+1 к отбрасыванию",
+      "+2 к отбрасыванию"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:feather",
+        "count": 4,
+        "label": "Перо"
+      },
+      {
+        "ingredient": "minecraft:iron_nugget",
+        "count": 4,
+        "label": "Железный самородок"
+      }
+    ]
+  },
+  "reactive_shaft": {
+    "name": "Реактивное древко",
+    "category": "weapon",
+    "icon": "minecraft:trident",
+    "max": 3,
+    "description": "Преобразует движение в воде и под дождём в направленный рывок.",
+    "families": [
+      "trident"
+    ],
+    "effectText": [
+      "",
+      "Рывок I",
+      "Рывок II",
+      "Рывок III"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:prismarine_shard",
+        "count": 4,
+        "label": "Призмариновый осколок"
+      },
+      {
+        "ingredient": "minecraft:copper_ingot",
+        "count": 2,
+        "label": "Медный слиток"
+      }
+    ]
+  },
+  "inertial_core": {
+    "name": "Инерционный сердечник",
+    "category": "weapon",
+    "icon": "minecraft:mace",
+    "max": 4,
+    "description": "Усиливает удар булавы при падении с высоты.",
+    "families": [
+      "mace"
+    ],
+    "effectText": [
+      "",
+      "+5% smash-урона за блок",
+      "+10% за блок",
+      "+15% за блок",
+      "+20% за блок"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:iron_block",
+        "count": 1,
+        "label": "Железный блок"
+      },
+      {
+        "ingredient": "minecraft:copper_ingot",
+        "count": 2,
+        "label": "Медный слиток"
+      }
+    ]
+  },
+  "rebound_piston": {
+    "name": "Отбойный поршень",
+    "category": "weapon",
+    "icon": "minecraft:breeze_rod",
+    "max": 3,
+    "description": "После smash-удара создаёт восходящий импульс.",
+    "families": [
+      "mace"
+    ],
+    "effectText": [
+      "",
+      "Отбой I",
+      "Отбой II",
+      "Отбой III"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:breeze_rod",
+        "count": 1,
+        "label": "Стержень бриза"
+      },
+      {
+        "ingredient": "minecraft:iron_ingot",
+        "count": 2,
+        "label": "Железный слиток"
+      }
+    ]
+  },
+  "roll_capacity": {
+    "name": "Дополнительный привод переката",
+    "category": "armor",
+    "icon": "minecraft:chainmail_helmet",
+    "max": 3,
+    "description": "Добавляет запас последовательных перекатов.",
+    "pieces": [
+      "helmet"
+    ],
+    "effectText": [
+      "",
+      "+1 перекат",
+      "+2 переката",
+      "+3 переката"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:iron_nugget",
+        "count": 4,
+        "label": "Железный самородок"
+      },
+      {
+        "ingredient": "minecraft:leather",
+        "count": 1,
+        "label": "Кожа"
+      }
+    ]
+  },
+  "roll_recharge": {
+    "name": "Акробатические сочленения",
+    "category": "armor",
+    "icon": "minecraft:chainmail_leggings",
+    "max": 4,
+    "description": "Ускоряет восстановление переката.",
+    "pieces": [
+      "chestplate"
+    ],
+    "effectText": [
+      "",
+      "+20% восстановления",
+      "+40% восстановления",
+      "+60% восстановления",
+      "+80% восстановления"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:leather",
+        "count": 2,
+        "label": "Кожа"
+      },
+      {
+        "ingredient": "minecraft:copper_ingot",
+        "count": 1,
+        "label": "Медный слиток"
+      }
+    ]
+  },
+  "roll_distance": {
+    "name": "Толчковая подошва",
+    "category": "armor",
+    "icon": "minecraft:iron_boots",
+    "max": 4,
+    "description": "Увеличивает дистанцию переката.",
+    "pieces": [
+      "boots"
+    ],
+    "effectText": [
+      "",
+      "+1 блок переката",
+      "+2 блока переката",
+      "+3 блока переката",
+      "+4 блока переката"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:rabbit_hide",
+        "count": 2,
+        "label": "Кроличья шкурка"
+      },
+      {
+        "ingredient": "minecraft:iron_nugget",
+        "count": 4,
+        "label": "Железный самородок"
+      }
+    ]
+  },
+  "lava_tread": {
+    "name": "Лавоходная подошва",
+    "category": "armor",
+    "icon": "minecraft:magma_cream",
+    "max": 2,
+    "description": "Повышает подвижность в лаве.",
+    "pieces": [
+      "boots"
+    ],
+    "effectText": [
+      "",
+      "+25% движения в лаве",
+      "+35% движения в лаве"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:magma_cream",
+        "count": 2,
+        "label": "Магмовый крем"
+      },
+      {
+        "ingredient": "minecraft:nether_brick",
+        "count": 4,
+        "label": "Незерский кирпич"
+      }
+    ]
+  },
+  "backstab_point": {
+    "name": "Тыльное остриё",
+    "category": "weapon",
+    "icon": "minecraft:iron_sword",
+    "max": 3,
+    "description": "Усиливает точный удар со спины.",
+    "families": [
+      "dagger"
+    ],
+    "effectText": [
+      "",
+      "+40% урона со спины",
+      "+80% урона со спины",
+      "+120% урона со спины"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:flint",
+        "count": 2,
+        "label": "Кремень"
+      },
+      {
+        "ingredient": "minecraft:quartz",
+        "count": 1,
+        "label": "Кварц"
+      }
+    ]
+  },
+  "air_receiver": {
+    "name": "Усиленный воздушный ресивер",
+    "category": "armor",
+    "icon": "create:copper_backtank",
+    "max": 3,
+    "description": "Увеличивает полезный запас воздуха Backtank.",
+    "pieces": [
+      "chestplate"
+    ],
+    "effectText": [
+      "",
+      "Увеличенный резерв I",
+      "Увеличенный резерв II",
+      "Увеличенный резерв III"
+    ],
+    "base": [
+      {
+        "ingredient": "create:copper_sheet",
+        "count": 2,
+        "label": "Медный лист"
+      },
+      {
+        "ingredient": "create:andesite_alloy",
+        "count": 1,
+        "label": "Андезитовый сплав"
+      }
+    ]
+  },
+  "ammo_catcher": {
+    "name": "Улавливатель боеприпаса",
+    "category": "weapon",
+    "icon": "create:potato_cannon",
+    "max": 3,
+    "description": "Даёт шанс сохранить боеприпас картофельной пушки после выстрела.",
+    "families": [
+      "potato_cannon"
+    ],
+    "effectText": [
+      "",
+      "+25% возврата",
+      "+37,5% возврата",
+      "+50% возврата"
+    ],
+    "base": [
+      {
+        "ingredient": "create:precision_mechanism",
+        "count": 1,
+        "label": "Точный механизм"
+      },
+      {
+        "ingredient": "minecraft:string",
+        "count": 2,
+        "label": "Нить"
+      }
+    ]
+  },
+  "purification_filter": {
+    "name": "Очистительный фильтр",
+    "category": "armor",
+    "icon": "minecraft:milk_bucket",
+    "max": 3,
+    "description": "Повышает шанс подавить яд и иссушение с защитным импульсом.",
+    "pieces": [
+      "all"
+    ],
+    "effectText": [
+      "",
+      "Очистка I",
+      "Очистка II",
+      "Очистка III"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:charcoal",
+        "count": 4,
+        "label": "Древесный уголь"
+      },
+      {
+        "ingredient": "minecraft:honeycomb",
+        "count": 2,
+        "label": "Пчелиные соты"
+      }
+    ]
+  },
+  "snare_module": {
+    "name": "Капканный модуль",
+    "category": "weapon",
+    "icon": "minecraft:cobweb",
+    "max": 4,
+    "description": "Удары могут сильнее замедлять цель и контролировать окружение.",
+    "families": [
+      "all"
+    ],
+    "effectText": [
+      "",
+      "Захват I",
+      "Захват II",
+      "Захват III",
+      "Захват IV"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:string",
+        "count": 4,
+        "label": "Нить"
+      },
+      {
+        "ingredient": "minecraft:tripwire_hook",
+        "count": 2,
+        "label": "Натяжной датчик"
+      }
+    ]
+  },
+  "voltaic_guide": {
+    "name": "Вольтова направляющая",
+    "category": "weapon",
+    "icon": "minecraft:lightning_rod",
+    "max": 1,
+    "description": "Стабилизирует полёт стрелы и добавляет электрический импульс.",
+    "families": [
+      "bow",
+      "crossbow"
+    ],
+    "effectText": [
+      "",
+      "Вольтов выстрел"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:copper_ingot",
+        "count": 3,
+        "label": "Медный слиток"
+      },
+      {
+        "ingredient": "minecraft:redstone",
+        "count": 2,
+        "label": "Редстоун"
+      }
+    ]
+  },
+  "kinetic_accumulator": {
+    "name": "Кинетический накопитель",
+    "category": "weapon",
+    "icon": "create:flywheel",
+    "max": 3,
+    "description": "Удары накапливают кинетический заряд для последующего разряда.",
+    "families": [
+      "all"
+    ],
+    "effectText": [
+      "",
+      "Накопление I",
+      "Накопление II",
+      "Накопление III"
+    ],
+    "base": [
+      {
+        "ingredient": "create:andesite_alloy",
+        "count": 2,
+        "label": "Андезитовый сплав"
+      },
+      {
+        "ingredient": "minecraft:redstone",
+        "count": 2,
+        "label": "Редстоун"
+      }
+    ]
+  },
+  "inertial_stabilizer": {
+    "name": "Инерционный стабилизатор",
+    "category": "weapon",
+    "icon": "supplementaries:slingshot",
+    "max": 1,
+    "description": "Снижает падение снаряда рогатки и стабилизирует траекторию.",
+    "families": [
+      "slingshot"
+    ],
+    "effectText": [
+      "",
+      "Снаряд не падает под действием гравитации"
+    ],
+    "base": [
+      {
+        "ingredient": "minecraft:amethyst_shard",
+        "count": 2,
+        "label": "Осколок аметиста"
+      },
+      {
+        "ingredient": "minecraft:copper_ingot",
+        "count": 1,
+        "label": "Медный слиток"
+      }
+    ]
   }
 }
 Object.keys(KOSH_FORGE_MODS).forEach(function(k) { KOSH_FORGE_MODS[k].id = k })
@@ -2551,6 +3012,7 @@ function koshForgeWeaponFamily(stack, id, namespace) {
   if (koshForgeHasTag(stack, 'minecraft:bows')) return 'bow'
   if (koshForgeHasTag(stack, 'minecraft:crossbows')) return 'crossbow'
   if (koshForgeHasTag(stack, 'minecraft:tridents')) return 'trident'
+  if (namespace === 'create' && id === 'potato_cannon') return 'potato_cannon'
 
   var n = id.toLowerCase()
   if (n.indexOf('chakram') >= 0) return 'chakram'
@@ -2564,6 +3026,7 @@ function koshForgeWeaponFamily(stack, id, namespace) {
   if (n.indexOf('glaive') >= 0 || n.indexOf('halberd') >= 0) return 'glaive'
   if (n.indexOf('scythe') >= 0) return 'scythe'
   if (n.indexOf('greataxe') >= 0 || koshForgeHasTag(stack, 'minecraft:axes')) return 'axe'
+  if (namespace === 'minecraft' && n === 'mace') return 'mace'
   if (n.indexOf('greathammer') >= 0 || n.indexOf('hammer') >= 0 || n.indexOf('mace') >= 0) return 'hammer'
   if (n.indexOf('slingshot') >= 0) return 'slingshot'
   if (koshForgeHasTag(stack, 'minecraft:swords')) return 'blade'
@@ -2594,6 +3057,9 @@ function koshForgeClassify(stack) {
   if (!id || id === 'minecraft:air') return null
 
   var split = id.split(':')
+  if (split.length === 2 && split[0] === 'create' && split[1].slice(-9) === '_backtank') {
+    return { category: 'armor', slots: 3, tier: 4, piece: 'chestplate', family: 'armor' }
+  }
   if (split.length === 2 && KOSH_ARMOR_NAMESPACES[split[0]]) {
     var armorTier = koshForgeArmorTier(split[1])
     return {
