@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.17"
+APP_VERSION = "0.2.18"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -1958,23 +1958,30 @@ class MeridianLauncher(tk.Tk):
             )
             self.channel_update_btn.configure(text="↻  ОБНОВИТЬ STABLE")
 
-    def _channel_changed(self) -> None:
-        self.state_data["channel"] = self.channel_var.get()
-        atomic_write_json(STATE_FILE, self.state_data)
-        if self.channel_var.get() == "stable":
+def _channel_changed(self) -> None:
+    channel = self.channel_var.get()
+    self.state_data["channel"] = channel
+    atomic_write_json(STATE_FILE, self.state_data)
+
+    self._update_channel_ui()
+    self.status_var.set("DEV-канал выбран" if channel == "dev" else "STABLE-канал выбран")
+    self.detail_var.set(
+        "Нажми «Обновить сборку», чтобы применить тестовую броню."
+        if channel == "dev"
+        else f"Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}"
+    )
+
+    if channel == "stable":
+        def restore_job() -> None:
             restored = restore_stable_armor()
             restored_extras = restore_stable_dev_extras()
+
             if restored:
-                self._log("DEV-броня отключена. Стабильная версия восстановлена.")
+                self._emit("log", "DEV-броня отключена. Стабильная версия восстановлена.")
             if restored_extras:
-                self._log("DEV-рецепты отключены; стабильные KubeJS-файлы восстановлены.")
-        self._update_channel_ui()
-        self.status_var.set("DEV-канал выбран" if self.channel_var.get() == "dev" else "STABLE-канал выбран")
-        self.detail_var.set(
-            "Нажми «Обновить сборку», чтобы применить тестовую броню."
-            if self.channel_var.get() == "dev"
-            else f"Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}"
-        )
+                self._emit("log", "DEV-рецепты отключены; стабильные KubeJS-файлы восстановлены.")
+
+        self._start_thread(restore_job)
 
     def _ensure_dev_armor(self) -> None:
         if self.channel_var.get() != "dev":
