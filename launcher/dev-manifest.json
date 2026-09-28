@@ -286,10 +286,10 @@
     },
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
-      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV-alpha17.jar",
-      "size": 171663,
-      "sha256": "88acf73750a462376eed146d08b50bd2292e2ffa90620900f1207f4b604c51e6"
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV-alpha17-ci.jar",
+      "size": 171867,
+      "sha256": "a7f73031041fb38b2414043ae66bd3c31a5864d5bca5a313dfa1cfaf467e6179"
     }
   ],
-  "hotfixRevision": 81
+  "hotfixRevision": 82
 }
