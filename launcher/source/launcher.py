@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.15"
+APP_VERSION = "0.2.16"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -37,23 +37,9 @@ DEV_MANIFEST_API_URL = "https://api.github.com/repos/koshgamer/KoshPack-Updates/
 DEV_ARMOR_TARGET = "koshpack-armor-specialties-DEV.jar"
 DEV_ARMOR_DIRECT_URL = "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar"
 DEV_ARMOR_B64_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/current.jar.b64"
-DEV_EXTRA_PATHS = (
-    "kubejs/startup_scripts/koshpack_profession_armor_components.js",
-    "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
-    "kubejs/server_scripts/koshpack_profession_armor_traits.js",
-    "kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js",
-    "kubejs/startup_scripts/koshpack_forge_bench.js",
-    "kubejs/server_scripts/koshpack_forge_bench_recipes.js",
-    "kubejs/server_scripts/koshpack_forge_bench.js",
-    "kubejs/server_scripts/koshpack_forge_runtime.js",
-    "kubejs/client_scripts/koshpack_forge_tooltips.js",
-    "kubejs/client_scripts/koshpack_gear_readable_tooltips.js",
-    "kubejs/server_scripts/koshpack_gear_material_swap.js",
-    "kubejs/server_scripts/koshpack_alloy_progression.js",
-    "kubejs/client_scripts/koshpack_alloy_tooltips.js",
-)
-PACK_ASSET_NAME = "minecraft.zip"
-EXPECTED_BUNDLED_PACK_SHA256 = "a815398de0b6863bafb15d6cecbaabfca69a8886bb22313847593ec7958bc227"
+DEV_EXTRA_PATHS: tuple[str, ...] = ()
+PACK_ASSET_NAME = "minecraft-stable-r82.zip"
+EXPECTED_BUNDLED_PACK_SHA256 = "aad11dad5747572fa8fc2e053acf73e12b1d7f4f015ab11bbfe62039edf09a3b"
 MC_VERSION = "1.21.1"
 NEOFORGE_VERSION = "21.1.248"
 LAUNCH_SPEC = f"neoforge::{NEOFORGE_VERSION}"
@@ -642,6 +628,15 @@ def _dev_extra_target(rel: str) -> Path:
 def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
     """Install checksum-pinned DEV extras and preserve any stable copies."""
     installed: list[str] = []
+    previously_tracked: set[str] = set()
+    try:
+        if DEV_EXTRA_TRACK_FILE.is_file():
+            data = json.loads(DEV_EXTRA_TRACK_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                previously_tracked = {str(rel) for rel in data.get("paths", [])}
+    except Exception:
+        pass
+
     extras = manifest.get("extras") or []
     for entry in extras:
         rel = str(entry["path"]).replace("\\", "/")
@@ -653,7 +648,9 @@ def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
         if target.is_file():
             try:
                 if sha256_file(target) == expected:
-                    installed.append(rel)
+                    backup = DEV_EXTRA_BACKUP_DIR / rel
+                    if rel in previously_tracked or backup.is_file():
+                        installed.append(rel)
                     continue
             except OSError:
                 pass
@@ -714,6 +711,13 @@ def restore_stable_dev_extras() -> list[str]:
                         tracked.append(rel)
     except Exception:
         pass
+
+    if DEV_EXTRA_BACKUP_DIR.is_dir():
+        for backup in DEV_EXTRA_BACKUP_DIR.rglob("*"):
+            if backup.is_file():
+                rel = backup.relative_to(DEV_EXTRA_BACKUP_DIR).as_posix()
+                if rel not in tracked:
+                    tracked.append(rel)
 
     for rel in tracked:
         target = _dev_extra_target(rel)
