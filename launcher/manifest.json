@@ -13,9 +13,9 @@
     "sha256": "aad11dad5747572fa8fc2e053acf73e12b1d7f4f015ab11bbfe62039edf09a3b"
   },
   "launcher": {
-    "version": "0.2.19",
+    "version": "0.2.20",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-current/Project-Meridian-Launcher.exe",
-    "sha256": "6fd4297e89ab77e7713d25bef417f688fdbba54d4c8afa673104e172744ec933",
-    "size": 18547710
+    "sha256": "91d4415d1007a62e8829dc82df98806d6898c180e431e1f9bc249a3a7c3b89d7",
+    "size": 18544824
   }
 }
