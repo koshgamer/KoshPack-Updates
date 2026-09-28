@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.16"
+APP_VERSION = "0.2.17"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -749,6 +749,15 @@ def restore_stable_dev_extras() -> list[str]:
     except OSError:
         pass
     return restored
+
+
+def discard_stale_dev_extra_backups() -> None:
+    """Drop backups only after a stable package has replaced the game files."""
+    try:
+        DEV_EXTRA_TRACK_FILE.unlink(missing_ok=True)
+    except OSError:
+        pass
+    shutil.rmtree(DEV_EXTRA_BACKUP_DIR, ignore_errors=True)
 
 
 def download_dev_armor_remote(
@@ -2187,6 +2196,7 @@ class MeridianLauncher(tk.Tk):
                 safe_extract(local_pack, staging)
                 payload = choose_payload_root(staging)
                 managed = install_payload(payload, list(self.state_data.get("managed_files", [])))
+                discard_stale_dev_extra_backups()
             finally:
                 shutil.rmtree(staging, ignore_errors=True)
             self.state_data["pack_digest"] = f"sha256:{local_digest}"
@@ -2245,6 +2255,7 @@ class MeridianLauncher(tk.Tk):
             payload = choose_payload_root(staging)
             self._emit("log", f"Корень сборки: {payload.name}")
             managed = install_payload(payload, list(self.state_data.get("managed_files", [])))
+            discard_stale_dev_extra_backups()
         finally:
             shutil.rmtree(staging, ignore_errors=True)
 
@@ -2288,6 +2299,7 @@ class MeridianLauncher(tk.Tk):
                 safe_extract(zip_path, staging)
                 payload = choose_payload_root(staging)
                 managed = install_payload(payload, list(self.state_data.get("managed_files", [])))
+                discard_stale_dev_extra_backups()
             finally:
                 shutil.rmtree(staging, ignore_errors=True)
 
