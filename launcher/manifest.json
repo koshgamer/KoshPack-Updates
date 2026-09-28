@@ -1,11 +1,11 @@
 {
   "schema": 1,
   "channel": "current",
-  "launcherMinVersion": "0.2.19",
+  "launcherMinVersion": "0.2.20",
   "pack": "KoshPack",
   "packVersion": "stable-r82",
   "minecraft": "1.21.1",
-  "neoforge": "21.1.248",
+  "neoforge": "21.1.249",
   "package": {
     "file": "minecraft-stable-r82.zip",
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/current/minecraft-stable-r82.zip",
