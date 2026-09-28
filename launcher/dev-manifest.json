@@ -293,9 +293,9 @@
     {
       "path": "mods/meridian_world_events-dev.jar",
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
-      "size": 112232,
-      "sha256": "cb9aecd823d121045c94ed857023c1abf23b4c8bafb6e1e2a2de81c6df2f39f1"
+      "size": 114631,
+      "sha256": "70a1820986747c39373bfb6aaec97e0c3115083ed513e81d6e0b0b8eb884c6f0"
     }
   ],
-  "hotfixRevision": 85
+  "hotfixRevision": 86
 }
