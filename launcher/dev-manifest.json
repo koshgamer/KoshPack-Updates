@@ -289,7 +289,13 @@
       "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV-alpha17-ci.jar",
       "size": 171867,
       "sha256": "a7f73031041fb38b2414043ae66bd3c31a5864d5bca5a313dfa1cfaf467e6179"
+    },
+    {
+      "path": "mods/meridian_world_events-dev.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
+      "size": 110409,
+      "sha256": "e77e79932b7d058acc5da0aa64f0384e3517ecae1aa67a74d7bb926d7dfb0bf1"
     }
   ],
-  "hotfixRevision": 82
+  "hotfixRevision": 83
 }
