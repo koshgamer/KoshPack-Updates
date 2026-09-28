@@ -286,7 +286,7 @@
     },
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
-      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/forge-ui-dev-current/KoshPack_Forge_UI_DEV-backtank-restored.jar",
       "size": 162637,
       "sha256": "fd0973cba5d3e57e7512422d86b7ccee22c465fbbd74140e3398d5d20d7b431e"
     }
