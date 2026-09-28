@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.18"
+APP_VERSION = "0.2.19"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -725,11 +725,38 @@ def restore_stable_dev_extras() -> list[str]:
         if backup.is_file():
             target.parent.mkdir(parents=True, exist_ok=True)
             tmp = target.with_suffix(target.suffix + ".restorepart")
-            shutil.copy2(backup, tmp)
+
+            # A previous interrupted restore can leave a read-only .restorepart
+            # on Windows. Remove it first and do not preserve file mode bits on
+            # the temporary copy.
+            if tmp.exists():
+                try:
+                    tmp.chmod(0o666)
+                except OSError:
+                    pass
+                tmp.unlink(missing_ok=True)
+
+            shutil.copyfile(backup, tmp)
+
+            if target.exists():
+                try:
+                    target.chmod(0o666)
+                except OSError:
+                    pass
+
             tmp.replace(target)
+
+            try:
+                backup.chmod(0o666)
+            except OSError:
+                pass
             backup.unlink(missing_ok=True)
             restored.append(rel)
         elif target.exists():
+            try:
+                target.chmod(0o666)
+            except OSError:
+                pass
             target.unlink(missing_ok=True)
             restored.append(rel)
     try:
