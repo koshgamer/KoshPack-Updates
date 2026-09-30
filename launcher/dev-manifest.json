@@ -293,9 +293,9 @@
     {
       "path": "mods/meridian_world_events-dev.jar",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_world_events-dev.jar",
-      "size": 167960,
-      "sha256": "09efdd1b6a3eb38e452a07942ff401fc4f72786f0537a3c6bba8daed4b23a167"
+      "size": 292307,
+      "sha256": "b34d36870bfeea7335979a00bfd68418c380146e29717344f6b88d18a167dc9b"
     }
   ],
-  "hotfixRevision": 92
+  "hotfixRevision": 93
 }
