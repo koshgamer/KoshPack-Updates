@@ -285,12 +285,6 @@
       "sha256": "03e3631bda12343ca0e1ba161c5bb4c8d84d9daa80470b5133c24fca33845591"
     },
     {
-      "path": "mods/meridian_world_events-dev.jar",
-      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_world_events-dev.jar",
-      "size": 366452,
-      "sha256": "67ae0e3860fd7edd21f14791c9d2fc9b927229f8d20cc83bd1cf15c59bfc7f49"
-    },
-    {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/KoshPack_Forge_UI_DEV.jar",
       "size": 172910,
@@ -301,7 +295,13 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_music_ui-dev.jar",
       "size": 5342,
       "sha256": "4cb75434256eee5763fa26a21bef8b6442715b8e4acef90f23b9f479064a5aa8"
+    },
+    {
+      "path": "mods/meridian_world_events-dev.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/meridian_world_events-dev.jar",
+      "size": 366452,
+      "sha256": "67ae0e3860fd7edd21f14791c9d2fc9b927229f8d20cc83bd1cf15c59bfc7f49"
     }
   ],
-  "hotfixRevision": 96
+  "hotfixRevision": 97
 }
