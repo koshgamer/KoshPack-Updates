@@ -291,6 +291,12 @@
       "sha256": "f7b71e93e275bc0eb7f59cebaca845afe77ab8edbf465fe183d751cfb36d1ff9"
     },
     {
+      "path": "mods/vaocorpmusicdiscs-1.5.0-kosh-1.0.jar",
+      "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/vaocorpmusicdiscs-1.5.0-kosh-1.0.jar",
+      "size": 14366700,
+      "sha256": "c3185e3f1a26e164f8abf2c7adb9f87370373ba49727ce1584b9478c63f87dc6"
+    },
+    {
       "path": "mods/meridian_music_ui-dev.jar",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_music_ui-dev.jar",
       "size": 5342,
@@ -303,5 +309,5 @@
       "sha256": "67ae0e3860fd7edd21f14791c9d2fc9b927229f8d20cc83bd1cf15c59bfc7f49"
     }
   ],
-  "hotfixRevision": 97
+  "hotfixRevision": 98
 }
