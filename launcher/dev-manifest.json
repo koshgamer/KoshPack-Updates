@@ -299,8 +299,8 @@
     {
       "path": "mods/meridian_music_ui-dev.jar",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_music_ui-dev.jar",
-      "size": 5342,
-      "sha256": "4cb75434256eee5763fa26a21bef8b6442715b8e4acef90f23b9f479064a5aa8"
+      "size": 4776,
+      "sha256": "f11c76081b64927859d87e360d7511ee47816dd8362384cabdf2d0e9275bbb06"
     },
     {
       "path": "mods/meridian_world_events-dev.jar",
@@ -309,5 +309,5 @@
       "sha256": "67ae0e3860fd7edd21f14791c9d2fc9b927229f8d20cc83bd1cf15c59bfc7f49"
     }
   ],
-  "hotfixRevision": 98
+  "hotfixRevision": 99
 }
