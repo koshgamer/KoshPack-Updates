@@ -2,7 +2,7 @@
   "schema": 1,
   "channel": "dev-armor",
   "label": "DEV / БРОНЯ",
-  "launcherMinVersion": "0.2.20",
+  "launcherMinVersion": "0.2.21-dev1",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "armor": {
@@ -101,14 +101,14 @@
     {
       "path": "kubejs/server_scripts/koshpack_no_enchantments.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_no_enchantments.js",
-      "size": 794,
-      "sha256": "13022cb22227fc8ee55b00270e4a1cad515b8cf5da5519814dc3f5d46c29dd9b"
+      "size": 388,
+      "sha256": "b8f0d8a68f76dcf145dd9206b654f111c29a0bb1ba4e938be6c5e437c3e83caa"
     },
     {
       "path": "kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
-      "size": 766,
-      "sha256": "14ba82072e500301a1f7b07dddbe59d48669c8db36b6edc7e56975db3cba3be8"
+      "size": 343,
+      "sha256": "64d39b6b31a421bb5c44d2e9a01c20b3ed8dc44b59ed9cd22bb23392b9dfd81c"
     },
     {
       "path": "kubejs/assets/kubejs/items/base_abrasive.json",
@@ -318,8 +318,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
-      "size": 2702,
-      "sha256": "812a7c2aaae9e4a26cd48551a37a90f1b07c84baaa6bbeadc7d7b99589e99f80"
+      "size": 6549,
+      "sha256": "d07d22a69300191c4f8e8aee226aca3c0d83d74357757bede2572c6065e97181"
     },
     {
       "path": "kubejs/client_scripts/koshpack_hide_vanilla_gear_jei.js",
@@ -650,8 +650,211 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/farmersdelight/recipe/integration/silentgear/cutting/netherwood.json",
       "size": 656,
       "sha256": "6d20bc953207b89c098f1d7cf2f00b3d4902969ba9580ae1b1cd8ea2306bf34e"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/black_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/black_experience_lantern.json",
+      "size": 514,
+      "sha256": "ec3af883d49165a085ab8ad9c6b70e1e49fcbb5a169768e4329721ffc0ee1345"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/black_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/black_printer.json",
+      "size": 489,
+      "sha256": "0fad9b24eacd36f42e14e16508eae3b6284838d42151beff0e6608d03bf5567c"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/blue_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/blue_experience_lantern.json",
+      "size": 512,
+      "sha256": "bd99cbf279b7a41894f4a207b0d8a2d3a576c36ac7783a11efa380e38cd54574"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/blue_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/blue_printer.json",
+      "size": 487,
+      "sha256": "1d4a1742338c9c0cc1cf311a323fba00edddc662ecc3c389a2e513b8d8804594"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/brown_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/brown_experience_lantern.json",
+      "size": 514,
+      "sha256": "bcb514d1ddb54973ee2f8ddf8469da481e5a6cac6459dd4a45227b131ac33055"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/brown_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/brown_printer.json",
+      "size": 489,
+      "sha256": "3ee6c209c062e2c1f3f4c5c8db2d9e31dda05afb5130066677f0b8c5be7a8ddd"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/cyan_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/cyan_experience_lantern.json",
+      "size": 512,
+      "sha256": "2702365dac3133295675e9a77c8ec3dc0e214bf576e1ee1f4fbccc9605fee560"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/cyan_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/cyan_printer.json",
+      "size": 487,
+      "sha256": "4a98a7d6d5f0600b9718be7fa248fd2850d1aed70396794349dc40f267926ccf"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/gray_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/gray_experience_lantern.json",
+      "size": 512,
+      "sha256": "749160553a0dde7e9e9139be85654573ce8afbdcc1317e0a0a5ec5df3c52665b"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/gray_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/gray_printer.json",
+      "size": 487,
+      "sha256": "54fd91ddd49907f2f5a9aad74514b660978c9f679163002705837cf421d1b77a"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/green_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/green_experience_lantern.json",
+      "size": 514,
+      "sha256": "b73213afbf86161c2a8c0a618f5d6ae9ef2923eb4727582583c644d39f670043"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/green_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/green_printer.json",
+      "size": 489,
+      "sha256": "fe9080eb7c0993eb5845980594f83e3252a484b41d44188034eb5308132ce766"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/light_blue_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/light_blue_experience_lantern.json",
+      "size": 524,
+      "sha256": "3bae40ad81df6eab47028d57e3144a450fdac19144717572ad8797093639fe75"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/light_blue_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/light_blue_printer.json",
+      "size": 499,
+      "sha256": "cac96c7ff8cfbaa1d378c80ea1b6b6b3a190bd442bbac684b5fbad77c793cf61"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/light_gray_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/light_gray_experience_lantern.json",
+      "size": 524,
+      "sha256": "452e9022c688dcc0c70ac3d451d6cfbec53d539ff991521a2e764d12b75005c1"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/light_gray_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/light_gray_printer.json",
+      "size": 499,
+      "sha256": "b56c9cfbf4ed91ea5f6d0601ee0ee65d985bd7671d154d1a463138b50e1a3e2e"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/lime_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/lime_experience_lantern.json",
+      "size": 512,
+      "sha256": "346208a261997ece56fcb25351af2a9fed7684a617af6d91b1adf8fd05fb0ab7"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/lime_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/lime_printer.json",
+      "size": 487,
+      "sha256": "2bc343bad9b951b2dca66182ea14c578a79e5be4180eb49e92eeedf8f65652f4"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/magenta_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/magenta_experience_lantern.json",
+      "size": 518,
+      "sha256": "6dae46ca974271bcfd8cfc2447559b1f43d18b8ac2196f7929a25c285940f764"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/magenta_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/magenta_printer.json",
+      "size": 493,
+      "sha256": "b4f9fed8d05de605ad6e27cb8d894fd2890a67ebb1e7ddb61dcae15381cc50f3"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/orange_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/orange_experience_lantern.json",
+      "size": 516,
+      "sha256": "cd53d1a4678b52e2157b560e1ca7f68e463af292f79dc1c62dbf1f8b30552ab3"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/orange_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/orange_printer.json",
+      "size": 491,
+      "sha256": "6fa27c1abd469347d630512334dce872b904e45d40de1f3a4a1be32fdcb370d4"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/pink_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/pink_experience_lantern.json",
+      "size": 512,
+      "sha256": "1577e8441b7b9990ddc59174fd66f92993453d34cd7fd0720fb6e8f934a2c801"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/pink_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/pink_printer.json",
+      "size": 487,
+      "sha256": "8dbb48a650136c83841f0742693a611b8678d26c6af6a20ff2d88a01c4f4757c"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/purple_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/purple_experience_lantern.json",
+      "size": 516,
+      "sha256": "a2e5400195ed0932a71b813ac38289c8db7325f53fa961f5f7c59237418aca91"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/purple_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/purple_printer.json",
+      "size": 491,
+      "sha256": "9fc0ee7852e2aefc892c5ecfd8dc5e1fee85bdd7ddaeb259cf3cd5f69d8015dc"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/red_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/red_experience_lantern.json",
+      "size": 510,
+      "sha256": "b614081eaf9889c8f1117b303573051766f695ff12f4f980c596699cabcafe72"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/red_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/red_printer.json",
+      "size": 485,
+      "sha256": "4df1979e309e0f15ac269562e5ad9d367452b5c10cc2b8a0d19166811f71cd9e"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/white_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/white_experience_lantern.json",
+      "size": 514,
+      "sha256": "f5a6f5a33af3aa1c13debd31a575ba06d23ef484b944d4f8f9802679044ecfe1"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/white_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/white_printer.json",
+      "size": 489,
+      "sha256": "3f1c4e44a3c41f063f0431a4089c1552c00bca542c09b5aec0b9a0ef644d67db"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/yellow_experience_lantern.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/yellow_experience_lantern.json",
+      "size": 516,
+      "sha256": "79d9b3596c47b3467024027a7a048f5a5601984538395577ed3dd96978f5a5ff"
+    },
+    {
+      "path": "kubejs/data/colorfulpipes/recipe/crafting/compats/yellow_printer.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/yellow_printer.json",
+      "size": 491,
+      "sha256": "94f641378e3fb427c7290cc3e6f2a84b9b1e7956336b4f31bd1b1052d7aad92a"
     }
   ],
-  "hotfixRevision": 101,
-  "note": "DEV 101: unified alpha3 events and adaptive UI preserved; strict vanilla gear and enchantment gates, reachable Silent Gear trident and profession recipes, 54 processing/integration recipe fixes."
+  "hotfixRevision": 102,
+  "removedModIds": [
+    "create_enchantment_industry",
+    "enchantmentlibrary"
+  ],
+  "devLauncher": {
+    "version": "0.2.21-dev1",
+    "file": "Project-Meridian-Launcher-DEV.exe",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/Project-Meridian-Launcher-DEV.exe",
+    "size": 31397972,
+    "sha256": "5d4d7a17e1d2e6160ea93cb409858b06952b4f3941436c7a36073943382c6e8d"
+  },
+  "note": "DEV 102: alpha3 events and adaptive UI preserved; strict gear/enchantment policy, repaired downstream crafting dependencies and processing recipes. Remove Create Enchantment Industry and Enchantment Library only in DEV; keep Dragons Plus for Central Kitchen."
 }

@@ -29,6 +29,78 @@ ServerEvents.recipes(function(event) {
   // Those skip the blueprint requirement, so Meridian disables the recipe type.
   event.remove({ type: 'silentgear:conversion' })
 
+  // Do not turn vanilla salvage recipes into destructive SG salvage recipes.
+  KOSH_VANILLA_TIERED_GEAR.forEach(function(itemId) {
+    event.remove({ type: 'silentgear:salvaging', input: itemId })
+  })
+  event.remove({ id: 'farmersdelight:salvaging/leather_armor' })
+  ;['gold', 'iron'].forEach(function(metal) {
+    ;['smelting', 'blasting'].forEach(function(method) {
+      event.remove({ id: 'minecraft:' + metal + '_nugget_from_' + method })
+    })
+  })
+
+  // Create already has the copper appliance + netherite ingot upgrade route.
+  ;['diving_boots', 'diving_helmet', 'backtank'].forEach(function(appliance) {
+    event.remove({ id: 'create:crafting/appliances/netherite_' + appliance + '_from_netherite' })
+  })
+
+  // The SG item kind is stable; its material is stored in components.
+  ;['wooden', 'stone', 'iron', 'golden', 'diamond', 'netherite'].forEach(function(tier) {
+    ;['sword', 'pickaxe', 'axe', 'shovel', 'hoe'].forEach(function(kind) {
+      event.replaceInput({}, 'minecraft:' + tier + '_' + kind, 'silentgear:' + kind)
+    })
+  })
+  ;['bow', 'crossbow', 'shield', 'trident', 'mace', 'shears', 'fishing_rod'].forEach(function(kind) {
+    event.replaceInput({}, 'minecraft:' + kind, 'silentgear:' + kind)
+  })
+
+  // Preserve the upgrade's material charge when any SG shovel becomes the base.
+  event.shapeless('silentgear:road_maker_upgrade', [
+    'silentgear:advanced_upgrade_base', 'silentgear:shovel', '#c:ingots/iron', '#c:dyes/orange'
+  ]).id('silentgear:road_maker_upgrade')
+  event.shapeless('silentgear:spoon_upgrade', [
+    'silentgear:advanced_upgrade_base', 'silentgear:shovel', 'minecraft:diamond'
+  ]).id('silentgear:spoon_upgrade')
+
+  // Smithing has only three inputs: move these upgrades to normal assembly so
+  // SG armor, one netherite ingot, the boss drop and the template all stay required.
+  ;['cursium', 'ignitium'].forEach(function(material) {
+    ;['boots', 'chestplate', 'helmet', 'leggings'].forEach(function(piece) {
+      var id = 'cataclysm:smithing/' + material + '_' + piece
+      event.remove({ id: id })
+      event.shapeless('cataclysm:' + material + '_' + piece, [
+        'silentgear:' + piece, 'minecraft:netherite_ingot',
+        'cataclysm:' + material + '_ingot', 'cataclysm:' + material + '_upgrade_smithing_template'
+      ]).id(id)
+    })
+  })
+  event.remove({ id: 'cataclysm:smithing/monstrous_helm' })
+  event.shapeless('cataclysm:monstrous_helm', [
+    'silentgear:helmet', 'minecraft:netherite_ingot', 'cataclysm:monstrous_horn',
+    'minecraft:netherite_upgrade_smithing_template'
+  ]).id('cataclysm:smithing/monstrous_helm')
+  event.remove({ id: 'cataclysm:the_incinerator' })
+  event.shapeless('cataclysm:the_incinerator', [
+    'silentgear:sword', 'minecraft:netherite_ingot',
+    'cataclysm:ignitium_ingot', 'cataclysm:ignitium_ingot',
+    'minecraft:blaze_rod', 'minecraft:blaze_rod', 'minecraft:blaze_rod', 'minecraft:blaze_rod'
+  ]).id('cataclysm:the_incinerator')
+
+  // Semji's JSON is only a JEI preview; its workbench checks vanilla items in
+  // Java. Add two real assembly routes instead of publishing misleading previews.
+  event.remove({ id: 'semji_clothing:exilearmor_jei' })
+  event.remove({ id: 'semji_clothing:twometerderby_jei' })
+  event.shapeless('semji_clothing:exile_armor_chestplate', [
+    'minecraft:netherite_ingot', 'minecraft:lava_bucket', 'semji_clothing:special_suit_template',
+    'minecraft:ender_eye', 'silentgear:chestplate', 'minecraft:diamond_block'
+  ]).id('kubejs:progression/semji_exile_armor')
+  event.shapeless('semji_clothing:two_meter_derby_boots', [
+    'minecraft:netherite_ingot', 'minecraft:lava_bucket', 'semji_clothing:special_suit_template',
+    'minecraft:ender_eye', 'silentgear:boots',
+    'minecraft:leather', 'minecraft:leather', 'minecraft:leather', 'minecraft:leather'
+  ]).id('kubejs:progression/semji_derby_boots')
+
   // Silent Gear's original blueprint needs the now-forbidden vanilla trident.
   // Keep the ocean exploration gate without depending on removed equipment.
   event.shaped('silentgear:trident_blueprint', ['#H#', '#T#', ' # '], {

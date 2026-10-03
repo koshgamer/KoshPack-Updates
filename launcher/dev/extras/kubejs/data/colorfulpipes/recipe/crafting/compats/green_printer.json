@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "-": {
+      "tag": "c:plates/brass"
+    },
+    "=": {
+      "item": "minecraft:iron_block"
+    },
+    "o": {
+      "item": "colorfulpipes:green_spout"
+    }
+  },
+  "pattern": [
+    "-",
+    "o",
+    "="
+  ],
+  "result": {
+    "count": 1,
+    "id": "colorfulpipes:green_printer"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create_enchantment_industry"
+    }
+  ]
+}

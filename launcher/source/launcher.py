@@ -8,12 +8,14 @@ import math
 import json
 import os
 import queue
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import threading
 import time
+import tomllib
 import urllib.error
 import urllib.request
 import webbrowser
@@ -27,7 +29,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.20"
+APP_VERSION = "0.2.21-dev1"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
@@ -610,6 +612,7 @@ def get_dev_armor_manifest() -> dict[str, Any]:
                 "url": file_url,
                 "size": size,
                 "extras": extras,
+                "removedModIds": _dev_removed_mod_ids(data),
             }
         except Exception as e:
             errors.append(f"{type(e).__name__}: {e}")
@@ -625,8 +628,54 @@ def _dev_extra_target(rel: str) -> Path:
     return INSTANCE_DIR / p
 
 
+def _dev_removed_mod_ids(manifest: dict[str, Any]) -> list[str]:
+    ids = manifest.get("removedModIds", [])
+    if not isinstance(ids, list) or any(
+        not isinstance(mod_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", mod_id)
+        or mod_id in {"minecraft", "neoforge"} for mod_id in ids
+    ):
+        raise RuntimeError("Некорректный список удаляемых DEV-модов")
+    return list(dict.fromkeys(ids))
+
+
+def _jar_mod_ids(path: Path) -> set[str]:
+    try:
+        with zipfile.ZipFile(path) as jar:
+            for name in ("META-INF/neoforge.mods.toml", "META-INF/mods.toml"):
+                if name in jar.namelist():
+                    metadata = tomllib.loads(jar.read(name).decode("utf-8-sig"))
+                    return {str(mod["modId"]) for mod in metadata.get("mods", [])}
+    except (OSError, zipfile.BadZipFile, ValueError, KeyError):
+        pass  # Unrelated non-mod libraries are not removal candidates.
+    return set()
+
+
+def _remove_dev_mods(mod_ids: list[str], previously_tracked: set[str]) -> list[str]:
+    removed = []
+    if not mod_ids:
+        return removed
+    blocked = set(mod_ids)
+    candidates = {path.name for directory in (INSTANCE_DIR / "mods", DEV_EXTRA_BACKUP_DIR / "mods")
+                  for path in directory.glob("*.jar") if _jar_mod_ids(path) & blocked}
+    for name in sorted(candidates):
+        rel = "mods/" + name
+        target = _dev_extra_target(rel)
+        backup = DEV_EXTRA_BACKUP_DIR / rel
+        if target.is_file():
+            # Never delete a differently identified replacement at the same path.
+            if not _jar_mod_ids(target) & blocked:
+                continue
+            if not backup.exists() and rel not in previously_tracked:
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(target, backup)
+            target.unlink()
+        removed.append(rel)
+    return removed
+
+
 def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
     """Install checksum-pinned DEV extras and preserve any stable copies."""
+    removed_mod_ids = _dev_removed_mod_ids(manifest)
     installed: list[str] = []
     previously_tracked: set[str] = set()
     try:
@@ -691,6 +740,7 @@ def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
         tmp.replace(target)
         installed.append(rel)
 
+    installed.extend(rel for rel in _remove_dev_mods(removed_mod_ids, previously_tracked) if rel not in installed)
     try:
         atomic_write_json(DEV_EXTRA_TRACK_FILE, {"paths": installed})
     except OSError:

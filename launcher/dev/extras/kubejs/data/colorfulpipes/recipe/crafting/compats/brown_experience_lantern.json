@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": {
+      "item": "create:experience_block"
+    },
+    "c": {
+      "item": "colorfulpipes:brown_copper_casing"
+    },
+    "s": {
+      "item": "minecraft:sponge"
+    }
+  },
+  "pattern": [
+    "a",
+    "s",
+    "c"
+  ],
+  "result": {
+    "count": 1,
+    "id": "colorfulpipes:brown_experience_lantern"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create_enchantment_industry"
+    }
+  ]
+}

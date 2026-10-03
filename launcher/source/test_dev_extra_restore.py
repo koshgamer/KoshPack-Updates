@@ -1,9 +1,12 @@
 import hashlib
 import importlib.util
 import json
+import io
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
+import zipfile
 
 
 spec = importlib.util.spec_from_file_location("launcher_restore_test", Path(__file__).with_name("launcher.py"))
@@ -53,6 +56,44 @@ class DevExtraRestoreTest(unittest.TestCase):
         self.assertEqual(json.loads(launcher.DEV_EXTRA_TRACK_FILE.read_text())["paths"], [rel])
         launcher.restore_stable_dev_extras()
         self.assertFalse((launcher.INSTANCE_DIR / rel).exists())
+
+    def mod_jar(self, filename, mod_id):
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w') as jar:
+            jar.writestr('META-INF/neoforge.mods.toml', f'[[mods]]\nmodId="{mod_id}"\nversion="1.0"\n')
+        target = launcher.INSTANCE_DIR / 'mods' / filename
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data.getvalue())
+        return target, data.getvalue()
+
+    def test_removed_mod_restores_exact_original_after_repeated_dev_updates(self):
+        target, original = self.mod_jar('enchant-custom-version.jar', 'enchantmentlibrary')
+        manifest = {'removedModIds': ['enchantmentlibrary']}
+        self.assertEqual(launcher.install_dev_extras(manifest), ['mods/enchant-custom-version.jar'])
+        self.assertFalse(target.exists())
+        self.assertEqual(launcher.install_dev_extras(manifest), ['mods/enchant-custom-version.jar'])
+        launcher.restore_stable_dev_extras()
+        self.assertEqual(target.read_bytes(), original)
+
+    def test_only_removed_mod_ids_are_affected_not_other_create_dependencies(self):
+        removed, _ = self.mod_jar('different-name.jar', 'create_enchantment_industry')
+        kept, original = self.mod_jar('CreateDragonsPlus.jar', 'create_dragons_plus')
+        launcher.install_dev_extras({'removedModIds': ['create_enchantment_industry']})
+        self.assertFalse(removed.exists())
+        self.assertEqual(kept.read_bytes(), original)
+
+    def test_manifest_reader_preserves_removed_mod_policy(self):
+        manifest = {'armor': {'version': 'test', 'sha256': 'a' * 64},
+                    'removedModIds': ['create_enchantment_industry', 'enchantmentlibrary']}
+        with patch.object(launcher, 'request_json', return_value=manifest):
+            self.assertEqual(launcher.get_dev_armor_manifest()['removedModIds'], manifest['removedModIds'])
+
+    def test_invalid_removal_policy_fails_before_touching_files(self):
+        target, original = self.mod_jar('test.jar', 'enchantmentlibrary')
+        for invalid in ('../saves', 'minecraft', 'neoforge', ['../saves'], ['minecraft'], ['neoforge']):
+            with self.assertRaises(RuntimeError):
+                launcher.install_dev_extras({'removedModIds': invalid})
+            self.assertEqual(target.read_bytes(), original)
 
 
 if __name__ == "__main__":
