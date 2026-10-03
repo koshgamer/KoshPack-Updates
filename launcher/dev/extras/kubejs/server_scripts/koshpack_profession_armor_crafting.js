@@ -78,7 +78,7 @@ const PROFESSIONS = [
   {
     id: 'farmer', namespace: 'koshpackfarmerhelmet', itemPrefix: 'farmer',
     moduleI: ['3x minecraft:wheat', '2x minecraft:leather', '2x minecraft:string'],
-    moduleII: ['minecraft:shears', 'minecraft:iron_hoe'],
+    moduleII: ['silentgear:shears', 'minecraft:composter'],
     moduleIII: ['create:brass_sheet', 'minecraft:golden_carrot', 'minecraft:magma_cream'],
     moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:golden_carrot']
   },
@@ -92,16 +92,16 @@ const PROFESSIONS = [
   {
     id: 'fisher', namespace: 'koshpackfisherhelmet', itemPrefix: 'fisher',
     moduleI: ['3x minecraft:string', '2x minecraft:cod', '2x minecraft:leather'],
-    moduleII: ['minecraft:fishing_rod', 'minecraft:prismarine_shard'],
+    moduleII: ['silentgear:fishing_rod', 'minecraft:prismarine_shard'],
     moduleIII: ['create:brass_sheet', 'minecraft:prismarine_crystals', 'minecraft:magma_cream'],
     moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:heart_of_the_sea']
   },
   {
     id: 'lumberjack', namespace: 'koshpacklumberjackhelmet', itemPrefix: 'lumberjack',
     moduleI: ['3x minecraft:oak_log', '2x minecraft:iron_ingot', '2x minecraft:leather'],
-    moduleII: ['minecraft:iron_axe', 'minecraft:chain'],
+    moduleII: ['create:mechanical_saw', 'minecraft:chain'],
     moduleIII: ['create:brass_sheet', 'minecraft:diamond', 'minecraft:blaze_powder'],
-    moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:diamond_axe']
+    moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:netherite_scrap']
   },
   {
     id: 'diver', namespace: 'koshpackdiverhelmet', itemPrefix: 'diver',
@@ -113,21 +113,21 @@ const PROFESSIONS = [
   {
     id: 'fighter', namespace: 'koshpackfighterarmor', itemPrefix: 'fighter',
     moduleI: ['3x minecraft:iron_ingot', '2x minecraft:leather', '2x minecraft:flint'],
-    moduleII: ['minecraft:shield', 'minecraft:iron_ingot'],
+    moduleII: ['silentgear:shield', 'minecraft:iron_ingot'],
     moduleIII: ['minecraft:blaze_rod', 'minecraft:diamond', 'create:brass_sheet'],
     moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:netherite_scrap']
   },
   {
     id: 'archer', namespace: 'koshpackarcherarmor', itemPrefix: 'archer',
     moduleI: ['3x minecraft:feather', '3x minecraft:string', '2x minecraft:leather'],
-    moduleII: ['minecraft:bow', 'minecraft:leather'],
+    moduleII: ['silentgear:bow', 'minecraft:leather'],
     moduleIII: ['create:brass_sheet', 'minecraft:phantom_membrane', 'minecraft:blaze_powder'],
     moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:ender_eye']
   },
   {
     id: 'shooter', namespace: 'koshpackshooterarmor', itemPrefix: 'shooter',
     moduleI: ['3x minecraft:gunpowder', '2x minecraft:copper_ingot', '2x minecraft:iron_ingot'],
-    moduleII: ['minecraft:crossbow', 'minecraft:iron_ingot'],
+    moduleII: ['silentgear:crossbow', 'minecraft:iron_ingot'],
     moduleIII: ['create:brass_sheet', 'minecraft:spyglass', 'minecraft:blaze_powder'],
     moduleIV: ['minecraft:shulker_shell', 'minecraft:popped_chorus_fruit', 'minecraft:spyglass']
   },

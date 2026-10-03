@@ -974,7 +974,8 @@ if (typeof PlayerEvents !== 'undefined') PlayerEvents.tick(event => {
   }
   var useTicks = 0
   try { useTicks = Number(player.getTicksUsingItem()) } catch (e) {}
-  if (reactive > 0 && using && wet && koshRuntimeStackId(held) === 'minecraft:trident') {
+  var reactiveTridentId = koshRuntimeStackId(held)
+  if (reactive > 0 && using && wet && (reactiveTridentId === 'minecraft:trident' || reactiveTridentId === 'silentgear:trident')) {
     if (useTicks >= 10 && !KOSH_RT_REACTIVE_LATCH[reactiveKey]) {
       try {
         var look = player.getLookAngle()

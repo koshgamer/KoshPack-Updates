@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "create:filling",
+  "ingredients": [
+    {
+      "item": "brewinandchewin:tankard"
+    },
+    {
+      "amount": 250,
+      "fluid": "cocktailsdelight:kraken_rum",
+      "type": "neoforge:single"
+    }
+  ],
+  "results": [
+    {
+      "id": "cocktailsdelight:kraken_rum"
+    }
+  ]
+}

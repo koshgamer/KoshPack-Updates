@@ -23,8 +23,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_profession_armor_crafting.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_profession_armor_crafting.js",
-      "size": 30107,
-      "sha256": "10a324246f47fc437f9e10015c5bdfb53764e57dd054f579ac6fde1227c917e2"
+      "size": 30120,
+      "sha256": "155b0c0eb0f0d567aae54f40c0d92e0446ce73c83eea035dc546d23ae4639f14"
     },
     {
       "path": "kubejs/server_scripts/koshpack_profession_armor_traits.js",
@@ -65,8 +65,8 @@
     {
       "path": "kubejs/server_scripts/koshpack_forge_runtime.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_forge_runtime.js",
-      "size": 37071,
-      "sha256": "94f47f02eeb979b9baf46997a2c07890222c24fc1a74865d282ef0f0663e3ea7"
+      "size": 37163,
+      "sha256": "df4c7eb8294838528423a3b1d6f2bd94d71dcc54888cf6a6a863fafa22928cb6"
     },
     {
       "path": "kubejs/client_scripts/koshpack_forge_tooltips.js",
@@ -101,14 +101,14 @@
     {
       "path": "kubejs/server_scripts/koshpack_no_enchantments.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_no_enchantments.js",
-      "size": 287,
-      "sha256": "dcba26fdb0aac09616d26396386c6f87704ff56336324c760840e629f28b3305"
+      "size": 794,
+      "sha256": "13022cb22227fc8ee55b00270e4a1cad515b8cf5da5519814dc3f5d46c29dd9b"
     },
     {
       "path": "kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_hide_enchantments_jei.js",
-      "size": 343,
-      "sha256": "64d39b6b31a421bb5c44d2e9a01c20b3ed8dc44b59ed9cd22bb23392b9dfd81c"
+      "size": 766,
+      "sha256": "14ba82072e500301a1f7b07dddbe59d48669c8db36b6edc7e56975db3cba3be8"
     },
     {
       "path": "kubejs/assets/kubejs/items/base_abrasive.json",
@@ -287,8 +287,9 @@
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/KoshPack_Forge_UI_DEV.jar",
-      "size": 172910,
-      "sha256": "f7b71e93e275bc0eb7f59cebaca845afe77ab8edbf465fe183d751cfb36d1ff9"
+      "size": 194158,
+      "sha256": "3b65c9817ebef0de60a879a3207fe14862a93babe21cdf9c1f02e4185b515ca8",
+      "version": "0.1.0-alpha18"
     },
     {
       "path": "mods/vaocorpmusicdiscs-1.5.0-kosh-1.0.jar",
@@ -313,7 +314,344 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_foundry_ui-dev.jar",
       "size": 17517,
       "sha256": "f4d8639c08baa27be42b967a716888da691b5c1af4614a706d2870235e31ad6f"
+    },
+    {
+      "path": "kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/server_scripts/koshpack_vanilla_gear_progression.js",
+      "size": 2702,
+      "sha256": "812a7c2aaae9e4a26cd48551a37a90f1b07c84baaa6bbeadc7d7b99589e99f80"
+    },
+    {
+      "path": "kubejs/client_scripts/koshpack_hide_vanilla_gear_jei.js",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/client_scripts/koshpack_hide_vanilla_gear_jei.js",
+      "size": 370,
+      "sha256": "d5147e91dd4d9640f988052ddd1b06505c4dbe3b03638b7496910fb3caa676d5"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/blue_curacao.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/blue_curacao.json",
+      "size": 366,
+      "sha256": "2936f8347517cd9ca11226b6f0e4bfc711d187e5c3c553425da8691c92ac6f70"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/bock.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/bock.json",
+      "size": 350,
+      "sha256": "4e7ea708fbfbbaba8cc98f6f6676c40dec5f04db2c9b59389b96bc93ae01e84e"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/cream_ale.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/cream_ale.json",
+      "size": 360,
+      "sha256": "dd63cde3d885a71d44ec7ab40f6ec6dc320bdbe6f8372ff1698e5b5a068aec82"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/gin.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/gin.json",
+      "size": 348,
+      "sha256": "e0a2e9b131e9081f7962f1a6978dcef105eca6b56e57539d8585f13b78efd179"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/hard_cider.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/hard_cider.json",
+      "size": 362,
+      "sha256": "10fa054f1c56a6e7682af533f174e38c428dde6a52b15f09992983ccc5ccb292"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/hard_lemonade.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/hard_lemonade.json",
+      "size": 368,
+      "sha256": "35b6525a2470cd85d51cbedc84862de36a6371297871329009496cf7a9a5d4dc"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/ipa.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/ipa.json",
+      "size": 348,
+      "sha256": "2764aa226516a62f831057b2a4848f35b27e7aa9a7f70dd1ee026598240856c9"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/kraken_rum.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/kraken_rum.json",
+      "size": 363,
+      "sha256": "d6c00fe572302f9c000f960897b3621042950b2ff783ab30526d74fb7aea5379"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/milk_stout.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/milk_stout.json",
+      "size": 362,
+      "sha256": "125cf02da100d6813763bebb70106dd13377e520a22b806c3991a5ac232f01e2"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/moonshine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/moonshine.json",
+      "size": 360,
+      "sha256": "5ffd985f61f2cc2153201d37da6b4f150b0b67ad1aba9b9813dc56a0feb117e2"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/mulled_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/mulled_wine.json",
+      "size": 364,
+      "sha256": "4aa4674f793da59e2a5a24545d859abdf2b7fd85d5d1ce82495d5a4adc66217f"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/nut_brown_ale.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/nut_brown_ale.json",
+      "size": 369,
+      "sha256": "49528e97dc456bcee6cda22f773edaa6581bfc6306ea2789f450fcb82dc12dbe"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/peach_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/peach_wine.json",
+      "size": 362,
+      "sha256": "731ccac7fd47d2d5d1128e444a335b4bfd7b3fc92a1dff4c5a1d7a74554a3ff8"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/pilsner.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/pilsner.json",
+      "size": 356,
+      "sha256": "37dfca9de765787131e6bbc614070b2cf0bf52d5e3eb7bad258aa7f3f72cce38"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/plum_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/plum_wine.json",
+      "size": 360,
+      "sha256": "2a07dab8790439151f7eb923956c3d18b15311b6bfe8daa497cbd5e950a93a19"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/porter.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/porter.json",
+      "size": 354,
+      "sha256": "32384d145347d30f8050906a6f270c7eafa88dffbfd2cd8c0b0bd94ab956780c"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/red_ale.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/red_ale.json",
+      "size": 356,
+      "sha256": "e193a24c4962be1ef712b71aaa23d80371f214186658b1284688fac9ac69e29f"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/red_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/red_wine.json",
+      "size": 358,
+      "sha256": "8e2259bb7ac46873e61300823e4d47519f7ec0b38c6d01bc8f99aecf9821fec4"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/rum.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/rum.json",
+      "size": 349,
+      "sha256": "4f929f999ab1e48fa9f338410e9a82e971b80b5dd3c4b50b1f42f857df467a7e"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/stout.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/stout.json",
+      "size": 352,
+      "sha256": "c461dd07f3c9c2fab4e0e98475a5c7ad82ea2f64f5068fb0de709cb83805fc2b"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/sweet_red_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/sweet_red_wine.json",
+      "size": 370,
+      "sha256": "c299f4ed26606b420ad2d1f3242efad02d858ba8d8070ac68ab6bbf72d2bd3b4"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/tequila.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/tequila.json",
+      "size": 356,
+      "sha256": "a551d2e73059ff295f88f200c58a10c8ebc10213508b7cec9985b9d970226c00"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/whiskey.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/whiskey.json",
+      "size": 356,
+      "sha256": "d74e2e7213d976387181200714a32662fce501745b54ddc2b262b2e80634d3f7"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/emptying/white_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/emptying/white_wine.json",
+      "size": 362,
+      "sha256": "ca3c485d167f7a811b3be59a07037e3f02567f49e022d79bb082f318b268cf52"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/blue_curacao.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/blue_curacao.json",
+      "size": 401,
+      "sha256": "56d022aea042fa559e891bef181bba958a7096b2012c800cd3699c9c9da08ed2"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/bock.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/bock.json",
+      "size": 385,
+      "sha256": "ed4f412e27debfd29a7757ba82da0fba50ecfe0e8212c0b51d44c811baf19e8f"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/cream_ale.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/cream_ale.json",
+      "size": 395,
+      "sha256": "f41de1303b6625be6384e2492f528f7671cb491ec2dc80938204f095ac3fc59f"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/gin.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/gin.json",
+      "size": 383,
+      "sha256": "0875946cd0b3311485f4450eda46f8eb108d654beede4ca56c0a4f1f38fd58cd"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/hard_cider.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/hard_cider.json",
+      "size": 397,
+      "sha256": "d474236f3e6ebedfa37551a363a21c93801c9ccd9c9addc1fc78075e77eccd71"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/hard_lemonade.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/hard_lemonade.json",
+      "size": 403,
+      "sha256": "9c2ed87cb438933c229b440a1a0fa5f901955bbe4cba631ba51ffcd03cbdde76"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/ipa.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/ipa.json",
+      "size": 383,
+      "sha256": "e9fe99bebd2527f11eeb1ecf831fba5e6c5abd456fa392b8fa9dc094ce14cd70"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/kraken_rum.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/kraken_rum.json",
+      "size": 398,
+      "sha256": "cec5b112b3efc708124f023f19fcfb8c635858130c8f143d27b3236576604579"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/milk_stout.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/milk_stout.json",
+      "size": 397,
+      "sha256": "209003a28bad6f8c730fa9ba5e44c2169e98632a39bfcedaa0cfaaff7ef7e389"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/moonshine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/moonshine.json",
+      "size": 395,
+      "sha256": "9fe09e028ec5e7da5c1ed9c9836580fc92c05345d462dfbd30d315530db2bdf7"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/mulled_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/mulled_wine.json",
+      "size": 399,
+      "sha256": "5389338eee290f7ddee0fa54d476ce1cfd9ec20a7183027c967ec9a8d78f4268"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/nut_brown_ale.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/nut_brown_ale.json",
+      "size": 404,
+      "sha256": "fc9b8aed7c65ccd3c21737c5820386cbc6a2d2f79427c1a9cd1a9d6df8930772"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/peach_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/peach_wine.json",
+      "size": 397,
+      "sha256": "47f9850cd21346a05832cba84b58df97b356a36499bc535f0ac273419ef82a16"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/pilsner.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/pilsner.json",
+      "size": 391,
+      "sha256": "3bc178eb49654390cf1045837d96e7462cf352b4653fe79474cbafc3b1566b0f"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/plum_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/plum_wine.json",
+      "size": 395,
+      "sha256": "707946ef8a707d85b9cb9536213f5f90e0bcc30e1fa918ae71849f2d2abf985f"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/porter.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/porter.json",
+      "size": 389,
+      "sha256": "46e777f233da38e783edf9f606c322830fe9db24ca0544ca017b9b1602ee39ea"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/red_ale.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/red_ale.json",
+      "size": 391,
+      "sha256": "ada9b8680153e88b9ec663c03731d70bbb4a36225bff7a002b380c82d8c0ce99"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/red_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/red_wine.json",
+      "size": 393,
+      "sha256": "c99adf8fc41c3f12c6cc9707f6d6b6638e1ac23d218ba23de30484e1393e2f9c"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/rum.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/rum.json",
+      "size": 384,
+      "sha256": "7463e283aaee37b9d90088fe01571df9f7c6974a843baba57bf52820daf35b5d"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/stout.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/stout.json",
+      "size": 387,
+      "sha256": "4c63e489604d83b14cf0c0fd9e411d011d60d611779ccf85dd2238a24f0860bc"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/sweet_red_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/sweet_red_wine.json",
+      "size": 405,
+      "sha256": "17fcab62ec5c05982da2359e6893454f73f476f1e45d18ae3526d3937d2b5a46"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/tequila.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/tequila.json",
+      "size": 391,
+      "sha256": "463635a68a7ea3bbebc78b43f449d81865f67f6ee2cfc93868bf0fe433785c15"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/whiskey.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/whiskey.json",
+      "size": 391,
+      "sha256": "d63c74625863cb3ceab9104859b270720d1fa71c7c5305fc2e479be154cc18e9"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/filling/white_wine.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/filling/white_wine.json",
+      "size": 397,
+      "sha256": "cfb6055884a86c1fab99b266f53132434d30fb6857c78b33d2c12b1d9a843d40"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/pouring/soymilk_bottle.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/pouring/soymilk_bottle.json",
+      "size": 326,
+      "sha256": "125e261f8db1dd303038978e2abb29eb4219011e58f3da5bf860eaaaa2d21965"
+    },
+    {
+      "path": "kubejs/data/cocktailsdelight/recipe/pouring/soymilk_bucket.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cocktailsdelight/recipe/pouring/soymilk_bucket.json",
+      "size": 327,
+      "sha256": "d23f673aeb91ef9bd3cabbb9dac82abbe669c4fb8e5c49b92eb7a9c47f9c73bc"
+    },
+    {
+      "path": "kubejs/data/cbc_at/recipe/cutting/rocket_pod_breech_cast_mould.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cbc_at/recipe/cutting/rocket_pod_breech_cast_mould.json",
+      "size": 174,
+      "sha256": "c0726ada7c2c89d2ddad8e05f14b216febd642c0719e7f58da002a96989d00dd"
+    },
+    {
+      "path": "kubejs/data/cbc_at/recipe/cutting/rocket_pod_rail_cast_mould.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cbc_at/recipe/cutting/rocket_pod_rail_cast_mould.json",
+      "size": 172,
+      "sha256": "cf245addb11b7638badbf587ecb1adfcc686b0b294f3276eff39a068a3081109"
+    },
+    {
+      "path": "kubejs/data/cbc_at/recipe/cutting/twin_autocannon_barrel_cast_mould.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/cbc_at/recipe/cutting/twin_autocannon_barrel_cast_mould.json",
+      "size": 179,
+      "sha256": "42f3dd8f314d3722a1b6cd02ada831cc338d8726be9f693035dea0bf8380a762"
+    },
+    {
+      "path": "kubejs/data/farmersdelight/recipe/integration/silentgear/cutting/netherwood.json",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/farmersdelight/recipe/integration/silentgear/cutting/netherwood.json",
+      "size": 656,
+      "sha256": "6d20bc953207b89c098f1d7cf2f00b3d4902969ba9580ae1b1cd8ea2306bf34e"
     }
   ],
-  "hotfixRevision": 100
+  "hotfixRevision": 101,
+  "note": "DEV 101: unified alpha3 events and adaptive UI preserved; strict vanilla gear and enchantment gates, reachable Silent Gear trident and profession recipes, 54 processing/integration recipe fixes."
 }

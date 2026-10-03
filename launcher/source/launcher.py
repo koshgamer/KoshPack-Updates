@@ -656,7 +656,8 @@ def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
                 pass
 
         backup = DEV_EXTRA_BACKUP_DIR / rel
-        if target.is_file() and not backup.exists():
+        # Tracked files without a backup were introduced by DEV, not by Stable.
+        if target.is_file() and not backup.exists() and rel not in previously_tracked:
             backup.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(target, backup)
 

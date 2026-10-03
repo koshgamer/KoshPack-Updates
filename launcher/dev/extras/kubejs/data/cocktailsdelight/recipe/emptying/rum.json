@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "create:emptying",
+  "ingredients": [
+    {
+      "item": "cocktailsdelight:rum"
+    }
+  ],
+  "results": [
+    {
+      "id": "brewinandchewin:tankard"
+    },
+    {
+      "amount": 250,
+      "id": "cocktailsdelight:rum"
+    }
+  ]
+}
