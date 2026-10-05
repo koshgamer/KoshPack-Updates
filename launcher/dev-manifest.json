@@ -287,9 +287,9 @@
     {
       "path": "mods/KoshPack_Forge_UI_DEV.jar",
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/KoshPack_Forge_UI_DEV.jar",
-      "size": 194158,
-      "sha256": "3b65c9817ebef0de60a879a3207fe14862a93babe21cdf9c1f02e4185b515ca8",
-      "version": "0.1.0-alpha18"
+      "size": 195915,
+      "sha256": "c4de78652ac4c372a829a7ff9f6b8fa2a3db57c2936a93803a756535c6f5c20c",
+      "version": "0.1.0-alpha19"
     },
     {
       "path": "mods/vaocorpmusicdiscs-1.5.0-kosh-1.0.jar",
@@ -842,9 +842,23 @@
       "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/extras/kubejs/data/colorfulpipes/recipe/crafting/compats/yellow_printer.json",
       "size": 491,
       "sha256": "94f641378e3fb427c7290cc3e6f2a84b9b1e7956336b4f31bd1b1052d7aad92a"
+    },
+    {
+      "path": "mods/piggyback-neoforge-1.21.1-1.1.1.jar",
+      "url": "https://cdn.modrinth.com/data/yP77bAiA/versions/zBNKQZnP/piggyback-neoforge-1.21.1-1.1.1.jar",
+      "size": 342949,
+      "sha256": "a9712c6d333302297db876beb973e105097e2660a22157c083c94954222c14eb",
+      "version": "1.1.1"
+    },
+    {
+      "path": "mods/faewulf_lib-neoforge-1.21.1-1.4.0.jar",
+      "url": "https://cdn.modrinth.com/data/q4N9H96q/versions/GMRYipxG/faewulf_lib-neoforge-1.21.1-1.4.0.jar",
+      "size": 329492,
+      "sha256": "c333a8f91acc5b4db6658e1de40b5039689f0dd5a46588ebae32b638705637eb",
+      "version": "1.4.0"
     }
   ],
-  "hotfixRevision": 102,
+  "hotfixRevision": 103,
   "removedModIds": [
     "create_enchantment_industry",
     "enchantmentlibrary"
@@ -856,5 +870,5 @@
     "size": 31397972,
     "sha256": "5d4d7a17e1d2e6160ea93cb409858b06952b4f3941436c7a36073943382c6e8d"
   },
-  "note": "DEV 102: alpha3 events and adaptive UI preserved; strict gear/enchantment policy, repaired downstream crafting dependencies and processing recipes. Remove Create Enchantment Industry and Enchantment Library only in DEV; keep Dragons Plus for Central Kitchen."
+  "note": "DEV 102: alpha3 events and adaptive UI preserved; strict gear/enchantment policy, repaired downstream crafting dependencies and processing recipes. Remove Create Enchantment Industry and Enchantment Library only in DEV; keep Dragons Plus for Central Kitchen. DEV 103: Piggyback 1.1.1 and Faewulf Lib 1.4.0; Forge UI alpha19 limits player mounting to one free pair, preventing chains and towers."
 }
