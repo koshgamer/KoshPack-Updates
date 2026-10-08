@@ -864,11 +864,11 @@
     "enchantmentlibrary"
   ],
   "devLauncher": {
-    "version": "0.2.21-dev1",
+    "version": "0.2.21-dev5",
     "file": "Project-Meridian-Launcher-DEV.exe",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/Project-Meridian-Launcher-DEV.exe",
-    "size": 31397972,
-    "sha256": "5d4d7a17e1d2e6160ea93cb409858b06952b4f3941436c7a36073943382c6e8d"
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-0.2.21-dev5/Project-Meridian-Launcher-DEV.exe",
+    "size": 19716404,
+    "sha256": "1bed73e296e2977e1ae7a6eef82927182cadeb6a1af801096f0b0f4c76da4846"
   },
   "note": "DEV 102: alpha3 events and adaptive UI preserved; strict gear/enchantment policy, repaired downstream crafting dependencies and processing recipes. Remove Create Enchantment Industry and Enchantment Library only in DEV; keep Dragons Plus for Central Kitchen. DEV 103: Piggyback 1.1.1 and Faewulf Lib 1.4.0; Forge UI alpha19 limits player mounting to one free pair, preventing chains and towers."
 }
