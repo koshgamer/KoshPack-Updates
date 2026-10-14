@@ -3,14 +3,14 @@
   "channel": "current",
   "launcherMinVersion": "0.2.20",
   "pack": "KoshPack",
-  "packVersion": "stable-r82",
+  "packVersion": "stable-r2j",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "minecraft-stable-r82.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/current/minecraft-stable-r82.zip",
-    "size": 729357801,
-    "sha256": "aad11dad5747572fa8fc2e053acf73e12b1d7f4f015ab11bbfe62039edf09a3b"
+    "file": "Project-Meridian-Stable-r2j-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j/Project-Meridian-Stable-r2j-client.zip",
+    "size": 737400546,
+    "sha256": "79036f830699a06bc031293dae0df9e6ac9f10434a8928653d8e1563f5855bb2"
   },
   "launcher": {
     "version": "1.0.0",
