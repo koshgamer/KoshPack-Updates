@@ -59,6 +59,9 @@ C_DANGER = "#ff4d2e"
 C_OK = "#9ecb6b"
 C_FIELD = "#10191b"
 
+C_TEXT_OUTLINE = "#010304"  # dark outline around texts drawn over the background
+C_HINT = "#93a8aa"          # secondary text over the background (a little brighter than C_MUTED)
+
 # Backward-compatible aliases used by the existing UI code.
 C_AMBER = C_COPPER
 C_AMBER_2 = C_TELEMETRY
@@ -1149,6 +1152,10 @@ def run_pmc(
         return proc.wait()
 
 
+MS_HINT = "Вход на официальной странице Microsoft. Пароль лаунчер не видит и не хранит."
+OFFLINE_HINT = ("Ник: 3–16 символов (A–Z, 0–9, _). При первом входе на сервер придумайте пароль: "
+                "/register пароль пароль, потом /login пароль. Не используйте пароли от других сайтов.")
+
 # Title brightness per frame (70 ms) when the launcher starts: a short flicker, like an old game menu powering on.
 BOOT_FLICKER: tuple[float, ...] = (0.0, 0.15, 0.05, 0.5, 0.2, 0.75, 0.35, 0.9, 0.6, 1.0, 0.8, 1.0)
 
@@ -1214,11 +1221,12 @@ class RamSlider(tk.Canvas):
     def __init__(self, parent: tk.Misc, variable: tk.IntVar, from_: int = 4, to: int = 16) -> None:
         super().__init__(
             parent,
-            width=px(170),
+            width=px(120),
             height=px(30),
-            bg=C_PANEL,
+            bg=C_PANEL_2,
             bd=0,
-            highlightthickness=0,
+            highlightthickness=1,
+            highlightbackground=C_LINE,
             cursor="hand2",
         )
         self.variable = variable
@@ -1386,6 +1394,9 @@ class MeridianBackdrop:
         self.photo: Any = None
         self.phase = 0.0
         self.pending: str | None = None
+        self.base: Image.Image | None = None
+        self.panels: list[tuple[float, float, float, float]] = []
+        self.image_item: int | None = None
         self.items: dict[str, Any] = {}
         self.particles: list[list[float]] = []
         self.rnd = random.Random(11)
@@ -1403,9 +1414,10 @@ class MeridianBackdrop:
         if w < 50 or h < 50:
             return
         self.size = (w, h)
-        self.photo = ImageTk.PhotoImage(render_backdrop(w, h), master=self.cv)
+        self.base = render_backdrop(w, h)
         self.cv.delete("backdrop")
-        self.cv.create_image(0, 0, image=self.photo, anchor="nw", tags=("backdrop",))
+        self.image_item = self.cv.create_image(0, 0, anchor="nw", tags=("backdrop",))
+        self._compose()
         line = blend_hex(C_BG, C_TELEMETRY, 0.30)
         copper = blend_hex(C_BG, C_COPPER, 0.50)
         self.globe = (w * 0.36, h * 0.86, min(w, h) * 0.30)
@@ -1466,6 +1478,26 @@ class MeridianBackdrop:
                 p[0], p[1] = self.rnd.uniform(0, w), h + 5
             x = p[0] + math.sin(p[3]) * 6
             self.cv.coords(item, x - 1.2, p[1] - 1.2, x + 1.2, p[1] + 1.2)
+
+    def set_panels(self, panels: list[tuple[float, float, float, float]]) -> None:
+        """Translucent 'glass' panels are part of the background image, so the scene shows through them."""
+        rounded = [tuple(round(v) for v in r) for r in panels]
+        if rounded != self.panels:
+            self.panels = rounded  # type: ignore[assignment]
+            self._compose()
+
+    def _compose(self) -> None:
+        if self.base is None or self.image_item is None:
+            return
+        img = self.base.convert("RGBA")
+        glass = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        gd = ImageDraw.Draw(glass)
+        for x0, y0, x1, y1 in self.panels:
+            gd.rectangle((x0, y0, x1 - 1, y1 - 1), fill=(6, 12, 14, 150))
+            gd.rectangle((x0, y0, x1 - 1, y1 - 1), outline=(55, 78, 80, 230))
+            gd.line((x0 + 1, y0 + 1, x1 - 2, y0 + 1), fill=(82, 188, 175, 40))
+        self.photo = ImageTk.PhotoImage(Image.alpha_composite(img, glass).convert("RGB"), master=self.cv)
+        self.cv.itemconfigure(self.image_item, image=self.photo)
 
     def tick(self) -> None:
         if self.animate:
@@ -1595,7 +1627,7 @@ class MeridianLauncher(tk.Tk):
         self._place_header()
         self._sync_auth_fields()
         self.update_idletasks()
-        return self.winfo_reqwidth(), self.winfo_reqheight()
+        return self._relayout(0, 0)
 
     @staticmethod
     def _scaled_pad(value: Any, tk_app: tk.Misc) -> Any:
@@ -1736,41 +1768,279 @@ class MeridianLauncher(tk.Tk):
         )
 
     def _build_ui(self) -> None:
-        d = self._d
-        # The whole window is a canvas with the animated background; the header is drawn on it and the panels
-        # are gridded on top. Row 0 only reserves the header height (set in _place_header).
+        # The whole window is one canvas: animated background, translucent "glass" panels baked into it,
+        # texts drawn on it with a dark outline, and the interactive controls placed on top as solid chips.
         root = tk.Canvas(self, bg=C_BG, bd=0, highlightthickness=0)
         root._meridian_scroll = True  # type: ignore[attr-defined]  # drawn at real pixels, not rescaled
         root.pack(fill="both", expand=True)
         self._root_frame = root
+        self._windows: dict[str, int] = {}
+        self._relayout_pending = False
         self.backdrop = MeridianBackdrop(root, self._animations)
-        root.bind("<Configure>", lambda e: self._place_header_right(e.width), add="+")
+        root.bind("<Configure>", self._on_canvas_configure, add="+")
         self.update_link = tk.Label(root, textvariable=self.launcher_update_var, bg=C_BG, fg=C_TELEMETRY,
                                     font=("Consolas", 9, "bold"), cursor="hand2")
         self.update_link.bind("<Button-1>", lambda _e: webbrowser.open(LAUNCHER_DOWNLOAD_PAGE))
+        self._build_account(root)
+        self._build_settings(root)
+        self._build_launch(root)
+        for var in (self.status_var, self.detail_var, self.ram_var, self.pack_value, self.core_value, self.account_value):
+            var.trace_add("write", lambda *_: self._request_relayout())
 
-        ox, oy, gap = d["outer"][0], d["outer"][1], d["gap"]
+    def _build_account(self, root: tk.Canvas) -> None:
+        d = self._d
+        self.profile_card = profile = tk.Frame(root, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
+        self._skin_base = d["skin"]
+        skin_box = tk.Frame(profile, bg=C_FIELD, width=d["skin"], height=d["skin"])
+        skin_box.pack_propagate(False)
+        skin_box.pack(side="left", padx=d["item_gap"], pady=d["item_gap"])
+        self.skin_label = tk.Label(skin_box, text="NO\nSKIN", bg=C_FIELD, fg=C_AMBER,
+                                   font=("Consolas", d["skin_font"], "bold"), justify="center")
+        self.skin_label.pack(fill="both", expand=True)
+        profile_text = tk.Frame(profile, bg=C_PANEL_2)
+        profile_text.pack(side="left", fill="both", expand=True, padx=(0, 10), pady=d["item_gap"])
+        tk.Label(profile_text, textvariable=self.account_name_var, bg=C_PANEL_2, fg=C_INK,
+                 font=("Segoe UI Semibold", 13 if d["hints"] else 12), anchor="w").pack(fill="x")
+        tk.Label(profile_text, textvariable=self.account_type_var, bg=C_PANEL_2, fg=C_AMBER,
+                 font=("Consolas", 9, "bold"), anchor="w").pack(fill="x", pady=(3, 0))
+        tk.Label(profile_text, textvariable=self.account_note_var, bg=C_PANEL_2, fg=C_MUTED, font=("Segoe UI", 9),
+                 anchor="w", wraplength=165, justify="left").pack(fill="x", pady=(3, 0))
 
-        def panel() -> tk.Frame:
-            return tk.Frame(root, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+        # segmented switch: licensed / unlicensed
+        self.mode_bar = tk.Frame(root, bg=C_LINE)
+        seg = dict(variable=self.auth_var, indicatoron=False, command=self._auth_mode_changed, bg=C_PANEL_2, fg=C_MUTED,
+                   selectcolor="#3b2618", activebackground="#2a1d14", activeforeground=C_AMBER, relief="flat", bd=0,
+                   offrelief="flat", font=("Consolas", 9, "bold"), cursor="hand2", pady=6)
+        self.microsoft_radio = tk.Radiobutton(self.mode_bar, text="ЛИЦЕНЗИЯ", value="microsoft", **seg)
+        self.microsoft_radio.pack(side="left", fill="x", expand=True, padx=(1, 0), pady=1)
+        self.offline_radio = tk.Radiobutton(self.mode_bar, text="БЕЗ ЛИЦЕНЗИИ", value="offline", **seg)
+        self.offline_radio.pack(side="left", fill="x", expand=True, padx=1, pady=1)
 
-        account, settings, right = panel(), panel(), panel()
-        if self._columns == 3:
-            # left and middle panels keep their natural height: the background shows below them
-            account.grid(row=1, column=0, sticky="new", padx=(ox, gap), pady=(0, oy))
-            settings.grid(row=1, column=1, sticky="new", padx=(0, gap), pady=(0, oy))
-            right.grid(row=1, column=2, sticky="nsew", padx=(0, ox), pady=(0, oy))
-            root.grid_columnconfigure(2, weight=1)
-            root.grid_rowconfigure(1, weight=1)
+        self.login_btn = self._button(root, "ВОЙТИ ЧЕРЕЗ MICROSOFT", self._login_microsoft)
+        self.logout_btn = self._button(root, "ВЫЙТИ", self._logout_microsoft)
+        self.username_entry = self._entry(root, self.username_var)
+        self.username_entry.configure(font=("Segoe UI", 10))
+        if not d["hints"]:
+            Tooltip(self.login_btn, lambda: MS_HINT)
+            Tooltip(self.username_entry, lambda: OFFLINE_HINT)
+        self.username_var.trace_add("write", lambda *_: self._sync_auth_fields())
+        self.skin_btn = self._button(root, "МОЙ СКИН", self._open_skin_dialog)
+
+    def _build_settings(self, root: tk.Canvas) -> None:
+        self.ram_scale = RamSlider(root, self.ram_var, from_=4, to=16)
+        self.folder_btn = self._button(root, "ПАПКА ИГРЫ", self._open_game_folder)
+        self.logs_btn = self._button(root, "ЖУРНАЛ", self._open_log_dialog)
+        self.repair_btn = self._button(root, "ПРОВЕРИТЬ / ПОЧИНИТЬ ФАЙЛЫ", self._repair_pack)
+        Tooltip(self.repair_btn, lambda: "Сверяет каждый файл сборки с эталоном (SHA-256) и заново скачивает только "
+                                         "повреждённые. Миры, скриншоты и настройки не затрагиваются.")
+
+    def _build_launch(self, root: tk.Canvas) -> None:
+        d = self._d
+        self.progress_shell = tk.Frame(root, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
+        self.progress = ttk.Progressbar(self.progress_shell, mode="determinate", maximum=100)
+        self.progress.pack(fill="x", padx=1, pady=(1, 5))
+        tk.Label(self.progress_shell, textvariable=self.progress_var, bg=C_PANEL_2, fg=C_MUTED, font=("Consolas", 9),
+                 anchor="w").pack(fill="x", padx=12, pady=(0, 6))
+        initial_play_text = "ИГРАТЬ" if any(INSTANCE_DIR.iterdir()) else "УСТАНОВИТЬ И ИГРАТЬ"
+        self.play_btn = self._button(root, initial_play_text, self._play, accent=True)
+        self.play_btn.configure(font=("Consolas", d["play_font"], "bold"), pady=d["play_pady"])
+
+        self.console_wrap = console_wrap = tk.Frame(root, bg=C_FIELD, highlightthickness=1, highlightbackground=C_LINE)
+        log_head = tk.Frame(console_wrap, bg=C_FIELD)
+        log_head.pack(fill="x", padx=12, pady=(6, 0))
+        tk.Label(log_head, text="/// ЖУРНАЛ ДИАГНОСТИКИ", bg=C_FIELD, fg=C_AMBER, font=("Consolas", 8, "bold")).pack(side="left")
+        more = tk.Label(log_head, text="ОТКРЫТЬ ПОЛНОСТЬЮ ›", bg=C_FIELD, fg=C_TELEMETRY, font=("Consolas", 8, "bold"),
+                        cursor="hand2")
+        more.pack(side="right")
+        more.bind("<Button-1>", lambda _e: self._open_log_dialog())
+        log_frame = tk.Frame(console_wrap, bg=C_FIELD)
+        log_frame.pack(fill="both", expand=True)
+        self.log_text = tk.Text(log_frame, height=d["log_lines"], width=40, bg=C_FIELD, fg="#a4a39c",
+                                insertbackground=C_AMBER, relief="flat", wrap="word", font=("Consolas", 9), padx=12, pady=6)
+        log_bar = ttk.Scrollbar(log_frame, orient="vertical", command=self.log_text.yview)
+        self.log_text.configure(yscrollcommand=log_bar.set)
+        log_bar.pack(side="right", fill="y")  # the only scrolling area: the message log
+        self.log_text.pack(side="left", fill="both", expand=True)
+        self.log_text.configure(state="disabled")
+        for line in self.log_lines[-50:]:
+            self.log_text.configure(state="normal")
+            self.log_text.insert("end", line + "\n")
+            self.log_text.configure(state="disabled")
+        if not self.log_lines:
+            self._log(f"Project Meridian Launcher {APP_VERSION}. Игра установлена отдельно от обычного .minecraft.")
+
+    # ---------- canvas layout ----------
+    def _on_canvas_configure(self, event: tk.Event) -> None:
+        self._place_header_right(event.width)
+        self._request_relayout()
+
+    def _request_relayout(self) -> None:
+        if getattr(self, "_relayout_pending", True):
+            return
+        self._relayout_pending = True
+        self.after_idle(self._relayout_now)
+
+    def _relayout_now(self) -> None:
+        self._relayout_pending = False
+        cv = self._root_frame
+        try:
+            self._relayout(cv.winfo_width(), cv.winfo_height())
+        except tk.TclError:
+            pass
+
+    def _otext(self, x: float, y: float, text: str, font: Any, fill: str, width: float = 0, anchor: str = "nw") -> int:
+        """Text drawn straight on the background with a dark outline so it stays readable over the scene."""
+        cv = self._root_frame
+        o = max(1, px(1))
+        for dx, dy in ((-o, 0), (o, 0), (0, -o), (0, o), (-o, -o), (o, o), (-o, o), (o, -o)):
+            cv.create_text(x + dx, y + dy, text=text, font=font, fill=C_TEXT_OUTLINE, width=width, anchor=anchor,
+                           tags=("ui",))
+        return cv.create_text(x, y, text=text, font=font, fill=fill, width=width, anchor=anchor, tags=("ui",))
+
+    def _text_block(self, x: float, y: float, text: str, font: Any, fill: str, width: float) -> float:
+        item = self._otext(x, y, text, font, fill, width=width)
+        box = self._root_frame.bbox(item)
+        return box[3] if box else y
+
+    def _win(self, widget: tk.Misc, x: float, y: float, w: float, h: float) -> None:
+        cv = self._root_frame
+        key = str(widget)
+        if key not in self._windows:
+            self._windows[key] = cv.create_window(x, y, window=widget, anchor="nw", width=w, height=h)
         else:
-            account.grid(row=1, column=0, sticky="new", padx=(ox, gap), pady=(0, gap))
-            settings.grid(row=2, column=0, sticky="nsew", padx=(ox, gap), pady=(0, oy))
-            right.grid(row=1, column=1, rowspan=2, sticky="nsew", padx=(0, ox), pady=(0, oy))
-            root.grid_columnconfigure(1, weight=1)
-            root.grid_rowconfigure(2, weight=1)
-        self._build_account(account)
-        self._build_settings(settings)
-        self._build_launch(right)
+            cv.coords(self._windows[key], x, y)
+            cv.itemconfigure(self._windows[key], width=w, height=h, state="normal")
+
+    def _flow(self, spec: list[tuple[str, Any]], x0: float, x1: float, y: float, fill_to: float | None = None) -> float:
+        d = self._d
+        width = x1 - x0
+        for kind, val in spec:
+            if kind == "gap":
+                y += px(val)
+            elif kind == "title":
+                y = self._text_block(x0, y + px(d["sec"][0]), val, ("Consolas", 10, "bold"), C_AMBER, width)
+                y += px(d["sec"][1])
+            elif kind == "hint":
+                y = self._text_block(x0, y, val, ("Segoe UI", 9), C_HINT, width)
+            elif kind == "label":
+                y = self._text_block(x0, y, val, ("Consolas", 8, "bold"), C_HINT, width)
+            elif kind == "status":
+                y = self._text_block(x0, y, self.status_var.get(), ("Segoe UI Black", d["status_font"]), C_INK, width)
+                y = self._text_block(x0, y + px(2), self.detail_var.get(), ("Consolas", 10), C_HINT, width)
+            elif kind == "w":
+                h = val.winfo_reqheight()
+                if val is self.username_entry:
+                    h += 2 * px(d["entry_ipady"])
+                self._win(val, x0, y, width, h)
+                y += h
+            elif kind == "row":
+                gap = px(8)
+                fixed = sum(w.winfo_reqwidth() for w, weight in val if not weight)
+                flex = max(1, sum(weight for _w, weight in val))
+                free = width - fixed - gap * (len(val) - 1)
+                h = max(w.winfo_reqheight() for w, _weight in val)
+                x = x0
+                for w, weight in val:
+                    ww = free * weight / flex if weight else w.winfo_reqwidth()
+                    self._win(w, x, y, ww, h)
+                    x += ww + gap
+                y += h
+            elif kind == "ram":
+                h = self.ram_scale.winfo_reqheight()
+                value_w = px(64)
+                self._win(self.ram_scale, x0, y, width - value_w, h)
+                mid = y + h / 2
+                self._otext(x1 - px(30), mid, str(self.ram_var.get()), ("Consolas", 13, "bold"), C_AMBER, anchor="e")
+                self._otext(x1, mid, "ГБ", ("Consolas", 9, "bold"), C_HINT, anchor="e")
+                y += h
+            elif kind == "info":
+                font_c, font_v = ("Consolas", 8, "bold"), ("Consolas", 9, "bold")
+                for caption, var in (("СБОРКА", self.pack_value), ("ЯДРО", self.core_value), ("АККАУНТ", self.account_value)):
+                    self._otext(x0, y, caption, font_c, C_HINT)
+                    bottom = self._text_block(x0 + px(68), y, var.get(), font_v, C_INK, width - px(68))
+                    y = bottom + px(4)
+            elif kind == "fill":
+                h = val.winfo_reqheight() if fill_to is None else max(val.winfo_reqheight(), fill_to - y)
+                self._win(val, x0, y, width, h)
+                y += h
+        return y
+
+    def _layout_specs(self) -> tuple[list, list, list]:
+        d = self._d
+        gap = d["item_gap"]
+        account: list[tuple[str, Any]] = [("title", "01 / ИГРОВОЙ ПРОФИЛЬ"), ("w", self.profile_card), ("gap", gap),
+                                          ("w", self.mode_bar)]
+        if self.auth_var.get() == "microsoft":
+            if d["hints"]:
+                account += [("gap", gap), ("hint", MS_HINT)]
+            account += [("gap", gap), ("row", [(self.login_btn, 1), (self.logout_btn, 0)])]
+        else:
+            account += [("gap", gap), ("label", "ИГРОВОЙ НИК"), ("gap", 3), ("w", self.username_entry)]
+            if d["hints"]:
+                account += [("gap", 4), ("hint", OFFLINE_HINT)]
+        account += [("gap", gap + 6), ("w", self.skin_btn)]
+        settings: list[tuple[str, Any]] = [("title", "02 / ПАМЯТЬ"), ("ram", None)]
+        if d["hints"]:
+            settings += [("gap", 3), ("hint", "Рекомендуется 6–8 ГБ. Больше половины памяти ПК не ставьте.")]
+        settings += [("title", "03 / ФАЙЛЫ ИГРЫ"), ("row", [(self.folder_btn, 1), (self.logs_btn, 1)]), ("gap", gap),
+                     ("w", self.repair_btn)]
+        launch: list[tuple[str, Any]] = [("title", "MERIDIAN // LAUNCH CONTROL"), ("status", None), ("gap", gap + 4),
+                                         ("w", self.progress_shell), ("gap", gap), ("w", self.play_btn), ("gap", gap + 2),
+                                         ("info", None), ("gap", gap), ("fill", self.console_wrap)]
+        return account, settings, launch
+
+    def _relayout(self, width: int, height: int) -> tuple[int, int]:
+        """Places everything on the canvas for the given size; returns the size the content needs."""
+        d = self._d
+        cv = self._root_frame
+        cv.delete("ui")
+        for item in self._windows.values():
+            cv.itemconfigure(item, state="hidden")
+        ox, oy, gap, pad = px(d["outer"][0]), px(d["outer"][1]), px(d["gap"]), px(d["pad"])
+        top = getattr(self, "_content_top", oy)
+        col_a, col_b, col_c_min = px(420), px(270), px(420)
+        account, settings, launch = self._layout_specs()
+        panels: list[tuple[float, float, float, float]] = []
+        x = ox
+        if self._columns == 3:
+            a_end = self._flow(account, x + pad, x + col_a - pad, top) + pad
+            panels.append((x, top, x + col_a, a_end))
+            x += col_a + gap
+            b_end = self._flow(settings, x + pad, x + col_b - pad, top) + pad
+            panels.append((x, top, x + col_b, b_end))
+            x += col_b + gap
+            left_bottom = max(a_end, b_end)
+        else:
+            a_end = self._flow(account, x + pad, x + col_a - pad, top) + pad
+            panels.append((x, top, x + col_a, a_end))
+            b_top = a_end + gap
+            b_end = self._flow(settings, x + pad, x + col_a - pad, b_top) + pad
+            panels.append((x, b_top, x + col_a, b_end))
+            x += col_a + gap
+            left_bottom = b_end
+        col_c = max(col_c_min, width - ox - x)
+        lpad = pad + px(4)
+        # natural height first, then stretch the log to the bottom of the window
+        natural = self._flow(launch, x + lpad, x + col_c - lpad, top) + lpad
+        bottom = max(natural, height - oy)
+        cv.delete("ui")
+        for item in self._windows.values():
+            cv.itemconfigure(item, state="hidden")
+        self._redraw_left(account, settings, panels, top, pad)
+        self._flow(launch, x + lpad, x + col_c - lpad, top, fill_to=bottom - lpad)
+        panels.append((x, top, x + col_c, bottom))
+        self.backdrop.set_panels(panels)
+        cv.tag_raise("header")
+        cv.tag_raise("ui")
+        req_w = x + col_c_min + ox
+        req_h = max(left_bottom, natural) + oy
+        return int(req_w), int(req_h)
+
+    def _redraw_left(self, account: list, settings: list, panels: list, top: float, pad: float) -> None:
+        ax0, ay0, ax1 = panels[0][:3]
+        bx0, by0, bx1 = panels[1][:3]
+        self._flow(account, ax0 + pad, ax1 - pad, ay0)
+        self._flow(settings, bx0 + pad, bx1 - pad, by0)
 
     def _place_header(self) -> None:
         """Emblem, title and status drawn on the background canvas (real pixels, after scaling)."""
@@ -1792,7 +2062,7 @@ class MeridianLauncher(tk.Tk):
             y += sub_font.metrics("linespace") + px(1)
         bottom = max(oy + icon, y)
         self._sep_y = bottom + px(d["sep"][0])
-        cv.grid_rowconfigure(0, minsize=self._sep_y + 1 + px(d["sep"][1]))
+        self._content_top = self._sep_y + 1 + px(d["sep"][1])
         self._title_font, self._sub_font = title_font, sub_font  # Tk forgets fonts without a reference
         self.system_dot_item = cv.create_oval(0, 0, 0, 0, fill=C_AMBER, outline="", tags=("header",))
         self.status_item = cv.create_text(0, 0, text="SYSTEM ONLINE", anchor="ne", font=sub_font, fill=C_MUTED,
@@ -1823,206 +2093,6 @@ class MeridianLauncher(tk.Tk):
             cv.coords(self.sep_item, ox, self._sep_y, width - ox, self._sep_y)
         except (tk.TclError, TypeError):
             pass
-
-    def _build_account(self, panel: tk.Frame) -> None:
-        d = self._d
-        pad = d["pad"]
-        self._section(panel, "01 / ИГРОВОЙ ПРОФИЛЬ", first=True)
-
-        profile = tk.Frame(panel, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-        profile.pack(fill="x", padx=pad)
-        self._skin_base = d["skin"]
-        skin_box = tk.Frame(profile, bg=C_FIELD, width=d["skin"], height=d["skin"])
-        skin_box.pack_propagate(False)
-        skin_box.pack(side="left", padx=d["item_gap"], pady=d["item_gap"])
-        self.skin_label = tk.Label(skin_box, text="NO\nSKIN", bg=C_FIELD, fg=C_AMBER,
-                                   font=("Consolas", d["skin_font"], "bold"), justify="center")
-        self.skin_label.pack(fill="both", expand=True)
-
-        profile_text = tk.Frame(profile, bg=C_PANEL_2)
-        profile_text.pack(side="left", fill="both", expand=True, padx=(0, 10), pady=d["item_gap"])
-        tk.Label(profile_text, textvariable=self.account_name_var, bg=C_PANEL_2, fg=C_INK,
-                 font=("Segoe UI Semibold", 13 if d["hints"] else 12), anchor="w").pack(fill="x")
-        tk.Label(profile_text, textvariable=self.account_type_var, bg=C_PANEL_2, fg=C_AMBER,
-                 font=("Consolas", 9, "bold"), anchor="w").pack(fill="x", pady=(3, 0))
-        tk.Label(profile_text, textvariable=self.account_note_var, bg=C_PANEL_2, fg=C_MUTED, font=("Segoe UI", 9),
-                 anchor="w", wraplength=165, justify="left").pack(fill="x", pady=(3, 0))
-
-        mode = tk.Frame(panel, bg=C_PANEL)
-        mode.pack(fill="x", padx=pad, pady=(d["item_gap"], 0))
-        radio = dict(bg=C_PANEL, fg=C_INK, activebackground=C_PANEL, activeforeground=C_AMBER, selectcolor=C_FIELD,
-                     font=("Consolas", 9, "bold"), command=self._auth_mode_changed)
-        self.microsoft_radio = tk.Radiobutton(mode, text="ЛИЦЕНЗИЯ", variable=self.auth_var, value="microsoft", **radio)
-        self.microsoft_radio.pack(side="left")
-        self.offline_radio = tk.Radiobutton(mode, text="БЕЗ ЛИЦЕНЗИИ", variable=self.auth_var, value="offline", **radio)
-        self.offline_radio.pack(side="left", padx=(14, 0))
-
-        # Microsoft mode: sign in / switch / sign out
-        self.ms_box = tk.Frame(panel, bg=C_PANEL)
-        ms_hint = "Вход на официальной странице Microsoft. Пароль лаунчер не видит и не хранит."
-        self.microsoft_hint = tk.Label(self.ms_box, text=ms_hint, bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 9),
-                                       justify="left", wraplength=275)
-        if d["hints"]:
-            self.microsoft_hint.pack(anchor="w", pady=(d["item_gap"], 0))
-        ms_row = tk.Frame(self.ms_box, bg=C_PANEL)
-        ms_row.pack(fill="x", pady=(d["item_gap"], 0))
-        self.login_btn = self._button(ms_row, "ВОЙТИ ЧЕРЕЗ MICROSOFT", self._login_microsoft)
-        self.login_btn.pack(side="left", fill="x", expand=True)
-        self.logout_btn = self._button(ms_row, "ВЫЙТИ", self._logout_microsoft)
-        self.logout_btn.pack(side="left", padx=(8, 0))
-        if not d["hints"]:
-            Tooltip(self.login_btn, lambda: ms_hint)
-
-        # Offline mode: nickname; the server protects it with a password
-        self.offline_box = tk.Frame(panel, bg=C_PANEL)
-        self.nick_label = tk.Label(self.offline_box, text="ИГРОВОЙ НИК", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 8, "bold"))
-        self.nick_label.pack(anchor="w", pady=(d["item_gap"], 3))
-        self.username_entry = self._entry(self.offline_box, self.username_var)
-        self.username_entry.pack(fill="x", ipady=d["entry_ipady"])
-        offline_hint = ("Ник: 3–16 символов (A–Z, 0–9, _). При первом входе на сервер придумайте пароль: "
-                        "/register пароль пароль, потом /login пароль. Не используйте пароли от других сайтов.")
-        self.offline_hint = tk.Label(self.offline_box, text=offline_hint, bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 8),
-                                     justify="left", wraplength=275)
-        if d["hints"]:
-            self.offline_hint.pack(anchor="w", pady=(4, 0))
-        else:
-            Tooltip(self.username_entry, lambda: offline_hint)
-        self.username_var.trace_add("write", lambda *_: self._sync_auth_fields())
-
-        self.skin_btn = self._button(panel, "МОЙ СКИН", self._open_skin_dialog)
-        self.skin_btn.pack(fill="x", padx=pad, pady=(d["item_gap"] + 6, pad))
-
-    def _build_settings(self, panel: tk.Frame) -> None:
-        d = self._d
-        pad = d["pad"]
-        self._section(panel, "02 / ПАМЯТЬ", first=True)
-        ram_line = tk.Frame(panel, bg=C_PANEL)
-        ram_line.pack(fill="x", padx=pad)
-        self.ram_scale = RamSlider(ram_line, self.ram_var, from_=4, to=16)
-        self.ram_scale.pack(side="left", fill="x", expand=True)
-        self.ram_label = tk.Label(ram_line, textvariable=self.ram_var, bg=C_PANEL, fg=C_AMBER, font=("Consolas", 13, "bold"), width=3)
-        self.ram_label.pack(side="left")
-        tk.Label(ram_line, text="ГБ", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 9, "bold")).pack(side="left")
-        if d["hints"]:
-            tk.Label(panel, text="Рекомендуется 6–8 ГБ. Больше половины памяти ПК не ставьте.", bg=C_PANEL, fg=C_MUTED,
-                     font=("Segoe UI", 8), justify="left", wraplength=250).pack(anchor="w", padx=pad, pady=(3, 0))
-
-        self._section(panel, "03 / ФАЙЛЫ ИГРЫ")
-        tools = tk.Frame(panel, bg=C_PANEL)
-        tools.pack(fill="x", padx=pad, pady=(0, pad))
-        row = tk.Frame(tools, bg=C_PANEL)
-        row.pack(fill="x")
-        self.folder_btn = self._button(row, "ПАПКА ИГРЫ", self._open_game_folder)
-        self.folder_btn.pack(side="left", fill="x", expand=True)
-        self.logs_btn = self._button(row, "ЖУРНАЛ", self._open_log_dialog)
-        self.logs_btn.pack(side="left", fill="x", expand=True, padx=(8, 0))
-        self.repair_btn = self._button(tools, "ПРОВЕРИТЬ / ПОЧИНИТЬ ФАЙЛЫ", self._repair_pack)
-        self.repair_btn.pack(fill="x", pady=(d["item_gap"], 0))
-        Tooltip(self.repair_btn, lambda: "Сверяет каждый файл сборки с эталоном (SHA-256) и заново скачивает только "
-                                         "повреждённые. Миры, скриншоты и настройки не затрагиваются.")
-
-    def _build_launch(self, right: tk.Frame) -> None:
-        d = self._d
-        pad = d["pad"] + 4
-        right.grid_rowconfigure(6, weight=1)
-        right.grid_columnconfigure(0, weight=1)
-
-        tk.Label(right, text="MERIDIAN // LAUNCH CONTROL", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).grid(
-            row=0, column=0, sticky="w", padx=pad, pady=(d["sec"][0] + 2, 0)
-        )
-        self.status_label = tk.Label(
-            right,
-            textvariable=self.status_var,
-            bg=C_PANEL,
-            fg=C_INK,
-            font=("Segoe UI Black", d["status_font"]),
-            anchor="w",
-            justify="left",
-            wraplength=380,
-        )
-        self.status_label.grid(row=1, column=0, sticky="ew", padx=pad, pady=(d["sec"][1], 2))
-        self.detail_label = tk.Label(
-            right,
-            textvariable=self.detail_var,
-            bg=C_PANEL,
-            fg=C_MUTED,
-            font=("Consolas", 10),
-            anchor="w",
-            justify="left",
-            wraplength=380,
-        )
-        self.detail_label.grid(row=2, column=0, sticky="ew", padx=pad)
-        # long status texts wrap to the real column width instead of being cut off
-        right.bind("<Configure>", lambda e: [lbl.configure(wraplength=max(px(200), e.width - 2 * px(pad)))
-                                             for lbl in (self.status_label, self.detail_label)], add="+")
-
-        progress_shell = tk.Frame(right, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-        progress_shell.grid(row=3, column=0, sticky="ew", padx=pad, pady=(d["item_gap"] + 4, d["item_gap"]))
-        self.progress = ttk.Progressbar(progress_shell, mode="determinate", maximum=100)
-        self.progress.pack(fill="x", padx=1, pady=(1, 5))
-        tk.Label(progress_shell, textvariable=self.progress_var, bg=C_PANEL_2, fg=C_MUTED, font=("Consolas", 9), anchor="w").pack(
-            fill="x", padx=12, pady=(0, 6)
-        )
-
-        initial_play_text = "ИГРАТЬ" if any(INSTANCE_DIR.iterdir()) else "УСТАНОВИТЬ И ИГРАТЬ"
-        self.play_btn = self._button(right, initial_play_text, self._play, accent=True)
-        self.play_btn.configure(font=("Consolas", d["play_font"], "bold"), pady=d["play_pady"])
-        self.play_btn.grid(row=4, column=0, sticky="ew", padx=pad)
-
-        info = tk.Frame(right, bg=C_PANEL)
-        info.grid(row=5, column=0, sticky="ew", padx=pad, pady=(d["item_gap"] + 2, d["item_gap"]))
-        cards = (("СБОРКА", self.pack_value), ("ЯДРО", self.core_value), ("АККАУНТ", self.account_value))
-        if self._columns == 3:
-            # one compact row per value: the launch column is narrower than in the two-column layout
-            info.grid_columnconfigure(1, weight=1)
-            for idx, (caption, var) in enumerate(cards):
-                tk.Label(info, text=caption, bg=C_PANEL, fg="#65645f", font=("Consolas", 8, "bold"), anchor="w").grid(
-                    row=idx, column=0, sticky="w", pady=1)
-                tk.Label(info, textvariable=var, bg=C_PANEL, fg=C_INK, font=("Consolas", 9, "bold"), anchor="w").grid(
-                    row=idx, column=1, sticky="w", padx=(10, 0), pady=1)
-        else:
-            for idx in range(3):
-                info.grid_columnconfigure(idx, weight=1)
-            for idx, (caption, var) in enumerate(cards):
-                card = tk.Frame(info, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-                card.grid(row=0, column=idx, sticky="ew", padx=(0 if idx == 0 else 5, 0 if idx == 2 else 5))
-                tk.Label(card, text=caption, bg=C_PANEL_2, fg="#65645f", font=("Consolas", 8, "bold")).pack(anchor="w", padx=10, pady=(6, 2))
-                tk.Label(card, textvariable=var, bg=C_PANEL_2, fg=C_INK, font=("Consolas", 9, "bold")).pack(anchor="w", padx=10, pady=(0, 7))
-
-        console_wrap = tk.Frame(right, bg=C_FIELD, highlightthickness=1, highlightbackground=C_LINE)
-        console_wrap.grid(row=6, column=0, sticky="nsew", padx=pad, pady=(0, pad))
-        log_head = tk.Frame(console_wrap, bg=C_FIELD)
-        log_head.pack(fill="x", padx=12, pady=(6, 0))
-        tk.Label(log_head, text="/// ЖУРНАЛ ДИАГНОСТИКИ", bg=C_FIELD, fg=C_AMBER, font=("Consolas", 8, "bold")).pack(side="left")
-        more = tk.Label(log_head, text="ОТКРЫТЬ ПОЛНОСТЬЮ ›", bg=C_FIELD, fg=C_TELEMETRY, font=("Consolas", 8, "bold"), cursor="hand2")
-        more.pack(side="right")
-        more.bind("<Button-1>", lambda _e: self._open_log_dialog())
-        log_frame = tk.Frame(console_wrap, bg=C_FIELD)
-        log_frame.pack(fill="both", expand=True)
-        self.log_text = tk.Text(
-            log_frame,
-            height=d["log_lines"],
-            width=40,
-            bg=C_FIELD,
-            fg="#a4a39c",
-            insertbackground=C_AMBER,
-            relief="flat",
-            wrap="word",
-            font=("Consolas", 9),
-            padx=12,
-            pady=6,
-        )
-        log_bar = ttk.Scrollbar(log_frame, orient="vertical", command=self.log_text.yview)
-        self.log_text.configure(yscrollcommand=log_bar.set)
-        log_bar.pack(side="right", fill="y")  # the only scrolling area: the message log
-        self.log_text.pack(side="left", fill="both", expand=True)
-        self.log_text.configure(state="disabled")
-        for line in self.log_lines[-50:]:
-            self.log_text.configure(state="normal")
-            self.log_text.insert("end", line + "\n")
-            self.log_text.configure(state="disabled")
-        if not self.log_lines:
-            self._log(f"Project Meridian Launcher {APP_VERSION}. Игра установлена отдельно от обычного .minecraft.")
 
     def _draw_brand_icon(self, cv: tk.Canvas, x0: float, y0: float, k: float = 1.0) -> None:
         """Draw the same mark used in the website header (.meridian-mark); k = size relative to 48 px."""
@@ -2068,9 +2138,8 @@ class MeridianLauncher(tk.Tk):
         try:
             is_ms = self.auth_var.get() == "microsoft"
             msa_name = str(self.state_data.get("msa_username") or "").strip()
+            self._request_relayout()
             if is_ms:
-                self.offline_box.pack_forget()
-                self.ms_box.pack(fill="x", padx=self._d["pad"], before=self.skin_btn)
                 self.login_btn.configure(text="СМЕНИТЬ АККАУНТ" if msa_name else "ВОЙТИ ЧЕРЕЗ MICROSOFT")
                 self.logout_btn.configure(state="normal" if msa_name and not self.busy else "disabled")
                 if msa_name:
@@ -2085,8 +2154,6 @@ class MeridianLauncher(tk.Tk):
                     self.account_value.set("НЕТ ВХОДА")
                     self._set_skin_placeholder()
             else:
-                self.ms_box.pack_forget()
-                self.offline_box.pack(fill="x", padx=self._d["pad"], before=self.skin_btn)
                 nick = self.username_var.get().strip()
                 valid = bool(NICK_RE.match(nick))
                 self.account_name_var.set(nick or "Ник не указан")
@@ -2435,8 +2502,8 @@ class MeridianLauncher(tk.Tk):
         return shell
 
     LAYOUT_KEY_WIDGETS = ("skin_label", "offline_radio", "microsoft_radio", "username_entry", "login_btn", "logout_btn",
-                          "skin_btn", "ram_scale", "ram_label", "folder_btn", "logs_btn", "repair_btn",
-                          "status_label", "progress", "play_btn", "log_text", "auth_copy_btn", "auth_open_btn")
+                          "skin_btn", "ram_scale", "folder_btn", "logs_btn", "repair_btn",
+                          "progress", "play_btn", "log_text", "auth_copy_btn", "auth_open_btn")
 
     def write_layout_report(self, path: str) -> None:
         """Writes the chosen layout and, for every key control, whether it is shown whole inside its window."""
