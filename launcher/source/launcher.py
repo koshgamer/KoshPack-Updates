@@ -182,17 +182,25 @@ def apply_window_icon(window: tk.Misc, keep: list[Any]) -> str:
         used.append("png" if png is not None else "drawn")
     except Exception:
         pass
-    if os.name == "nt":
-        # dark Windows title bar (Windows 10 20H1+ / 11); older systems simply keep the default one
-        try:
-            window.update_idletasks()
-            hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
-            dark = ctypes.c_int(1)
-            if ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(dark), ctypes.sizeof(dark)) == 0:
-                used.append("dark-titlebar")
-        except Exception:
-            pass
+    if dark_title_bar(window):
+        used.append("dark-titlebar")
     return "+".join(used) or "none"
+
+
+def dark_title_bar(window: tk.Misc) -> bool:
+    """Dark Windows title bar (Windows 10 20H1+ / 11); older systems simply keep the default one. Called again after
+    a dialog is shown, because a window that was hidden while the attribute was set keeps its light frame."""
+    if os.name != "nt":
+        return False
+    try:
+        window.update_idletasks()
+        hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
+        dark = ctypes.c_int(1)
+        ok = ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(dark), ctypes.sizeof(dark)) == 0
+        ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0004 | 0x0010 | 0x0020)
+        return ok
+    except Exception:
+        return False
 
 
 class _RECT(ctypes.Structure):
@@ -1020,35 +1028,57 @@ def mineskin_sign_png(data: bytes, variant: str) -> str:
         except Exception:
             pass
         raise RuntimeError(f"MineSkin отклонил загрузку (HTTP {e.code}){': ' + detail if detail else ''}.") from e
-    job_id = str(((answer.get("job") or {}).get("id")) or "")
+    def skin_url(skin_id: str) -> str:
+        if not re.fullmatch(r"[0-9a-f]{32}", skin_id):
+            raise RuntimeError("MineSkin вернул неожиданный ответ.")
+        with urllib.request.urlopen(urllib.request.Request(f"{MINESKIN_API}/v2/skins/{skin_id}", headers=headers),
+                                    timeout=30) as response:
+            skin = json.load(response).get("skin") or {}
+        texture = skin.get("texture") or {}
+        url_field = texture.get("url")
+        url = str((url_field.get("skin") if isinstance(url_field, dict) else url_field) or "")
+        if not url:
+            try:  # the URL inside the Mojang-signed textures property
+                packed = json.loads(base64.b64decode(str((texture.get("data") or {}).get("value") or "")))
+                url = str(((packed.get("textures") or {}).get("SKIN") or {}).get("url") or "")
+            except (ValueError, TypeError):
+                url = ""
+        if urllib.parse.urlsplit(url).hostname != "textures.minecraft.net":
+            raise RuntimeError("MineSkin вернул текстуру не с серверов Mojang.")
+        return url
+
+    job = answer.get("job") or {}
+    job_id = str(job.get("id") or "")
     if not re.fullmatch(r"[A-Za-z0-9_-]{6,64}", job_id):
         raise RuntimeError("MineSkin вернул неожиданный ответ.")
     deadline = time.monotonic() + 120
-    while time.monotonic() < deadline:
-        time.sleep(3)
-        with urllib.request.urlopen(urllib.request.Request(f"{MINESKIN_API}/v2/queue/{job_id}", headers=headers),
-                                    timeout=30) as response:
-            status = json.load(response)
-        job = status.get("job") or {}
+    while True:
         if job.get("status") == "failed":
             raise RuntimeError("MineSkin не смог обработать скин.")
-        url = str((((status.get("skin") or {}).get("texture") or {}).get("url")) or "")
-        if job.get("status") == "completed" and url:
-            if urllib.parse.urlsplit(url).hostname != "textures.minecraft.net":
-                raise RuntimeError("MineSkin вернул текстуру не с серверов Mojang.")
-            return url
+        if job.get("status") == "completed" and job.get("result"):
+            return skin_url(str(job["result"]))
+        if time.monotonic() > deadline:
+            break
+        time.sleep(3)
+        try:
+            with urllib.request.urlopen(urllib.request.Request(f"{MINESKIN_API}/v2/queue/{job_id}", headers=headers),
+                                        timeout=30) as response:
+                job = json.load(response).get("job") or {}
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                raise
     raise RuntimeError("MineSkin не ответил за 2 минуты. Попробуй позже.")
 
 
 def skin_command(source: str, url: str = "", slim: bool = False) -> str:
-    """In-game command for SkinRestorer. Remote skins go through its "web" provider, which has them signed by
-    Mojang via MineSkin, so vanilla clients of all players display them."""
+    """In-game command for SkinRestorer. Ely.by, TLauncher and own PNG skins are first signed by Mojang through
+    MineSkin (textures.minecraft.net), the only address the server accepts, so every player's client shows them."""
     if source == "official":
         return "/skin reset"
     if source == "default":
         return "/skin clear"
-    if not skin_host_allowed(url):
-        raise ValueError("Недопустимый адрес скина.")
+    if urllib.parse.urlsplit(url).hostname != "textures.minecraft.net" or not skin_host_allowed(url):
+        raise ValueError("Сначала подготовьте скин для сервера (подпись Mojang).")
     return f"/skin set web {'slim' if slim else 'classic'} \"{url}\""
 
 
@@ -1350,6 +1380,7 @@ class MeridianLauncher(tk.Tk):
             self._log(f"Масштаб {round(chosen * 100)}% не помещается на этом экране: интерфейс показан в "
                       f"{round(picked['scale'] * 100)}%. Выбранная настройка сохранена.")
         self.deiconify()
+        dark_title_bar(self)
 
     def _build_main(self, scale: float, columns: int, density: int) -> tuple[int, int]:
         """(Re)builds the whole main window content and returns the size it needs (client area, pixels)."""
@@ -2046,7 +2077,7 @@ class MeridianLauncher(tk.Tk):
             elif kind == "skin_preview":
                 self._show_skin_preview(dict(value))
             elif kind == "skin_signed":
-                self._skin_signed(str(value))
+                self._skin_signed(dict(value))
             elif kind == "auth_changed":
                 self._sync_auth_fields()
                 self._set_skin_placeholder()
@@ -2192,6 +2223,7 @@ class MeridianLauncher(tk.Tk):
         self.auth_layout_info = {"density": density, "required": (req_w, req_h), "available": (avail_w, avail_h),
                                  "size": (w, h), "fits": req_w <= avail_w and req_h <= avail_h}
         dialog.deiconify()
+        dark_title_bar(dialog)
         dialog.protocol("WM_DELETE_WINDOW", self._close_auth_dialog)
 
     def _build_auth_content(self, dialog: tk.Toplevel, d: dict[str, Any]) -> tk.Frame:
@@ -2661,6 +2693,7 @@ class MeridianLauncher(tk.Tk):
         self._button(actions, "ОТКРЫТЬ ПАПКУ ЛОГОВ", self._open_logs).pack(side="left", padx=(8, 0))
         self._button(actions, "ЗАКРЫТЬ", dialog.destroy).pack(side="right")
         self._apply_ui_scale(dialog)
+        dialog.after(50, lambda: dark_title_bar(dialog))
 
     @staticmethod
     def _launch_log_tail(lines: int) -> str:
@@ -2747,7 +2780,7 @@ class MeridianLauncher(tk.Tk):
         cmd.grid(row=5, column=0, columnspan=2, sticky="ew", padx=16, ipady=5)
         actions = tk.Frame(shell, bg=C_PANEL)
         actions.grid(row=6, column=0, columnspan=2, sticky="ew", padx=16, pady=(10, 14))
-        self.skin_sign_btn = self._button(actions, "ПОДГОТОВИТЬ PNG ДЛЯ СЕРВЕРА", self._skin_sign_file)
+        self.skin_sign_btn = self._button(actions, "ПОДГОТОВИТЬ ДЛЯ СЕРВЕРА", self._skin_sign_file)
         self.skin_sign_btn.pack(side="left")
         self._button(actions, "СКОПИРОВАТЬ КОМАНДУ", self._skin_copy_command, accent=True).pack(side="left", padx=(8, 0))
         self._button(actions, "СБРОСИТЬ", self._skin_reset).pack(side="right")
@@ -2756,21 +2789,22 @@ class MeridianLauncher(tk.Tk):
                  wraplength=560, justify="left").grid(row=7, column=0, columnspan=2, sticky="w", padx=16, pady=(0, 12))
         self._skin_source_changed()
         self._apply_ui_scale(dialog)
+        dialog.after(50, lambda: dark_title_bar(dialog))
 
     def _skin_source_changed(self) -> None:
         source = self.skin_source_var.get()
         try:
             self.skin_nick_entry.configure(state="normal" if source in ("elyby", "tlauncher") else "disabled")
             self.skin_file_btn.configure(state="normal" if source == "file" else "disabled")
-            self.skin_sign_btn.configure(state="normal" if source == "file" else "disabled")
+            self.skin_sign_btn.configure(state="normal" if source in ("elyby", "tlauncher", "file") else "disabled")
         except (tk.TclError, AttributeError):
             pass
         self._skin_pending = {}
         self.skin_cmd_var.set("")
         notes = {
             "official": "Официальный скин аккаунта Microsoft. Команда вернёт его, если вы ставили другой.",
-            "elyby": "Публичный скин Ely.by по нику. Вход в Ely.by и пароль не нужны.",
-            "tlauncher": "Публичный скин TLauncher по нику. Вход в TLauncher и пароль не нужны.",
+            "elyby": "Публичный скин Ely.by по нику: вход и пароль не нужны. Для сервера скин подписывается MineSkin.",
+            "tlauncher": "Публичный скин TLauncher по нику: вход и пароль не нужны. Для сервера скин подписывается MineSkin.",
             "file": "Свой PNG 64×64. Для показа другим игрокам файл подписывается сервисом MineSkin (с вашего согласия).",
             "default": "Стандартный скин Minecraft (Steve/Alex).",
         }
@@ -2834,7 +2868,7 @@ class MeridianLauncher(tk.Tk):
         self.skin_canvas.configure(image=self._skin_preview_photo, text="")
         if facts["slim"] != self.skin_slim_var.get() and result["source"] != "official":
             self.skin_slim_var.set(facts["slim"])
-        self._skin_pending = {"source": result["source"], "url": result.get("url", ""), "data": result.get("data")}
+        self._skin_pending = {"source": result["source"], "data": result.get("data")}
         parts = [f"PNG {facts['width']}×{facts['height']}", "есть прозрачность" if facts["has_transparency"] else "без прозрачности",
                  "модель Alex" if facts["slim"] else "модель Steve"]
         self.skin_info_var.set("Скин проверен: " + ", ".join(parts) + ".")
@@ -2856,40 +2890,42 @@ class MeridianLauncher(tk.Tk):
 
     def _skin_sign_file(self) -> None:
         pending = getattr(self, "_skin_pending", {}) or {}
-        if pending.get("source") != "file" or not pending.get("data"):
-            self.skin_info_var.set("Сначала выберите PNG и нажмите «ПОКАЗАТЬ».")
+        source = self.skin_source_var.get()
+        if pending.get("source") != source or not pending.get("data"):
+            self.skin_info_var.set("Сначала нажмите «ПОКАЗАТЬ» — скин нужно проверить.")
             return
         if not messagebox.askyesno(
-                "Свой скин",
-                "Чтобы другие игроки видели ваш PNG, лаунчер загрузит его в сервис MineSkin.org (без вашего ника, "
-                "с пометкой «не в общем каталоге»). MineSkin получит подпись Mojang и вернёт ссылку на "
-                "textures.minecraft.net.\n\nЗагрузить скин?", parent=self.skin_dialog):
+                "Скин для сервера",
+                "Чтобы все игроки видели этот скин, лаунчер загрузит картинку в сервис MineSkin.org (без вашего ника "
+                "и аккаунта, с пометкой «не в общем каталоге»). MineSkin получит подпись Mojang и вернёт ссылку на "
+                "textures.minecraft.net.\n\nПродолжить?", parent=self.skin_dialog):
             return
         data, variant = pending["data"], "slim" if self.skin_slim_var.get() else "classic"
         self.skin_info_var.set("Отправляю скин в MineSkin… это может занять до минуты.")
 
         def worker() -> None:
             try:
-                url = mineskin_sign_png(data, variant)
-                self._emit("skin_signed", url)
+                self._emit("skin_signed", {"source": source, "url": mineskin_sign_png(data, variant)})
             except Exception as e:
-                self._emit("skin_preview", {"source": "file", "error": str(e)})
+                self._emit("skin_preview", {"source": source, "error": str(e)})
 
         threading.Thread(target=worker, daemon=True).start()
 
-    def _skin_signed(self, url: str) -> None:
+    def _skin_signed(self, result: dict[str, str]) -> None:
         if self.skin_dialog is None or not self.skin_dialog.winfo_exists():
             return
-        self._skin_pending = {"source": "file", "url": url}
+        if result.get("source") != self.skin_source_var.get():
+            return
+        self._skin_pending = {"source": result["source"], "url": result["url"]}
         self._skin_refresh_command()
         self.skin_info_var.set("Готово: скин подписан Mojang. Скопируйте команду и выполните её в игре.")
-        self._log("Свой скин подготовлен через MineSkin.")
+        self._log("Скин подготовлен для сервера через MineSkin.")
 
     def _skin_copy_command(self) -> None:
         command = self.skin_cmd_var.get().strip()
         if not command:
             self.skin_info_var.set("Команды пока нет: нажмите «ПОКАЗАТЬ»" +
-                                   (" и «ПОДГОТОВИТЬ PNG»." if self.skin_source_var.get() == "file" else "."))
+                                   (", затем «ПОДГОТОВИТЬ ДЛЯ СЕРВЕРА»." if self.skin_source_var.get() in ("elyby", "tlauncher", "file") else "."))
             return
         self._copy_text(command)
         self.skin_info_var.set("Команда скопирована. В игре: T → Ctrl+V → Enter.")

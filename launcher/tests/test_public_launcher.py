@@ -415,9 +415,14 @@ def test_skins():
     except RuntimeError:
         ok = True
     check("skin: local/non-allowlisted URL refused (no SSRF)", ok)
-    check("skin: command format", L.skin_command("elyby", "https://ely.by/storage/skins/a.png", True)
-          == '/skin set web slim "https://ely.by/storage/skins/a.png"' and L.skin_command("official") == "/skin reset"
+    check("skin: command format", L.skin_command("elyby", "https://textures.minecraft.net/texture/ab12", True)
+          == '/skin set web slim "https://textures.minecraft.net/texture/ab12"' and L.skin_command("official") == "/skin reset"
           and L.skin_command("default") == "/skin clear")
+    try:
+        L.skin_command("elyby", "https://ely.by/storage/skins/a.png"); ok = False
+    except ValueError:
+        ok = True
+    check("skin: unsigned Ely.by URL not used in server command", ok)
     try:
         L.skin_command("file", "http://127.0.0.1/a.png"); ok = False
     except ValueError:
@@ -452,11 +457,13 @@ def test_real_pack(path: Path):
     took = time.time() - t
     with zipfile.ZipFile(path) as zf:
         n = len([i for i in zf.infolist() if not i.is_dir()])
-    check("r2h client ZIP: installs completely", len(managed) == n and len(list((L.INSTANCE_DIR / "mods").glob("*.jar"))) == 178,
-          f"{len(managed)} files, 178 mods, {took:.0f} s")
+        jars = len([i for i in zf.infolist() if i.filename.startswith("mods/") and i.filename.endswith(".jar")])
+    installed = len(list((L.INSTANCE_DIR / "mods").glob("*.jar")))
+    check(f"pack ZIP {path.name}: installs completely", len(managed) == n and installed == jars,
+          f"{len(managed)} files, {installed} mods, {took:.0f} s")
     t = time.time()
     broken = L.verify_installed_files(index)
-    check("r2h client ZIP: verification clean", not broken, f"{time.time() - t:.0f} s for {len(index)} files")
+    check(f"pack ZIP {path.name}: verification clean", not broken, f"{time.time() - t:.0f} s for {len(index)} files")
 
 
 def main():
