@@ -15,8 +15,8 @@ import sys
 import tempfile
 import threading
 import time
-import tomllib
 import urllib.error
+import urllib.parse
 import urllib.request
 import webbrowser
 import zipfile
@@ -29,26 +29,19 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "0.2.21-dev1"
+APP_VERSION = "1.0.0"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
+# The public launcher reads only the Stable manifest; there is no other channel in this build.
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/manifest.json"
-DEV_MANIFEST_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev-manifest.json"
-DEV_MANIFEST_RELEASE_URL = "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/dev-manifest.json"
-DEV_MANIFEST_API_URL = "https://api.github.com/repos/koshgamer/KoshPack-Updates/contents/launcher/dev-manifest.json?ref=main"
-DEV_ARMOR_TARGET = "koshpack-armor-specialties-DEV.jar"
-DEV_ARMOR_DIRECT_URL = "https://github.com/koshgamer/KoshPack-Updates/releases/download/armor-dev-current/KoshPack_Armor_DEV.jar"
-DEV_ARMOR_B64_URL = "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/current.jar.b64"
-DEV_EXTRA_PATHS: tuple[str, ...] = ()
-PACK_ASSET_NAME = "minecraft-stable-r82.zip"
-EXPECTED_BUNDLED_PACK_SHA256 = "aad11dad5747572fa8fc2e053acf73e12b1d7f4f015ab11bbfe62039edf09a3b"
 MC_VERSION = "1.21.1"
 NEOFORGE_VERSION = "21.1.249"
 LAUNCH_SPEC = f"neoforge::{NEOFORGE_VERSION}"
 PMC_VERSION = "5.0.5"
 PMC_ARCHIVE_URL = "https://github.com/theorzr/portablemc/releases/download/v5.0.5/portablemc-5.0.5-windows-x86_64-msvc.zip"
 PMC_ARCHIVE_SHA256 = "c1ad577e9441040e65a55b521c6ab0fc4c32ec0c6f114d169ae6eee7d3d9fda6"
-PROJECT_SITE_URL = ""
+PROJECT_SITE_URL = "https://projectmeridian-minecraft.lovable.app/"
+LAUNCHER_DOWNLOAD_PAGE = PROJECT_SITE_URL + "download"
 SERVER_HOST = ""
 SERVER_PORT = 25565
 
@@ -68,6 +61,213 @@ C_FIELD = "#10191b"
 # Backward-compatible aliases used by the existing UI code.
 C_AMBER = C_COPPER
 C_AMBER_2 = C_TELEMETRY
+
+# Launcher interface scale (independent of Minecraft's GUI Scale). "auto" follows the Windows display scale;
+# a fixed value is relative to a 100 % (96 DPI) display. Stored in state.json as "ui_scale".
+UI_SCALE_CHOICES: tuple[str, ...] = ("auto", "100", "125", "150", "175", "200")
+UI_SCALE_LABELS: dict[str, str] = {
+    "auto": "Авто по DPI Windows",
+    "100": "100%",
+    "125": "125%",
+    "150": "150%",
+    "175": "175%",
+    "200": "200%",
+}
+UI_SCALE = 1.0
+
+
+def enable_dpi_awareness() -> None:
+    """Per-system DPI awareness: Windows stops bitmap-stretching the window and the launcher scales itself."""
+    if os.name != "nt":
+        return
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        return
+    except Exception:
+        pass
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
+def system_dpi_scale() -> float:
+    if os.name != "nt":
+        return 1.0
+    dpi = 0
+    try:
+        dpi = int(ctypes.windll.user32.GetDpiForSystem())
+    except Exception:
+        try:
+            hdc = ctypes.windll.user32.GetDC(0)
+            dpi = int(ctypes.windll.gdi32.GetDeviceCaps(hdc, 88))  # LOGPIXELSX
+            ctypes.windll.user32.ReleaseDC(0, hdc)
+        except Exception:
+            dpi = 0
+    return dpi / 96.0 if dpi > 0 else 1.0
+
+
+APP_USER_MODEL_ID = "KoshPack.ProjectMeridianLauncher"
+ICON_SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
+
+
+def set_app_user_model_id() -> None:
+    """Own taskbar identity: the taskbar button uses this window's icon, not python.exe / the Tk host."""
+    if os.name != "nt":
+        return
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_USER_MODEL_ID)
+    except Exception:
+        pass
+
+
+def resource_file(name: str) -> Path | None:
+    """A file shipped with the launcher: inside the PyInstaller bundle, next to the exe, or in the source tree."""
+    candidates: list[Path] = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / name)
+    if getattr(sys, "frozen", False):
+        candidates.append(Path(sys.executable).resolve().parent / name)
+    here = Path(__file__).resolve().parent
+    candidates += [here / name, here.parent / name]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def meridian_emblem(size: int) -> Image.Image:
+    """The Project Meridian mark (same geometry as make_icon.py) when the bundled image cannot be read."""
+    from PIL import ImageDraw
+
+    k = 4
+    canvas = size * k
+    img = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    f = canvas / 256.0
+    c = 128 * f
+    copper, telemetry = (208, 121, 64, 255), (82, 188, 175, 255)
+    for r, color, width in ((69, copper, 8), (31, telemetry, 8)):
+        pts = [(c, c - r * f), (c + r * f, c), (c, c + r * f), (c - r * f, c)]
+        d.line(pts + [pts[0]], fill=color, width=max(1, round(width * f)), joint="curve")
+    e = 91 * f
+    d.line((c - e, c - e, c + e, c + e), fill=copper, width=max(1, round(5 * f)))
+    d.line((c + e, c - e, c - e, c + e), fill=copper, width=max(1, round(5 * f)))
+    return img.resize((size, size), Image.Resampling.LANCZOS)
+
+
+def apply_window_icon(window: tk.Misc, keep: list[Any]) -> str:
+    """Sets the emblem on a Tk window: the .ico (all sizes) for the Windows title bar/taskbar/Alt+Tab and photo images
+    for Tk itself. Returns a short description of what was used."""
+    used = []
+    ico = resource_file("meridian.ico")
+    if ico is not None and os.name == "nt":
+        try:
+            if isinstance(window, tk.Tk):
+                window.iconbitmap(default=str(ico))
+            else:
+                window.iconbitmap(str(ico))
+            used.append("ico")
+        except tk.TclError:
+            pass
+    try:
+        png = resource_file("meridian.png")
+        base = Image.open(png).convert("RGBA") if png is not None else meridian_emblem(256)
+        photos = [ImageTk.PhotoImage(base.resize((size, size), Image.Resampling.LANCZOS), master=window) for size in (256, 64, 48, 32, 16)]
+        keep.extend(photos)
+        if isinstance(window, tk.Tk):
+            window.iconphoto(True, *photos)   # default for the dialogs created later
+        window.iconphoto(False, *photos)      # WM_SETICON on this window itself: title bar, taskbar, Alt+Tab
+        used.append("png" if png is not None else "drawn")
+    except Exception:
+        pass
+    if os.name == "nt":
+        # dark Windows title bar (Windows 10 20H1+ / 11); older systems simply keep the default one
+        try:
+            window.update_idletasks()
+            hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
+            dark = ctypes.c_int(1)
+            if ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(dark), ctypes.sizeof(dark)) == 0:
+                used.append("dark-titlebar")
+        except Exception:
+            pass
+    return "+".join(used) or "none"
+
+
+class _RECT(ctypes.Structure):
+    _fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long), ("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+
+
+class _MONITORINFO(ctypes.Structure):
+    _fields_ = [("cbSize", ctypes.c_ulong), ("rcMonitor", _RECT), ("rcWork", _RECT), ("dwFlags", ctypes.c_ulong)]
+
+
+def work_area(window: tk.Misc | None = None) -> tuple[int, int, int, int]:
+    """(left, top, width, height) of the usable area (taskbar excluded) of the monitor holding the window, or the one
+    under the mouse pointer for a window not shown yet."""
+    if os.name == "nt":
+        try:
+            user32 = ctypes.windll.user32
+            user32.MonitorFromWindow.restype = ctypes.c_void_p
+            user32.MonitorFromWindow.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+            user32.MonitorFromPoint.restype = ctypes.c_void_p
+            user32.GetMonitorInfoW.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+            monitor = None
+            if window is not None and window.winfo_viewable():
+                monitor = user32.MonitorFromWindow(int(window.wm_frame(), 16), 2)
+            if not monitor:
+                class _POINT(ctypes.Structure):
+                    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+                pt = _POINT()
+                user32.GetCursorPos(ctypes.byref(pt))
+                user32.MonitorFromPoint.argtypes = [_POINT, ctypes.c_ulong]
+                monitor = user32.MonitorFromPoint(pt, 2)
+            info = _MONITORINFO()
+            info.cbSize = ctypes.sizeof(info)
+            if monitor and user32.GetMonitorInfoW(monitor, ctypes.byref(info)):
+                r = info.rcWork
+                return r.left, r.top, r.right - r.left, r.bottom - r.top
+        except Exception:
+            pass
+    if window is not None:
+        return 0, 0, window.winfo_screenwidth(), window.winfo_screenheight() - 48
+    return 0, 0, 1280, 720
+
+
+def frame_extra(resizable: bool = True) -> tuple[int, int]:
+    """Width and height the Windows frame and title bar add around the client area (at the process DPI)."""
+    if os.name == "nt":
+        try:
+            r = _RECT(0, 0, 100, 100)
+            style = 0x00CF0000 if resizable else 0x00C80000  # WS_OVERLAPPEDWINDOW / caption + sysmenu
+            if ctypes.windll.user32.AdjustWindowRectEx(ctypes.byref(r), style, False, 0):
+                return (r.right - r.left) - 100, (r.bottom - r.top) - 100
+        except Exception:
+            pass
+    return 16, 39
+
+
+def normalize_ui_scale_choice(value: Any) -> str:
+    text = str(value if value is not None else "auto").strip().lower().rstrip("%").strip()
+    return text if text in UI_SCALE_CHOICES else "auto"
+
+
+def resolve_ui_scale(choice: Any) -> float:
+    choice = normalize_ui_scale_choice(choice)
+    if choice == "auto":
+        return max(0.5, min(4.0, system_dpi_scale()))
+    return int(choice) / 100.0
+
+
+def px(value: float) -> int:
+    """Pixel distance at the current launcher UI scale (never rounds a non-zero distance to zero)."""
+    if value == 0:
+        return 0
+    scaled = int(round(value * UI_SCALE))
+    if scaled == 0:
+        return 1 if value > 0 else -1
+    return scaled
 
 USER_AGENT = f"ProjectMeridianLauncher/{APP_VERSION} (+https://github.com/{REPO})"
 PRESERVE_PREFIXES = (
@@ -100,8 +300,13 @@ STATE_FILE = APP_ROOT / "state.json"
 LAUNCH_LOG = LOG_DIR / "minecraft-launch.log"
 TOOLS_DIR = APP_ROOT / "tools"
 PMC_EXE = TOOLS_DIR / f"portablemc-{PMC_VERSION}.exe"
-DEV_EXTRA_BACKUP_DIR = APP_ROOT / "dev-extra-backup"
-DEV_EXTRA_TRACK_FILE = APP_ROOT / "dev-extra-paths.json"
+FILE_INDEX = APP_ROOT / "installed-files.json"
+INSTALL_JOURNAL = APP_ROOT / "install-journal.json"
+# Left behind by DEV builds of the old launcher; only used to clean up once during migration.
+LEGACY_DEV_BACKUP_DIR = APP_ROOT / "dev-extra-backup"
+LEGACY_DEV_TRACK_FILE = APP_ROOT / "dev-extra-paths.json"
+LEGACY_DEV_ARMOR_JAR = "koshpack-armor-specialties-DEV.jar"
+FREE_SPACE_MARGIN = 512 * 1024 * 1024
 
 
 def ensure_dirs() -> None:
@@ -135,10 +340,10 @@ def load_state() -> dict[str, Any]:
         "msa_uuid": "",
         "msa_username": "",
         "ram_gb": 8,
-        "channel": "stable",
-        "dev_armor_digest": "",
-        "dev_armor_name": "",
-        "dev_armor_source": "",
+        "ui_scale": "auto",
+        "skin_source": "",
+        "skin_nick": "",
+        "skin_slim": False,
         "pack_digest": "",
         "pack_identity": "",
         "managed_files": [],
@@ -192,17 +397,54 @@ def get_release_asset() -> dict[str, Any]:
     size = int(package.get("size") or 0)
     if not url:
         raise RuntimeError("В публичном манифесте Project Meridian не указан URL сборки.")
-    if not sha256:
+    if not re.fullmatch(r"[0-9a-f]{64}", sha256):
         raise RuntimeError("В публичном манифесте Project Meridian не указан SHA-256 сборки.")
-    identity = f"{manifest.get('packVersion','unknown')}:{sha256}"
+    if urllib.parse.urlsplit(url).scheme != "https":
+        raise RuntimeError("Адрес сборки в манифесте должен быть HTTPS.")
+    launcher = manifest.get("launcher") or {}
+    pack_version = str(manifest.get("packVersion") or "")
     return {
         "url": url,
         "size": size,
         "digest": f"sha256:{sha256}",
-        "identity": identity,
-        "updated_at": str(manifest.get("packVersion") or ""),
-        "release_name": str(manifest.get("packVersion") or RELEASE_TAG),
+        "identity": f"{pack_version or 'unknown'}:{sha256}",
+        "updated_at": pack_version,
+        "release_name": pack_version_label(pack_version),
+        "launcher_version": str(launcher.get("version") or ""),
+        "launcher_min": str(manifest.get("launcherMinVersion") or ""),
     }
+
+
+def pack_version_label(pack_version: str) -> str:
+    """Public name of a pack version: 'stable-r2h' / 'r2h' -> 'Stable r2h'."""
+    value = str(pack_version or "").strip()
+    if not value:
+        return "Stable"
+    value = value.removeprefix("stable-").removeprefix("Stable-")
+    return f"Stable {value}"
+
+
+def offline_uuid(nick: str) -> str:
+    """Standard offline-mode UUID (same as Java UUID.nameUUIDFromBytes("OfflinePlayer:" + nick))."""
+    raw = bytearray(hashlib.md5(f"OfflinePlayer:{nick}".encode("utf-8")).digest())
+    raw[6] = (raw[6] & 0x0F) | 0x30
+    raw[8] = (raw[8] & 0x3F) | 0x80
+    h = raw.hex()
+    return f"{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:]}"
+
+
+_SECRET_PATTERNS = (
+    re.compile(r"eyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,}"),
+    re.compile(r"(?i)((?:access|refresh|xbl|xsts|mc)[_-]?token[\"'=: ]+)[^\s\"',]+"),
+    re.compile(r"(?i)(--accessToken\s+)\S+"),
+)
+
+
+def mask_secrets(text: str) -> str:
+    """Logs never contain sign-in tokens, even if a component prints one."""
+    for pattern in _SECRET_PATTERNS:
+        text = pattern.sub(lambda m: (m.group(1) if m.groups() else "") + "***", text)
+    return text
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -228,65 +470,6 @@ def cached_pack_path(asset: dict[str, Any]) -> Path:
     if not key:
         key = hashlib.sha1(asset["identity"].encode("utf-8")).hexdigest()[:16]
     return CACHE_DIR / f"minecraft-{key}.zip"
-
-
-def _reconstruct_chunked_pack(base_dir: Path) -> Path | None:
-    wrappers = [
-        (base_dir / "KoshPack-part01.zip", "minecraft.zip.part01"),
-        (base_dir / "KoshPack-part02.zip", "minecraft.zip.part02"),
-    ]
-    if not all(wrapper.is_file() for wrapper, _member in wrappers):
-        return None
-
-    target = CACHE_DIR / "minecraft-from-chunks.zip"
-    if target.is_file():
-        try:
-            if sha256_file(target) == EXPECTED_BUNDLED_PACK_SHA256:
-                return target
-        except OSError:
-            pass
-        target.unlink(missing_ok=True)
-
-    tmp = target.with_suffix(".zip.part")
-    tmp.unlink(missing_ok=True)
-    with tmp.open("wb") as out:
-        for wrapper, member in wrappers:
-            with zipfile.ZipFile(wrapper) as zf:
-                names = zf.namelist()
-                chosen = member if member in names else next((n for n in names if n.endswith(member)), None)
-                if not chosen:
-                    raise RuntimeError(f"В {wrapper.name} не найден {member}")
-                with zf.open(chosen) as src:
-                    shutil.copyfileobj(src, out, length=4 * 1024 * 1024)
-
-    actual = sha256_file(tmp)
-    if actual != EXPECTED_BUNDLED_PACK_SHA256:
-        tmp.unlink(missing_ok=True)
-        raise RuntimeError(
-            "Части KoshPack скачались неправильно: SHA-256 восстановленного minecraft.zip не совпал."
-        )
-    tmp.replace(target)
-    return target
-
-
-def bundled_pack_path() -> Path | None:
-    candidates: list[Path] = []
-    base_dir: Path
-    if getattr(sys, "frozen", False):
-        base_dir = Path(sys.executable).resolve().parent
-        candidates.append(base_dir / PACK_ASSET_NAME)
-        meipass = getattr(sys, "_MEIPASS", None)
-        if meipass:
-            candidates.append(Path(meipass) / PACK_ASSET_NAME)
-    else:
-        base_dir = Path(__file__).resolve().parent
-        candidates.append(base_dir / PACK_ASSET_NAME)
-
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate
-
-    return _reconstruct_chunked_pack(base_dir)
 
 
 def download_file(
@@ -360,534 +543,6 @@ def download_file(
         f"Лаунчер сохранит .part и попробует докачать файл при следующем запуске. Последняя ошибка: {last_error}"
     )
 
-
-def _armor_jar_name(name: str) -> bool:
-    low = name.lower()
-    return low.endswith(".jar") and (
-        low.startswith("koshpack_armor_")
-        or low.startswith("koshpack-armor-specialties")
-    )
-
-
-def find_local_dev_armor() -> Path | None:
-    candidates: list[Path] = []
-    shallow_roots = [
-        Path.home() / "Downloads",
-        Path.home() / "Загрузки",
-    ]
-    if getattr(sys, "frozen", False):
-        shallow_roots.append(Path(sys.executable).resolve().parent)
-    else:
-        shallow_roots.append(Path(__file__).resolve().parent)
-
-    for root in shallow_roots:
-        if not root.is_dir():
-            continue
-        try:
-            for item in root.iterdir():
-                if item.is_file() and _armor_jar_name(item.name) and item.name != DEV_ARMOR_TARGET:
-                    candidates.append(item)
-        except OSError:
-            pass
-
-    # Also reuse armor builds that were already tested through PrismLauncher.
-    appdata = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
-    prism_instances = appdata / "PrismLauncher" / "instances"
-    if prism_instances.is_dir():
-        try:
-            for mods_dir in prism_instances.glob("*/minecraft/mods"):
-                if not mods_dir.is_dir():
-                    continue
-                for item in mods_dir.iterdir():
-                    if item.is_file() and _armor_jar_name(item.name) and item.name != DEV_ARMOR_TARGET:
-                        candidates.append(item)
-            for mods_dir in prism_instances.glob("*/.minecraft/mods"):
-                if not mods_dir.is_dir():
-                    continue
-                for item in mods_dir.iterdir():
-                    if item.is_file() and _armor_jar_name(item.name) and item.name != DEV_ARMOR_TARGET:
-                        candidates.append(item)
-        except OSError:
-            pass
-
-    if not candidates:
-        return None
-
-    def score(path: Path) -> tuple[int, float]:
-        name = path.name.lower()
-        alpha = 0
-        marker = "alpha"
-        pos = name.rfind(marker)
-        if pos >= 0:
-            digits = []
-            for ch in name[pos + len(marker):]:
-                if ch.isdigit():
-                    digits.append(ch)
-                elif digits:
-                    break
-            if digits:
-                try:
-                    alpha = int("".join(digits))
-                except ValueError:
-                    alpha = 0
-        try:
-            mtime = path.stat().st_mtime
-        except OSError:
-            mtime = 0.0
-        return alpha, mtime
-
-    return max(candidates, key=score)
-
-
-def restore_stable_armor() -> int:
-    mods = INSTANCE_DIR / "mods"
-    if not mods.is_dir():
-        return 0
-
-    changed = 0
-    dev_target = mods / DEV_ARMOR_TARGET
-    if dev_target.exists():
-        try:
-            dev_target.unlink()
-            changed += 1
-        except OSError:
-            pass
-
-    for backup in list(mods.glob("*.meridian-stable-bak")):
-        original = Path(str(backup)[: -len(".meridian-stable-bak")])
-        try:
-            if original.exists():
-                backup.unlink()
-            else:
-                backup.replace(original)
-            changed += 1
-        except OSError:
-            pass
-    return changed
-
-
-def apply_dev_armor(source: Path) -> tuple[str, str]:
-    if not source.is_file():
-        raise RuntimeError(f"DEV JAR не найден: {source}")
-
-    mods = INSTANCE_DIR / "mods"
-    mods.mkdir(parents=True, exist_ok=True)
-    restore_stable_armor()
-
-    # Hide the stable copy of this mod while DEV is active.
-    for jar in list(mods.glob("*.jar")):
-        if jar.name == DEV_ARMOR_TARGET:
-            continue
-        if _armor_jar_name(jar.name):
-            backup = Path(str(jar) + ".meridian-stable-bak")
-            try:
-                if backup.exists():
-                    backup.unlink()
-                jar.replace(backup)
-            except OSError as e:
-                raise RuntimeError(f"Не удалось временно отключить {jar.name}: {e}") from e
-
-    target = mods / DEV_ARMOR_TARGET
-    shutil.copy2(source, target)
-    digest = sha256_file(target)
-    return target.name, digest
-
-
-def validate_dev_armor_jar(path: Path) -> None:
-    try:
-        with zipfile.ZipFile(path) as zf:
-            names = set(zf.namelist())
-    except Exception as e:
-        raise RuntimeError(f"DEV-файл не является корректным JAR: {e}") from e
-
-    required = {
-        "ru/koshpack/forgebridge/armor/client/DiverModelGeometry.class",
-        "data/koshpackarmor/function/spawn_diver_test.mcfunction",
-    }
-    missing = sorted(required - names)
-    if missing:
-        raise RuntimeError("В DEV JAR отсутствуют обязательные файлы: " + ", ".join(missing))
-
-
-def _download_raw_b64_dev(
-    target: Path,
-    on_progress: Callable[[int, int], None],
-    attempts: int = 2,
-) -> None:
-    """Download the raw base64 mirror in chunks with retries."""
-    last_error: Exception | None = None
-    for attempt in range(1, attempts + 1):
-        try:
-            req = urllib.request.Request(
-                DEV_ARMOR_B64_URL + f"?nocache={int(time.time())}-{attempt}",
-                headers={
-                    "User-Agent": USER_AGENT,
-                    "Cache-Control": "no-cache",
-                    "Pragma": "no-cache",
-                    "Connection": "close",
-                },
-            )
-            chunks: list[bytes] = []
-            received = 0
-            with urllib.request.urlopen(req, timeout=15) as response:
-                total_encoded = int(response.headers.get("Content-Length") or 0)
-                while True:
-                    chunk = response.read(256 * 1024)
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-                    received += len(chunk)
-                    # Approximate decoded progress. Exact size is known after decode.
-                    if total_encoded:
-                        on_progress(received, total_encoded)
-
-            encoded = b"".join(chunks)
-            raw = base64.b64decode(encoded)
-            target.write_bytes(raw)
-            on_progress(len(raw), len(raw))
-            return
-        except (urllib.error.URLError, ConnectionResetError, TimeoutError, OSError, ValueError) as e:
-            last_error = e
-            target.unlink(missing_ok=True)
-            if attempt < attempts:
-                time.sleep(min(2 * attempt, 3))
-
-    raise RuntimeError(f"raw-зеркало не ответило после {attempts} попыток: {last_error}")
-
-
-def get_dev_armor_manifest() -> dict[str, Any]:
-    """Fetch the tiny DEV manifest before downloading the armor JAR."""
-    errors: list[str] = []
-    urls = (
-        DEV_MANIFEST_URL + f"?nocache={int(time.time())}",
-        DEV_MANIFEST_API_URL + f"&nocache={int(time.time())}",
-        DEV_MANIFEST_RELEASE_URL + f"?nocache={int(time.time())}",
-    )
-    for url in urls:
-        try:
-            data = request_json(url, timeout=12)
-            if url.startswith(DEV_MANIFEST_API_URL):
-                import base64 as _manifest_b64
-                encoded = str(data.get("content") or "").replace("\n", "")
-                if not encoded:
-                    raise RuntimeError("GitHub API не вернул содержимое DEV manifest")
-                data = json.loads(_manifest_b64.b64decode(encoded).decode("utf-8"))
-            armor = data.get("armor") or {}
-            version = str(armor.get("version") or "").strip()
-            sha256 = str(armor.get("sha256") or "").strip().lower()
-            file_url = str(armor.get("url") or DEV_ARMOR_DIRECT_URL).strip()
-            size = int(armor.get("size") or 0)
-            if not version or len(sha256) != 64:
-                raise RuntimeError("DEV manifest не содержит корректную version/sha256")
-            extras_raw = data.get("extras") or []
-            extras: list[dict[str, Any]] = []
-            if not isinstance(extras_raw, list):
-                raise RuntimeError("DEV manifest extras должен быть массивом")
-            for entry in extras_raw:
-                if not isinstance(entry, dict):
-                    raise RuntimeError("DEV manifest extras содержит некорректную запись")
-                rel = str(entry.get("path") or "").replace("\\", "/").strip()
-                extra_url = str(entry.get("url") or "").strip()
-                extra_sha = str(entry.get("sha256") or "").strip().lower()
-                extra_size = int(entry.get("size") or 0)
-                parts = Path(rel).parts
-                allowed_prefix = rel.startswith("kubejs/") or rel.startswith("mods/") or rel.startswith("config/ftbquests/quests/")
-                if (
-                    not allowed_prefix
-                    or Path(rel).is_absolute()
-                    or ".." in parts
-                    or not extra_url
-                    or len(extra_sha) != 64
-                ):
-                    raise RuntimeError(f"Некорректный DEV extra: {rel or '<без пути>'}")
-                extras.append({
-                    "path": rel,
-                    "url": extra_url,
-                    "sha256": extra_sha,
-                    "size": extra_size,
-                })
-            return {
-                "version": version,
-                "sha256": sha256,
-                "url": file_url,
-                "size": size,
-                "extras": extras,
-                "removedModIds": _dev_removed_mod_ids(data),
-            }
-        except Exception as e:
-            errors.append(f"{type(e).__name__}: {e}")
-    raise RuntimeError("Не удалось получить DEV manifest: " + " | ".join(errors))
-
-
-def _dev_extra_target(rel: str) -> Path:
-    normalized = rel.replace("\\", "/").strip()
-    p = Path(normalized)
-    allowed = normalized.startswith("kubejs/") or normalized.startswith("mods/") or normalized.startswith("config/ftbquests/quests/")
-    if not allowed or p.is_absolute() or ".." in p.parts:
-        raise RuntimeError(f"Небезопасный путь DEV extra: {rel}")
-    return INSTANCE_DIR / p
-
-
-def _dev_removed_mod_ids(manifest: dict[str, Any]) -> list[str]:
-    ids = manifest.get("removedModIds", [])
-    if not isinstance(ids, list) or any(
-        not isinstance(mod_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", mod_id)
-        or mod_id in {"minecraft", "neoforge"} for mod_id in ids
-    ):
-        raise RuntimeError("Некорректный список удаляемых DEV-модов")
-    return list(dict.fromkeys(ids))
-
-
-def _jar_mod_ids(path: Path) -> set[str]:
-    try:
-        with zipfile.ZipFile(path) as jar:
-            for name in ("META-INF/neoforge.mods.toml", "META-INF/mods.toml"):
-                if name in jar.namelist():
-                    metadata = tomllib.loads(jar.read(name).decode("utf-8-sig"))
-                    return {str(mod["modId"]) for mod in metadata.get("mods", [])}
-    except (OSError, zipfile.BadZipFile, ValueError, KeyError):
-        pass  # Unrelated non-mod libraries are not removal candidates.
-    return set()
-
-
-def _remove_dev_mods(mod_ids: list[str], previously_tracked: set[str]) -> list[str]:
-    removed = []
-    if not mod_ids:
-        return removed
-    blocked = set(mod_ids)
-    candidates = {path.name for directory in (INSTANCE_DIR / "mods", DEV_EXTRA_BACKUP_DIR / "mods")
-                  for path in directory.glob("*.jar") if _jar_mod_ids(path) & blocked}
-    for name in sorted(candidates):
-        rel = "mods/" + name
-        target = _dev_extra_target(rel)
-        backup = DEV_EXTRA_BACKUP_DIR / rel
-        if target.is_file():
-            # Never delete a differently identified replacement at the same path.
-            if not _jar_mod_ids(target) & blocked:
-                continue
-            if not backup.exists() and rel not in previously_tracked:
-                backup.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(target, backup)
-            target.unlink()
-        removed.append(rel)
-    return removed
-
-
-def install_dev_extras(manifest: dict[str, Any]) -> list[str]:
-    """Install checksum-pinned DEV extras and preserve any stable copies."""
-    removed_mod_ids = _dev_removed_mod_ids(manifest)
-    installed: list[str] = []
-    previously_tracked: set[str] = set()
-    try:
-        if DEV_EXTRA_TRACK_FILE.is_file():
-            data = json.loads(DEV_EXTRA_TRACK_FILE.read_text(encoding="utf-8"))
-            if isinstance(data, dict):
-                previously_tracked = {str(rel) for rel in data.get("paths", [])}
-    except Exception:
-        pass
-
-    extras = manifest.get("extras") or []
-    for entry in extras:
-        rel = str(entry["path"]).replace("\\", "/")
-        expected = str(entry["sha256"]).lower()
-        url = str(entry["url"])
-        size = int(entry.get("size") or 0)
-        target = _dev_extra_target(rel)
-
-        if target.is_file():
-            try:
-                if sha256_file(target) == expected:
-                    backup = DEV_EXTRA_BACKUP_DIR / rel
-                    if rel in previously_tracked or backup.is_file():
-                        installed.append(rel)
-                    continue
-            except OSError:
-                pass
-
-        backup = DEV_EXTRA_BACKUP_DIR / rel
-        # Tracked files without a backup were introduced by DEV, not by Stable.
-        if target.is_file() and not backup.exists() and rel not in previously_tracked:
-            backup.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(target, backup)
-
-        cache = CACHE_DIR / f"dev-extra-{expected[:16]}-{Path(rel).name}"
-        if cache.is_file():
-            try:
-                if sha256_file(cache) != expected:
-                    cache.unlink(missing_ok=True)
-            except OSError:
-                cache.unlink(missing_ok=True)
-
-        if not cache.is_file():
-            sep = "&" if "?" in url else "?"
-            download_file(
-                url + f"{sep}nocache={int(time.time())}",
-                cache,
-                size,
-                lambda _done, _total: None,
-                timeout=15,
-                max_attempts=3,
-            )
-
-        actual = sha256_file(cache)
-        if actual != expected:
-            cache.unlink(missing_ok=True)
-            raise RuntimeError(f"SHA-256 DEV extra не совпал: {rel}")
-
-        target.parent.mkdir(parents=True, exist_ok=True)
-        tmp = target.with_suffix(target.suffix + ".devpart")
-        shutil.copy2(cache, tmp)
-        tmp.replace(target)
-        installed.append(rel)
-
-    installed.extend(rel for rel in _remove_dev_mods(removed_mod_ids, previously_tracked) if rel not in installed)
-    try:
-        atomic_write_json(DEV_EXTRA_TRACK_FILE, {"paths": installed})
-    except OSError:
-        pass
-    return installed
-
-
-def restore_stable_dev_extras() -> list[str]:
-    """Remove DEV extras, restoring stable copies if they existed before DEV mode."""
-    restored: list[str] = []
-    tracked: list[str] = list(DEV_EXTRA_PATHS)
-    try:
-        if DEV_EXTRA_TRACK_FILE.is_file():
-            data = json.loads(DEV_EXTRA_TRACK_FILE.read_text(encoding="utf-8"))
-            if isinstance(data, dict):
-                for rel in data.get("paths", []):
-                    rel = str(rel)
-                    if rel not in tracked:
-                        tracked.append(rel)
-    except Exception:
-        pass
-
-    if DEV_EXTRA_BACKUP_DIR.is_dir():
-        for backup in DEV_EXTRA_BACKUP_DIR.rglob("*"):
-            if backup.is_file():
-                rel = backup.relative_to(DEV_EXTRA_BACKUP_DIR).as_posix()
-                if rel not in tracked:
-                    tracked.append(rel)
-
-    for rel in tracked:
-        target = _dev_extra_target(rel)
-        backup = DEV_EXTRA_BACKUP_DIR / rel
-        if backup.is_file():
-            target.parent.mkdir(parents=True, exist_ok=True)
-            tmp = target.with_suffix(target.suffix + ".restorepart")
-
-            # A previous interrupted restore can leave a read-only .restorepart
-            # on Windows. Remove it first and do not preserve file mode bits on
-            # the temporary copy.
-            if tmp.exists():
-                try:
-                    tmp.chmod(0o666)
-                except OSError:
-                    pass
-                tmp.unlink(missing_ok=True)
-
-            shutil.copyfile(backup, tmp)
-
-            if target.exists():
-                try:
-                    target.chmod(0o666)
-                except OSError:
-                    pass
-
-            tmp.replace(target)
-
-            try:
-                backup.chmod(0o666)
-            except OSError:
-                pass
-            backup.unlink(missing_ok=True)
-            restored.append(rel)
-        elif target.exists():
-            try:
-                target.chmod(0o666)
-            except OSError:
-                pass
-            target.unlink(missing_ok=True)
-            restored.append(rel)
-    try:
-        DEV_EXTRA_TRACK_FILE.unlink(missing_ok=True)
-    except OSError:
-        pass
-    try:
-        for root, dirs, files in os.walk(DEV_EXTRA_BACKUP_DIR, topdown=False):
-            for name in files:
-                pass
-            for name in dirs:
-                try:
-                    (Path(root) / name).rmdir()
-                except OSError:
-                    pass
-        DEV_EXTRA_BACKUP_DIR.rmdir()
-    except OSError:
-        pass
-    return restored
-
-
-def discard_stale_dev_extra_backups() -> None:
-    """Drop backups only after a stable package has replaced the game files."""
-    try:
-        DEV_EXTRA_TRACK_FILE.unlink(missing_ok=True)
-    except OSError:
-        pass
-    shutil.rmtree(DEV_EXTRA_BACKUP_DIR, ignore_errors=True)
-
-
-def download_dev_armor_remote(
-    on_progress: Callable[[int, int], None],
-    on_retry: Callable[[str], None] | None = None,
-    manifest: dict[str, Any] | None = None,
-) -> tuple[Path, str]:
-    """Download the current DEV armor quickly and verify it against the manifest."""
-    target = CACHE_DIR / "KoshPack_Armor_REMOTE.jar"
-    info = manifest or get_dev_armor_manifest()
-    expected = str(info["sha256"]).lower()
-    version = str(info["version"])
-    size = int(info.get("size") or 0)
-    errors: list[str] = []
-
-    if target.is_file():
-        try:
-            if sha256_file(target) == expected:
-                validate_dev_armor_jar(target)
-                return target, version
-        except Exception:
-            pass
-        target.unlink(missing_ok=True)
-
-    # raw.githubusercontent is usually much faster for the small DEV payload
-    # than waiting on a Release redirect/CDN, so use it first.
-    if on_retry:
-        on_retry(f"{version} • резервное зеркало")
-    try:
-        _download_raw_b64_dev(target, on_progress, attempts=2)
-        validate_dev_armor_jar(target)
-        if sha256_file(target) != expected:
-            raise RuntimeError("SHA-256 резервного DEV JAR не совпал с manifest")
-        return target, version
-    except Exception as e:
-        target.unlink(missing_ok=True)
-        errors.append(f"raw: {type(e).__name__}: {e}")
-
-    if on_retry:
-        on_retry(f"{version} • GitHub Release")
-    try:
-        url = str(info.get("url") or DEV_ARMOR_DIRECT_URL) + f"?nocache={int(time.time())}"
-        download_file(url, target, size, on_progress, timeout=20, max_attempts=2)
-        validate_dev_armor_jar(target)
-        if sha256_file(target) != expected:
-            raise RuntimeError("SHA-256 DEV JAR не совпал с manifest")
-        return target, version
-    except Exception as e:
-        target.unlink(missing_ok=True)
-        errors.append(f"release: {type(e).__name__}: {e}")
-
-    raise RuntimeError("Удалённый DEV-канал не ответил. " + " | ".join(errors))
 
 def format_bytes(value: float | int) -> str:
     size = float(max(0, value))
@@ -963,56 +618,438 @@ def safe_extract(zip_path: Path, dest: Path) -> None:
         zf.extractall(dest)
 
 
-def choose_payload_root(staging: Path) -> Path:
-    for name in (".minecraft", "minecraft"):
-        p = staging / name
-        if p.is_dir():
-            return p
-    entries = [p for p in staging.iterdir() if p.name != "__MACOSX"]
-    if len(entries) == 1 and entries[0].is_dir():
-        return entries[0]
-    return staging
-
-
 def is_preserved(rel: str) -> bool:
     normalized = rel.replace("\\", "/")
     return normalized in PRESERVE_FILES or any(normalized.startswith(prefix) for prefix in PRESERVE_PREFIXES)
 
 
-def remove_old_managed_files(managed_files: list[str]) -> None:
-    for rel in managed_files:
-        if is_preserved(rel):
+def safe_rel_path(name: str) -> str | None:
+    """Relative instance path for a ZIP member, or None for directories. Rejects path traversal and absolute paths."""
+    rel = name.replace("\\", "/")
+    if not rel or rel.endswith("/"):
+        return None
+    parts = rel.split("/")
+    if rel.startswith("/") or any(p in ("", ".", "..") for p in parts) or ":" in parts[0]:
+        raise RuntimeError(f"Небезопасный путь в архиве: {name}")
+    if any(p.rstrip(". ") != p for p in parts):
+        raise RuntimeError(f"Небезопасное имя файла в архиве: {name}")
+    return rel
+
+
+def pack_members(zf: zipfile.ZipFile) -> dict[str, zipfile.ZipInfo]:
+    """Maps instance-relative paths to ZIP entries. Every entry name is validated as a whole first; a common
+    .minecraft/ or minecraft/ top folder is then stripped."""
+    files = [i for i in zf.infolist() if not i.is_dir() and not i.filename.startswith("__MACOSX/")]
+    names = {i.filename: safe_rel_path(i.filename) for i in files}
+    prefix = ""
+    for top in (".minecraft/", "minecraft/"):
+        if files and all(str(n).startswith(top) for n in names.values()):
+            prefix = top
+    members: dict[str, zipfile.ZipInfo] = {}
+    for info in files:
+        rel = names[info.filename]
+        if rel is not None:
+            rel = safe_rel_path(rel[len(prefix):])
+        if rel is not None:
+            members[rel] = info
+    if not members:
+        raise RuntimeError("Архив сборки пуст.")
+    return members
+
+
+def ensure_free_space(where: Path, needed: int, purpose: str) -> None:
+    probe = where
+    while not probe.exists() and probe.parent != probe:
+        probe = probe.parent
+    free = shutil.disk_usage(probe).free
+    required = needed + FREE_SPACE_MARGIN
+    if free < required:
+        raise RuntimeError(
+            f"Недостаточно места на диске {probe.anchor or probe}: для {purpose} нужно ещё "
+            f"{format_bytes(required - free)}. Освободи место и повтори — уже установленные файлы не тронуты."
+        )
+
+
+def _make_writable(path: Path) -> None:
+    try:
+        path.chmod(0o666)
+    except OSError:
+        pass
+
+
+def _write_member(zf: zipfile.ZipFile, info: zipfile.ZipInfo, dst: Path) -> str:
+    """Writes one ZIP entry next to its target, then atomically replaces the target. Returns the SHA-256."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dst.with_name(dst.name + ".meridian-new")
+    if tmp.exists():
+        _make_writable(tmp)
+        tmp.unlink()
+    h = hashlib.sha256()
+    try:
+        with zf.open(info) as src, tmp.open("wb") as out:
+            while True:
+                chunk = src.read(1024 * 1024)
+                if not chunk:
+                    break
+                h.update(chunk)
+                out.write(chunk)
+            out.flush()
+            os.fsync(out.fileno())
+        if dst.exists():
+            _make_writable(dst)
+        os.replace(tmp, dst)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+    return h.hexdigest()
+
+
+def load_file_index() -> dict[str, str]:
+    try:
+        data = json.loads(FILE_INDEX.read_text(encoding="utf-8"))
+        files = data.get("files") if isinstance(data, dict) else None
+        if isinstance(files, dict):
+            return {str(k): str(v).lower() for k, v in files.items()}
+    except (OSError, ValueError):
+        pass
+    return {}
+
+
+def install_from_zip(
+    zip_path: Path,
+    previous_managed: list[str],
+    on_progress: Callable[[int, int], None] | None = None,
+) -> tuple[list[str], dict[str, str]]:
+    """Installs a verified pack ZIP into the instance without deleting anything first.
+
+    Every file is written to a temporary name and swapped in atomically; files of the previous version that are
+    no longer part of the pack are removed only after all new files are in place. User data (saves, screenshots,
+    options, servers, ...) is never overwritten or removed, and unknown files the launcher did not install stay."""
+    with zipfile.ZipFile(zip_path) as zf:
+        members = pack_members(zf)
+        ensure_free_space(INSTANCE_DIR, sum(i.file_size for i in members.values()), "установки сборки")
+        managed: list[str] = []
+        index: dict[str, str] = {}
+        total = len(members)
+        for done, (rel, info) in enumerate(sorted(members.items()), start=1):
+            dst = INSTANCE_DIR / rel
+            if is_preserved(rel):
+                if not dst.exists():
+                    _write_member(zf, info, dst)
+                continue
+            index[rel] = _write_member(zf, info, dst)
+            managed.append(rel)
+            if on_progress is not None and (done % 25 == 0 or done == total):
+                on_progress(done, total)
+    remove_obsolete_files(previous_managed, set(managed))
+    return sorted(managed), index
+
+
+def remove_obsolete_files(previous_managed: list[str], keep: set[str]) -> list[str]:
+    removed: list[str] = []
+    parents: set[Path] = set()
+    for rel in previous_managed:
+        if rel in keep or is_preserved(rel):
             continue
-        target = INSTANCE_DIR / rel
+        try:
+            safe = safe_rel_path(rel)
+        except RuntimeError:
+            continue
+        if safe is None:
+            continue
+        target = INSTANCE_DIR / safe
         try:
             if target.is_file() or target.is_symlink():
+                _make_writable(target)
                 target.unlink()
+                removed.append(safe)
+                parents.add(target.parent)
         except OSError:
             pass
-    for root, dirs, _files in os.walk(INSTANCE_DIR, topdown=False):
-        for d in dirs:
-            p = Path(root) / d
+    root = INSTANCE_DIR.resolve()
+    for parent in sorted(parents, key=lambda p: len(p.parts), reverse=True):
+        p = parent
+        while p.resolve() != root:
             try:
                 p.rmdir()
             except OSError:
-                pass
+                break
+            p = p.parent
+    return removed
 
 
-def install_payload(payload_root: Path, previous_managed: list[str]) -> list[str]:
-    remove_old_managed_files(previous_managed)
-    managed: list[str] = []
-    for src in payload_root.rglob("*"):
-        if not src.is_file():
-            continue
-        rel = src.relative_to(payload_root).as_posix()
-        dst = INSTANCE_DIR / rel
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        if is_preserved(rel) and dst.exists():
-            continue
-        shutil.copy2(src, dst)
-        if not is_preserved(rel):
-            managed.append(rel)
-    return sorted(managed)
+def verify_installed_files(index: dict[str, str]) -> list[str]:
+    """Managed files that are missing or whose SHA-256 differs from the installed pack."""
+    broken: list[str] = []
+    for rel, expected in sorted(index.items()):
+        target = INSTANCE_DIR / rel
+        try:
+            if not target.is_file() or sha256_file(target) != expected:
+                broken.append(rel)
+        except OSError:
+            broken.append(rel)
+    return broken
+
+
+def restore_files_from_zip(zip_path: Path, rels: list[str]) -> dict[str, str]:
+    with zipfile.ZipFile(zip_path) as zf:
+        members = pack_members(zf)
+        wanted = [rel for rel in rels if rel in members]
+        ensure_free_space(INSTANCE_DIR, sum(members[rel].file_size for rel in wanted), "восстановления файлов")
+        return {rel: _write_member(zf, members[rel], INSTANCE_DIR / rel) for rel in wanted}
+
+
+def unknown_mod_files(index: dict[str, str]) -> list[str]:
+    """Mods in the instance that the launcher did not install (reported, never deleted automatically)."""
+    mods = INSTANCE_DIR / "mods"
+    if not mods.is_dir():
+        return []
+    return sorted(f"mods/{p.name}" for p in mods.iterdir() if p.is_file() and f"mods/{p.name}" not in index)
+
+
+def cleanup_legacy_dev_files() -> list[str]:
+    """One-time migration from DEV builds of the old launcher: removes the DEV armor JAR, its stable backups and the
+    DEV extras the old launcher tracked. The following Stable install puts the stable files back."""
+    removed: list[str] = []
+    mods = INSTANCE_DIR / "mods"
+    candidates: list[Path] = []
+    if mods.is_dir():
+        candidates += [mods / LEGACY_DEV_ARMOR_JAR]
+        candidates += list(mods.glob("*.meridian-stable-bak"))
+    try:
+        if LEGACY_DEV_TRACK_FILE.is_file():
+            data = json.loads(LEGACY_DEV_TRACK_FILE.read_text(encoding="utf-8"))
+            for rel in (data.get("paths", []) if isinstance(data, dict) else []):
+                safe = safe_rel_path(str(rel))
+                if safe and safe.startswith(("kubejs/", "mods/", "config/ftbquests/quests/")):
+                    candidates.append(INSTANCE_DIR / safe)
+    except (OSError, ValueError, RuntimeError):
+        pass
+    for target in candidates:
+        try:
+            if target.is_file():
+                _make_writable(target)
+                target.unlink()
+                removed.append(target.relative_to(INSTANCE_DIR).as_posix())
+        except OSError:
+            pass
+    return removed
+
+
+def finish_legacy_dev_cleanup() -> None:
+    """After a successful Stable install the old launcher's DEV bookkeeping is no longer needed."""
+    LEGACY_DEV_TRACK_FILE.unlink(missing_ok=True)
+    shutil.rmtree(LEGACY_DEV_BACKUP_DIR, ignore_errors=True)
+
+
+def legacy_dev_state_present(state: dict[str, Any]) -> bool:
+    mods = INSTANCE_DIR / "mods"
+    return (
+        str(state.get("channel") or "stable") != "stable"
+        or LEGACY_DEV_TRACK_FILE.exists()
+        or LEGACY_DEV_BACKUP_DIR.exists()
+        or (mods / LEGACY_DEV_ARMOR_JAR).exists()
+        or (mods.is_dir() and any(mods.glob("*.meridian-stable-bak")))
+    )
+
+
+def version_tuple(value: str) -> tuple[int, ...]:
+    """'1.2.3' -> (1, 2, 3); pre-release suffixes ('-dev5') sort before the release."""
+    main, _, suffix = str(value).strip().lstrip("v").partition("-")
+    nums = tuple(int(p) if p.isdigit() else 0 for p in main.split("."))
+    nums = (nums + (0, 0, 0))[:3]
+    return nums + ((0,) if suffix else (1,))
+
+# ---------- Skins ("МОЙ СКИН") ----------
+# The launcher only previews skins and prepares the in-game command for the server mod SkinRestorer, which applies
+# the skin to the player's profile so that every player on the server sees it. Remote images are fetched only from
+# the fixed hosts below (redirects included), with a size limit, and are validated before they are decoded.
+SKIN_SOURCES: tuple[tuple[str, str], ...] = (
+    ("official", "Официальный (Microsoft)"),
+    ("elyby", "Ely.by — по нику"),
+    ("tlauncher", "TLauncher — по нику"),
+    ("file", "Свой PNG-файл"),
+    ("default", "Стандартный скин"),
+)
+SKIN_ALLOWED_HOSTS = ("textures.minecraft.net", "ely.by", ".ely.by", "auth.tlauncher.org")
+SKIN_MAX_BYTES = 256 * 1024
+SKIN_SIZES = ((64, 64), (64, 32))
+ELYBY_SKIN_URL = "https://skinsystem.ely.by/skins/{}.png"
+TLAUNCHER_TEXTURES_URL = "https://auth.tlauncher.org/skin/profile/texture/login/{}"
+MINESKIN_API = "https://api.mineskin.org"
+NICK_RE = re.compile(r"^[A-Za-z0-9_]{3,16}$")
+
+
+def skin_host_allowed(url: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(url)
+    except ValueError:
+        return False
+    host = (parsed.hostname or "").lower()
+    if parsed.scheme not in ("http", "https") or not host or parsed.username or parsed.password:
+        return False
+    if parsed.port not in (None, 80, 443):
+        return False
+    return any(host == h or (h.startswith(".") and host.endswith(h)) for h in SKIN_ALLOWED_HOSTS)
+
+
+class _AllowlistRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        if not skin_host_allowed(newurl):
+            raise RuntimeError("Источник скина перенаправил на неразрешённый адрес.")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def fetch_limited(url: str, limit: int = SKIN_MAX_BYTES, timeout: int = 20) -> tuple[bytes, str]:
+    """GET from an allow-listed skin host. Returns (body, final URL)."""
+    if not skin_host_allowed(url):
+        raise RuntimeError("Адрес скина не входит в список разрешённых источников.")
+    opener = urllib.request.build_opener(_AllowlistRedirect())
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with opener.open(req, timeout=timeout) as response:
+        final_url = response.geturl()
+        if not skin_host_allowed(final_url):
+            raise RuntimeError("Источник скина ответил с неразрешённого адреса.")
+        declared = int(response.headers.get("Content-Length") or 0)
+        if declared > limit:
+            raise RuntimeError("Файл скина слишком большой.")
+        body = response.read(limit + 1)
+    if len(body) > limit:
+        raise RuntimeError("Файл скина слишком большой.")
+    return body, final_url
+
+
+def validate_skin_png(data: bytes) -> dict[str, Any]:
+    """Checks a skin before use: PNG signature, size, dimensions (read from the header, before decoding),
+    integrity and pixel format. Returns facts used for the preview and the Steve/Alex suggestion."""
+    if len(data) > SKIN_MAX_BYTES:
+        raise ValueError(f"Файл больше {SKIN_MAX_BYTES // 1024} КБ — это не похоже на скин Minecraft.")
+    if not data.startswith(b"\x89PNG\r\n\x1a\n") or len(data) < 33 or data[12:16] != b"IHDR":
+        raise ValueError("Это не PNG-файл.")
+    width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    if (width, height) not in SKIN_SIZES:
+        raise ValueError(f"Размер {width}×{height}: скин Minecraft должен быть 64×64 (или старый 64×32).")
+    try:
+        with Image.open(io.BytesIO(data)) as probe:
+            if probe.format != "PNG":
+                raise ValueError("Это не PNG-файл.")
+            probe.verify()
+        with Image.open(io.BytesIO(data)) as img:
+            img.load()
+            rgba = img.convert("RGBA")
+    except ValueError:
+        raise
+    except Exception as e:
+        raise ValueError(f"PNG повреждён или не читается: {type(e).__name__}.") from e
+    alpha = rgba.getchannel("A")
+    has_transparency = alpha.getextrema()[0] < 255
+    slim_guess = height == 64 and rgba.getpixel((54, 20))[3] == 0 and rgba.getpixel((55, 31))[3] == 0
+    return {"width": width, "height": height, "has_transparency": has_transparency, "slim": slim_guess, "image": rgba}
+
+
+def resolve_external_skin(source: str, nick: str) -> tuple[bytes, str]:
+    """Downloads a public skin by nickname from Ely.by or TLauncher (no sign-in, no password)."""
+    if not NICK_RE.match(nick):
+        raise ValueError("Ник: 3–16 символов, латиница, цифры и «_».")
+    quoted = urllib.parse.quote(nick)
+    if source == "elyby":
+        return fetch_limited(ELYBY_SKIN_URL.format(quoted))
+    if source == "tlauncher":
+        body, _ = fetch_limited(TLAUNCHER_TEXTURES_URL.format(quoted), limit=16 * 1024)
+        try:
+            url = str(((json.loads(body.decode("utf-8")).get("SKIN") or {}).get("url")) or "")
+        except ValueError as e:
+            raise RuntimeError("TLauncher вернул неожиданный ответ.") from e
+        if not url:
+            raise RuntimeError("У этого ника нет скина TLauncher.")
+        return fetch_limited(url)
+    raise ValueError(source)
+
+
+def skin_preview_image(skin: Image.Image, scale: int) -> Image.Image:
+    """Front view (head, body, arms, legs with overlay layers) of a 64×64 or 64×32 skin."""
+    w = 16 * scale
+    out = Image.new("RGBA", (16, 32), (0, 0, 0, 0))
+    legacy = skin.height == 32
+
+    def part(box: tuple[int, int, int, int], at: tuple[int, int], mirror: bool = False) -> None:
+        piece = skin.crop(box)
+        if mirror:
+            piece = piece.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        out.alpha_composite(piece, at)
+
+    part((8, 8, 16, 16), (4, 0))
+    part((20, 20, 28, 32), (4, 8))
+    part((44, 20, 48, 32), (0, 8))
+    part((4, 20, 8, 32), (4, 20))
+    if legacy:
+        part((44, 20, 48, 32), (12, 8), mirror=True)
+        part((4, 20, 8, 32), (8, 20), mirror=True)
+    else:
+        part((36, 52, 40, 64), (12, 8))
+        part((20, 52, 24, 64), (8, 20))
+        for box, at in (((20, 36, 28, 48), (4, 8)), ((44, 36, 48, 48), (0, 8)), ((52, 52, 56, 64), (12, 8)),
+                        ((4, 36, 8, 48), (4, 20)), ((4, 52, 8, 64), (8, 20))):
+            part(box, at)
+    part((40, 8, 48, 16), (4, 0))
+    return out.resize((w, 2 * w), Image.Resampling.NEAREST)
+
+
+def mineskin_sign_png(data: bytes, variant: str) -> str:
+    """Uploads the player's own PNG to MineSkin (unlisted) to obtain a Mojang-signed texture URL on
+    textures.minecraft.net. Only called after the player confirmed the upload."""
+    boundary = "----meridian" + hashlib.sha1(data).hexdigest()[:16]
+    fields = {"variant": variant, "visibility": "unlisted", "name": "project-meridian"}
+    body = b"".join(
+        f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode() for k, v in fields.items()
+    ) + (
+        f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="skin.png"\r\n'
+        "Content-Type: image/png\r\n\r\n"
+    ).encode() + data + f"\r\n--{boundary}--\r\n".encode()
+    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+    req = urllib.request.Request(f"{MINESKIN_API}/v2/queue", data=body, method="POST",
+                                 headers={**headers, "Content-Type": f"multipart/form-data; boundary={boundary}"})
+    try:
+        with urllib.request.urlopen(req, timeout=40) as response:
+            answer = json.load(response)
+    except urllib.error.HTTPError as e:
+        detail = ""
+        try:
+            errors = json.loads(e.read(4096).decode("utf-8")).get("errors") or []
+            detail = "; ".join(str(x.get("message") or x.get("code")) for x in errors if isinstance(x, dict))
+        except Exception:
+            pass
+        raise RuntimeError(f"MineSkin отклонил загрузку (HTTP {e.code}){': ' + detail if detail else ''}.") from e
+    job_id = str(((answer.get("job") or {}).get("id")) or "")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{6,64}", job_id):
+        raise RuntimeError("MineSkin вернул неожиданный ответ.")
+    deadline = time.monotonic() + 120
+    while time.monotonic() < deadline:
+        time.sleep(3)
+        with urllib.request.urlopen(urllib.request.Request(f"{MINESKIN_API}/v2/queue/{job_id}", headers=headers),
+                                    timeout=30) as response:
+            status = json.load(response)
+        job = status.get("job") or {}
+        if job.get("status") == "failed":
+            raise RuntimeError("MineSkin не смог обработать скин.")
+        url = str((((status.get("skin") or {}).get("texture") or {}).get("url")) or "")
+        if job.get("status") == "completed" and url:
+            if urllib.parse.urlsplit(url).hostname != "textures.minecraft.net":
+                raise RuntimeError("MineSkin вернул текстуру не с серверов Mojang.")
+            return url
+    raise RuntimeError("MineSkin не ответил за 2 минуты. Попробуй позже.")
+
+
+def skin_command(source: str, url: str = "", slim: bool = False) -> str:
+    """In-game command for SkinRestorer. Remote skins go through its "web" provider, which has them signed by
+    Mojang via MineSkin, so vanilla clients of all players display them."""
+    if source == "official":
+        return "/skin reset"
+    if source == "default":
+        return "/skin clear"
+    if not skin_host_allowed(url):
+        raise ValueError("Недопустимый адрес скина.")
+    return f"/skin set web {'slim' if slim else 'classic'} \"{url}\""
 
 
 def ensure_portablemc() -> Path:
@@ -1062,7 +1099,7 @@ def run_pmc(
     with log_path.open("a", encoding="utf-8", errors="replace") as log:
         log.write("\n\n===== Project Meridian Launcher =====\n")
         log.write(f"PortableMC core: {PMC_VERSION}\n")
-        log.write("PortableMC args: " + " ".join(pmc_args) + "\n")
+        log.write("PortableMC args: " + mask_secrets(" ".join(pmc_args)) + "\n")
         log.flush()
         proc = subprocess.Popen(
             build_pmc_command(pmc_args),
@@ -1078,7 +1115,7 @@ def run_pmc(
         assert proc.stdout is not None
         for raw_line in proc.stdout:
             line = raw_line.rstrip("\r\n")
-            log.write(line + "\n")
+            log.write(mask_secrets(line) + "\n")
             log.flush()
             if on_event is not None:
                 try:
@@ -1089,13 +1126,73 @@ def run_pmc(
         return proc.wait()
 
 
+# Title brightness per frame (70 ms) when the launcher starts: a short flicker, like an old game menu powering on.
+BOOT_FLICKER: tuple[float, ...] = (0.0, 0.15, 0.05, 0.5, 0.2, 0.75, 0.35, 0.9, 0.6, 1.0, 0.8, 1.0)
+
+# Layout densities, tried in order until the whole window fits the work area of the monitor without scrolling.
+# Values are pixels / points at 100 % and are scaled by the effective interface scale.
+DENSITY: tuple[dict[str, Any], ...] = (
+    {"outer": (28, 20), "gap": 14, "sep": (10, 14), "pad": 20, "sec": (18, 10), "btn_pady": 10, "play_pady": 13,
+     "play_font": 14, "title_font": 24, "subtitle": True, "icon": 48, "skin": 96, "skin_font": 15, "hints": True,
+     "log_lines": 6, "status_font": 23, "entry_ipady": 7, "item_gap": 10},
+    {"outer": (20, 14), "gap": 12, "sep": (8, 10), "pad": 16, "sec": (12, 7), "btn_pady": 7, "play_pady": 9,
+     "play_font": 13, "title_font": 19, "subtitle": True, "icon": 40, "skin": 72, "skin_font": 12, "hints": False,
+     "log_lines": 4, "status_font": 19, "entry_ipady": 5, "item_gap": 7},
+    {"outer": (14, 9), "gap": 9, "sep": (6, 7), "pad": 12, "sec": (8, 5), "btn_pady": 5, "play_pady": 6,
+     "play_font": 12, "title_font": 15, "subtitle": False, "icon": 32, "skin": 56, "skin_font": 10, "hints": False,
+     "log_lines": 3, "status_font": 16, "entry_ipady": 3, "item_gap": 5},
+)
+# (columns, density): three columns first (shortest window), then two columns for narrow screens.
+LAYOUTS: tuple[tuple[int, int], ...] = ((3, 0), (3, 1), (3, 2), (2, 1), (2, 2))
+MIN_EFFECTIVE_SCALE = 0.75
+PREFERRED_SIZE = (1180, 720)
+
+
+class Tooltip:
+    """Hint shown on hover; used for explanations moved out of the compact layout."""
+
+    def __init__(self, widget: tk.Misc, text: Callable[[], str]) -> None:
+        self.widget, self.text, self.tip = widget, text, None
+        widget.bind("<Enter>", self.show, add="+")
+        widget.bind("<Leave>", self.hide, add="+")
+        widget.bind("<ButtonPress>", self.hide, add="+")
+
+    def show(self, _event: tk.Event | None = None) -> None:
+        text = self.text()
+        if not text or self.tip is not None:
+            return
+        tip = tk.Toplevel(self.widget)
+        tip.wm_overrideredirect(True)
+        tip.configure(bg=C_LINE)
+        tk.Label(tip, text=text, bg=C_PANEL_2, fg=C_INK, font=("Segoe UI", 9), justify="left",
+                 wraplength=px(320), padx=px(8), pady=px(5)).pack(padx=1, pady=1)
+        tip.update_idletasks()
+        x = self.widget.winfo_rootx()
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + px(4)
+        left, top, ww, wh = work_area(self.widget.winfo_toplevel())
+        x = max(left, min(x, left + ww - tip.winfo_reqwidth()))
+        if y + tip.winfo_reqheight() > top + wh:
+            y = self.widget.winfo_rooty() - tip.winfo_reqheight() - px(4)
+        tip.geometry(f"+{x}+{y}")
+        self.tip = tip
+
+    def hide(self, _event: tk.Event | None = None) -> None:
+        if self.tip is not None:
+            try:
+                self.tip.destroy()
+            except tk.TclError:
+                pass
+            self.tip = None
+
+
 class RamSlider(tk.Canvas):
     """Small custom slider so the handle is always visible on Windows."""
 
     def __init__(self, parent: tk.Misc, variable: tk.IntVar, from_: int = 4, to: int = 16) -> None:
         super().__init__(
             parent,
-            height=30,
+            width=px(170),
+            height=px(30),
             bg=C_PANEL,
             bd=0,
             highlightthickness=0,
@@ -1112,7 +1209,7 @@ class RamSlider(tk.Canvas):
 
     def _pointer(self, event: tk.Event) -> None:
         width = max(1, self.winfo_width())
-        left, right = 9, max(10, width - 9)
+        left, right = px(9), max(px(10), width - px(9))
         ratio = max(0.0, min(1.0, (event.x - left) / max(1, right - left)))
         value = round(self.minimum + ratio * (self.maximum - self.minimum))
         self.variable.set(max(self.minimum, min(self.maximum, value)))
@@ -1120,28 +1217,28 @@ class RamSlider(tk.Canvas):
     def _draw(self) -> None:
         self.delete("all")
         width = max(1, self.winfo_width())
-        left, right, y = 9, max(10, width - 9), 15
+        left, right, y = px(9), max(px(10), width - px(9)), px(15)
         value = max(self.minimum, min(self.maximum, int(self.variable.get())))
         ratio = (value - self.minimum) / max(1, self.maximum - self.minimum)
         x = left + (right - left) * ratio
 
-        self.create_line(left, y, right, y, fill=C_LINE, width=2)
-        self.create_line(left, y, x, y, fill=C_COPPER, width=3)
+        self.create_line(left, y, right, y, fill=C_LINE, width=px(2))
+        self.create_line(left, y, x, y, fill=C_COPPER, width=px(3))
 
         for step in range(self.minimum, self.maximum + 1, 2):
             r = (step - self.minimum) / max(1, self.maximum - self.minimum)
             tick_x = left + (right - left) * r
-            self.create_line(tick_x, y - 4, tick_x, y + 4, fill="#314346", width=1)
+            self.create_line(tick_x, y - px(4), tick_x, y + px(4), fill="#314346", width=px(1))
 
         # Permanent high-contrast handle; no hover required.
         self.create_rectangle(
-            x - 9, y - 9, x + 9, y + 9,
+            x - px(9), y - px(9), x + px(9), y + px(9),
             fill=C_COPPER,
             outline=C_TELEMETRY,
-            width=2,
+            width=px(2),
         )
         self.create_rectangle(
-            x - 3, y - 3, x + 3, y + 3,
+            x - px(3), y - px(3), x + px(3), y + px(3),
             fill=C_TELEMETRY,
             outline="",
         )
@@ -1149,22 +1246,39 @@ class RamSlider(tk.Canvas):
 
 class MeridianLauncher(tk.Tk):
     def __init__(self) -> None:
+        global UI_SCALE
+        enable_dpi_awareness()
+        set_app_user_model_id()
         super().__init__()
+        self.withdraw()  # shown once sized and placed: no flash of a cut-off window
+        self._icon_images: list[Any] = []
+        self.icon_source = apply_window_icon(self, self._icon_images)
         ensure_dirs()
         self.state_data = load_state()
         self.events: queue.Queue[tuple[str, Any]] = queue.Queue()
         self.busy = False
 
+        self.ui_scale_choice = normalize_ui_scale_choice(self.state_data.get("ui_scale", "auto"))
+        self.ui_scale_var = tk.StringVar(value=self.ui_scale_choice)
+        self._d = DENSITY[0]
+        self._root_frame: tk.Frame | None = None
+
         self.title(f"{APP_NAME} {APP_VERSION}")
-        self.geometry("1180x760")
-        self.minsize(1040, 700)
         self.configure(bg=C_BG)
 
-        self.username_var = tk.StringVar(value=str(self.state_data.get("username", "Player")))
-        self.email_var = tk.StringVar(value=str(self.state_data.get("email", "")))
-        self.auth_var = tk.StringVar(value=str(self.state_data.get("auth_mode", "offline")))
+        self.username_var = tk.StringVar(value=str(self.state_data.get("username", "")))
+        self.auth_var = tk.StringVar(value="microsoft" if self.state_data.get("auth_mode") == "microsoft" else "offline")
         self.ram_var = tk.IntVar(value=int(self.state_data.get("ram_gb", 8)))
-        self.channel_var = tk.StringVar(value=str(self.state_data.get("channel", "stable")))
+        self.skin_source_var = tk.StringVar(value="")
+        self.skin_nick_var = tk.StringVar(value="")
+        self.skin_slim_var = tk.BooleanVar(value=False)
+        self.skin_cmd_var = tk.StringVar(value="")
+        self.skin_info_var = tk.StringVar(value="")
+        self.skin_dialog: tk.Toplevel | None = None
+        self.log_dialog: tk.Toplevel | None = None
+        self.log_dialog_text: tk.Text | None = None
+        self.log_lines: list[str] = []
+        self.launcher_update_var = tk.StringVar(value="")
         self.status_var = tk.StringVar(value="Система готова")
         self.detail_var = tk.StringVar(value=f"Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}")
         self.progress_var = tk.StringVar(value="MERIDIAN_SYS // IDLE")
@@ -1177,14 +1291,200 @@ class MeridianLauncher(tk.Tk):
         self.auth_uri = "https://microsoft.com/devicelogin"
         self.skin_photo: ImageTk.PhotoImage | None = None
         self._animation_phase = 0.0
+        self.pack_value = tk.StringVar(value=str(self.state_data.get("pack_version") or "Stable"))
+        self.core_value = tk.StringVar(value=f"{MC_VERSION} // NF {NEOFORGE_VERSION}")
+        self.account_value = tk.StringVar(value="OFFLINE")
 
-        self._build_style()
-        self._build_ui()
-        self._sync_auth_fields()
+        self._layout_main()
         self.after(100, self._drain_events)
         self.after(120, self._animate_ui)
         self.after(400, self._initial_check)
         self.after(900, self._refresh_skin_async)
+
+    def _set_scale(self, scale: float) -> None:
+        global UI_SCALE
+        UI_SCALE = scale
+        # Fonts are given in points: Tk turns them into pixels with this factor (96 DPI baseline = 100 %).
+        self.tk.call("tk", "scaling", scale * 96.0 / 72.0)
+
+    def _layout_main(self) -> None:
+        """Builds the main window in the first layout that fits the work area of the monitor (taskbar, title bar
+        and frame excluded) at the chosen interface scale; only when no layout fits is the scale lowered, in 5 %
+        steps, and the limit is shown next to the scale setting. The window never needs scrolling."""
+        chosen = resolve_ui_scale(self.ui_scale_choice)
+        left, top, work_w, work_h = work_area(None)
+        extra_w, extra_h = frame_extra(True)
+        avail_w, avail_h = work_w - extra_w, work_h - extra_h
+        tried: list[dict[str, Any]] = []
+        scale = chosen
+        picked: dict[str, Any] | None = None
+        while picked is None:
+            for columns, density in LAYOUTS:
+                req_w, req_h = self._build_main(scale, columns, density)
+                attempt = {"scale": round(scale, 3), "columns": columns, "density": density, "req": (req_w, req_h)}
+                tried.append(attempt)
+                if req_w <= avail_w and req_h <= avail_h:
+                    picked = attempt
+                    break
+            if picked is None:
+                if scale <= MIN_EFFECTIVE_SCALE + 1e-6:
+                    picked = dict(tried[-1], fits=False)
+                    break
+                scale = max(MIN_EFFECTIVE_SCALE, round(scale - 0.05, 2))
+        if picked.get("columns") != tried[-1]["columns"] or picked.get("density") != tried[-1]["density"] or picked["scale"] != tried[-1]["scale"]:
+            self._build_main(picked["scale"], picked["columns"], picked["density"])
+        req_w, req_h = picked["req"]
+        w = min(max(req_w, px(PREFERRED_SIZE[0])), avail_w)
+        h = min(max(req_h, px(PREFERRED_SIZE[1])), avail_h)
+        x = left + max(0, (work_w - (w + extra_w)) // 2)
+        y = top + max(0, (work_h - (h + extra_h)) // 2)
+        self.geometry(f"{w}x{h}+{x}+{y}")
+        self.minsize(min(req_w, avail_w), min(req_h, avail_h))
+        self.layout_info = {"chosen_scale": round(chosen, 3), "effective_scale": picked["scale"], "columns": picked["columns"],
+                            "density": picked["density"], "required": (req_w, req_h), "available": (avail_w, avail_h),
+                            "work": (left, top, work_w, work_h), "frame": (extra_w, extra_h), "size": (w, h), "pos": (x, y),
+                            "fits": picked.get("fits", True), "tried": len(tried)}
+        limited = picked["scale"] < chosen - 1e-6
+        self.ui_scale_btn.configure(text=self._ui_scale_label(self.ui_scale_choice, picked["scale"] if limited else None))
+        if limited:
+            self._log(f"Масштаб {round(chosen * 100)}% не помещается на этом экране: интерфейс показан в "
+                      f"{round(picked['scale'] * 100)}%. Выбранная настройка сохранена.")
+        self.deiconify()
+
+    def _build_main(self, scale: float, columns: int, density: int) -> tuple[int, int]:
+        """(Re)builds the whole main window content and returns the size it needs (client area, pixels)."""
+        self._set_scale(scale)
+        self._d = DENSITY[density]
+        self._columns = columns
+        if self._root_frame is not None:
+            self._root_frame.destroy()
+        self._build_style()
+        self._build_ui()
+        self._apply_ui_scale(self)
+        self._sync_auth_fields()
+        self.update_idletasks()
+        return self.winfo_reqwidth(), self.winfo_reqheight()
+
+    @staticmethod
+    def _scaled_pad(value: Any, tk_app: tk.Misc) -> Any:
+        parts = value if isinstance(value, (tuple, list)) else tk_app.tk.splitlist(str(value))
+        nums = [px(int(float(str(part)))) for part in parts]
+        return nums[0] if len(nums) == 1 else tuple(nums)
+
+    def _apply_ui_scale(self, top: tk.Misc) -> None:
+        """Scales pixel paddings, wrap widths, frame/canvas sizes and canvas drawings built at 100 %."""
+        if abs(UI_SCALE - 1.0) < 1e-6:
+            return
+        pending: list[tk.Misc] = [top]
+        while pending:
+            widget = pending.pop()
+            pending.extend(widget.winfo_children())
+            if getattr(widget, "_meridian_scaled", False):
+                continue
+            widget._meridian_scaled = True  # type: ignore[attr-defined]
+            try:
+                self._scale_widget(widget)
+            except tk.TclError:
+                pass
+
+    def _scale_widget(self, widget: tk.Misc) -> None:
+        keys = widget.keys() if hasattr(widget, "keys") else []
+        if not isinstance(widget, (tk.Tk, tk.Toplevel)):
+            for opt in ("padx", "pady", "wraplength"):
+                if opt in keys:
+                    try:
+                        value = int(float(str(widget.cget(opt))))
+                    except (ValueError, tk.TclError):
+                        continue
+                    if value:
+                        widget.configure(**{opt: px(value)})
+            if isinstance(widget, (tk.Frame, tk.Canvas)) and not isinstance(widget, RamSlider) and not getattr(widget, "_meridian_scroll", False):
+                for opt in ("width", "height"):
+                    try:
+                        value = int(float(str(widget.cget(opt))))
+                    except (ValueError, tk.TclError):
+                        continue
+                    if value > 0:
+                        widget.configure(**{opt: px(value)})
+            if isinstance(widget, tk.Canvas) and not isinstance(widget, RamSlider) and not getattr(widget, "_meridian_scroll", False):
+                widget.scale("all", 0, 0, UI_SCALE, UI_SCALE)
+                for item in widget.find_all():
+                    try:
+                        line_width = float(widget.itemcget(item, "width"))
+                    except (ValueError, tk.TclError):
+                        continue
+                    if line_width > 0:
+                        widget.itemconfigure(item, width=px(line_width))
+            manager = widget.winfo_manager()
+            if manager in ("pack", "grid"):
+                info = widget.pack_info() if manager == "pack" else widget.grid_info()
+                changes = {}
+                for opt in ("padx", "pady", "ipadx", "ipady"):
+                    if opt in info:
+                        changes[opt] = self._scaled_pad(info[opt], self)
+                if changes:
+                    if manager == "pack":
+                        widget.pack_configure(**changes)
+                    else:
+                        widget.grid_configure(**changes)
+        columns, rows = widget.grid_size()
+        for index in range(columns):
+            minsize = int(widget.grid_columnconfigure(index, "minsize") or 0)
+            if minsize:
+                widget.grid_columnconfigure(index, minsize=px(minsize))
+        for index in range(rows):
+            minsize = int(widget.grid_rowconfigure(index, "minsize") or 0)
+            if minsize:
+                widget.grid_rowconfigure(index, minsize=px(minsize))
+
+    def _show_ui_scale_menu(self) -> None:
+        menu = tk.Menu(self, tearoff=0, bg=C_PANEL_2, fg=C_INK, activebackground=C_AMBER, activeforeground="#161106",
+                       selectcolor=C_AMBER_2, font=("Segoe UI", 10))
+        for choice in UI_SCALE_CHOICES:
+            label = UI_SCALE_LABELS[choice]
+            if choice == "auto":
+                label += f" ({round(system_dpi_scale() * 100)}%)"
+            menu.add_radiobutton(label=label, value=choice, variable=self.ui_scale_var, command=self._ui_scale_changed)
+        try:
+            x = self.ui_scale_btn.winfo_rootx()
+            y = self.ui_scale_btn.winfo_rooty() + self.ui_scale_btn.winfo_height()
+            menu.tk_popup(x, y)
+        finally:
+            menu.grab_release()
+
+    def _ui_scale_label(self, choice: str, effective: float | None = None) -> str:
+        label = "ИНТЕРФЕЙС: " + ("АВТО" if choice == "auto" else choice + "%")
+        if effective is not None:
+            label += f" → {round(effective * 100)}% (не помещается)"
+        return label
+
+    def _ui_scale_changed(self) -> None:
+        choice = normalize_ui_scale_choice(self.ui_scale_var.get())
+        self.ui_scale_var.set(choice)
+        if choice == self.ui_scale_choice:
+            return
+        self._save_preferences()
+        self.state_data["ui_scale"] = choice
+        atomic_write_json(STATE_FILE, self.state_data)
+        self.ui_scale_btn.configure(text=self._ui_scale_label(choice) + " *")
+        self._log(f"Масштаб интерфейса лаунчера: {UI_SCALE_LABELS[choice]} (GUI Scale Minecraft не меняется).")
+        if self.busy:
+            messagebox.showinfo("Масштаб интерфейса", "Сохранено. Новый масштаб применится при следующем запуске лаунчера.", parent=self)
+            return
+        if messagebox.askyesno("Масштаб интерфейса", "Сохранено. Перезапустить лаунчер сейчас, чтобы применить масштаб?", parent=self):
+            self._restart_launcher()
+
+    def _restart_launcher(self) -> None:
+        if getattr(sys, "frozen", False):
+            command = [sys.executable] + sys.argv[1:]
+        else:
+            command = [sys.executable, str(Path(__file__).resolve())] + sys.argv[1:]
+        try:
+            subprocess.Popen(command, close_fds=True)
+        except Exception as exc:
+            messagebox.showerror("Масштаб интерфейса", f"Не удалось перезапустить: {exc}. Масштаб применится при следующем запуске.", parent=self)
+            return
+        self.destroy()
 
     def _build_style(self) -> None:
         style = ttk.Style(self)
@@ -1225,7 +1525,7 @@ class MeridianLauncher(tk.Tk):
             font=("Consolas", 10, "bold"),
             cursor="hand2",
             padx=14,
-            pady=11,
+            pady=self._d["btn_pady"],
         )
         return btn
 
@@ -1246,17 +1546,25 @@ class MeridianLauncher(tk.Tk):
             font=("Segoe UI", 10),
         )
 
+    def _section(self, parent: tk.Misc, text: str, first: bool = False) -> None:
+        d = self._d
+        tk.Label(parent, text=text, bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
+            anchor="w", padx=d["pad"], pady=((d["sec"][0] + 2) if first else d["sec"][0], d["sec"][1])
+        )
+
     def _build_ui(self) -> None:
-        # Header
+        d = self._d
         root = tk.Frame(self, bg=C_BG)
-        root.pack(fill="both", expand=True, padx=28, pady=22)
+        root.pack(fill="both", expand=True, padx=d["outer"][0], pady=d["outer"][1])
+        self._root_frame = root
 
-        header = tk.Frame(root, bg=C_BG, height=84)
+        # Header: emblem, title, system state, version and the interface scale setting
+        header = tk.Frame(root, bg=C_BG)
         header.pack(fill="x")
-
-        self.brand_icon = tk.Canvas(header, width=54, height=48, bg=C_BG, bd=0, highlightthickness=0)
-        self.brand_icon.pack(side="left", padx=(0, 14))
-        self._draw_brand_icon()
+        icon = d["icon"]
+        self.brand_icon = tk.Canvas(header, width=round(icon * 54 / 48), height=icon, bg=C_BG, bd=0, highlightthickness=0)
+        self.brand_icon.pack(side="left", padx=(0, 12))
+        self._draw_brand_icon(icon / 48.0)
 
         brand_box = tk.Frame(header, bg=C_BG)
         brand_box.pack(side="left", fill="y")
@@ -1265,17 +1573,18 @@ class MeridianLauncher(tk.Tk):
             text="PROJECT MERIDIAN",
             bg=C_BG,
             fg=C_INK,
-            font=("Segoe UI Black", 26),
+            font=("Segoe UI Black", d["title_font"]),
             anchor="w",
         )
         self.brand_title.pack(anchor="w")
-        tk.Label(
-            brand_box,
-            text="MERIDIAN_SYS // KOSHPACK LAUNCH CONTROL",
-            bg=C_BG,
-            fg=C_MUTED,
-            font=("Consolas", 9, "bold"),
-        ).pack(anchor="w", pady=(2, 0))
+        if d["subtitle"]:
+            tk.Label(
+                brand_box,
+                text="EXPEDITION NETWORK // LAUNCH TERMINAL",
+                bg=C_BG,
+                fg=C_MUTED,
+                font=("Consolas", 9, "bold"),
+            ).pack(anchor="w", pady=(1, 0))
 
         head_right = tk.Frame(header, bg=C_BG)
         head_right.pack(side="right", anchor="n")
@@ -1284,234 +1593,179 @@ class MeridianLauncher(tk.Tk):
         self.system_dot = tk.Canvas(status_row, width=12, height=12, bg=C_BG, bd=0, highlightthickness=0)
         self.system_dot.pack(side="left", padx=(0, 7))
         self.system_dot_id = self.system_dot.create_oval(2, 2, 10, 10, fill=C_AMBER, outline="")
-        tk.Label(
-            status_row,
-            text="SYSTEM ONLINE",
+        tk.Label(status_row, text="SYSTEM ONLINE", bg=C_BG, fg=C_MUTED, font=("Consolas", 9, "bold")).pack(side="left")
+        tk.Label(status_row, text=f"   v{APP_VERSION}  //  STABLE", bg=C_BG, fg=C_AMBER, font=("Consolas", 9, "bold")).pack(side="left")
+        self.update_link = tk.Label(head_right, textvariable=self.launcher_update_var, bg=C_BG, fg=C_TELEMETRY,
+                                    font=("Consolas", 9, "bold"), cursor="hand2")
+        self.update_link.bind("<Button-1>", lambda _e: webbrowser.open(LAUNCHER_DOWNLOAD_PAGE))
+        if self.launcher_update_var.get():
+            self.update_link.pack(anchor="e")
+        self.ui_scale_btn = tk.Button(
+            head_right,
+            text=self._ui_scale_label(self.ui_scale_choice),
+            command=self._show_ui_scale_menu,
             bg=C_BG,
             fg=C_MUTED,
+            activebackground=C_PANEL_2,
+            activeforeground=C_INK,
+            relief="flat",
+            bd=0,
+            highlightthickness=1,
+            highlightbackground=C_LINE,
             font=("Consolas", 9, "bold"),
-        ).pack(side="left")
-        tk.Label(
-            head_right,
-            text=f"v{APP_VERSION}  //  CURRENT",
-            bg=C_BG,
-            fg=C_AMBER,
-            font=("Consolas", 9, "bold"),
-        ).pack(anchor="e", pady=(7, 0))
+            cursor="hand2",
+            padx=8,
+            pady=2,
+        )
+        self.ui_scale_btn.pack(anchor="e", pady=(d["item_gap"], 0))
+        Tooltip(self.ui_scale_btn, lambda: "Масштаб окна лаунчера (не GUI Scale Minecraft). 100% — размер как на экране "
+                                           "с масштабом Windows 100%; «Авто» следует масштабу Windows.")
 
-        tk.Frame(root, bg=C_LINE, height=1).pack(fill="x", pady=(10, 18))
+        tk.Frame(root, bg=C_LINE, height=1).pack(fill="x", pady=d["sep"])
 
         body = tk.Frame(root, bg=C_BG)
         body.pack(fill="both", expand=True)
-        body.grid_columnconfigure(0, minsize=330)
-        body.grid_columnconfigure(1, weight=1)
         body.grid_rowconfigure(0, weight=1)
+        if self._columns == 3:
+            account = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+            account.grid(row=0, column=0, sticky="nsew", padx=(0, d["gap"]))
+            settings = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+            settings.grid(row=0, column=1, sticky="nsew", padx=(0, d["gap"]))
+            launch_col = 2
+        else:
+            stack = tk.Frame(body, bg=C_BG)
+            stack.grid(row=0, column=0, sticky="nsew", padx=(0, d["gap"]))
+            account = tk.Frame(stack, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+            account.pack(fill="x")
+            settings = tk.Frame(stack, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+            settings.pack(fill="both", expand=True, pady=(d["gap"], 0))
+            launch_col = 1
+        body.grid_columnconfigure(launch_col, weight=1)
 
-        # Account / controls
-        left = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-        left.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        self._build_account(account)
+        self._build_settings(settings)
+        right = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+        right.grid(row=0, column=launch_col, sticky="nsew")
+        self._build_launch(right)
 
-        tk.Label(left, text="01 / АККАУНТ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
-            anchor="w", padx=22, pady=(20, 14)
-        )
+    def _build_account(self, panel: tk.Frame) -> None:
+        d = self._d
+        pad = d["pad"]
+        self._section(panel, "01 / ИГРОВОЙ ПРОФИЛЬ", first=True)
 
-        profile = tk.Frame(left, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-        profile.pack(fill="x", padx=22)
-
-        self.skin_label = tk.Label(
-            profile,
-            text="NO\nSKIN",
-            bg=C_FIELD,
-            fg=C_AMBER,
-            font=("Consolas", 18, "bold"),
-            width=7,
-            height=5,
-            justify="center",
-        )
-        self.skin_label.pack(side="left", padx=12, pady=12)
+        profile = tk.Frame(panel, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
+        profile.pack(fill="x", padx=pad)
+        self._skin_base = d["skin"]
+        skin_box = tk.Frame(profile, bg=C_FIELD, width=d["skin"], height=d["skin"])
+        skin_box.pack_propagate(False)
+        skin_box.pack(side="left", padx=d["item_gap"], pady=d["item_gap"])
+        self.skin_label = tk.Label(skin_box, text="NO\nSKIN", bg=C_FIELD, fg=C_AMBER,
+                                   font=("Consolas", d["skin_font"], "bold"), justify="center")
+        self.skin_label.pack(fill="both", expand=True)
 
         profile_text = tk.Frame(profile, bg=C_PANEL_2)
-        profile_text.pack(side="left", fill="both", expand=True, padx=(0, 10), pady=14)
-        tk.Label(
-            profile_text,
-            textvariable=self.account_name_var,
-            bg=C_PANEL_2,
-            fg=C_INK,
-            font=("Segoe UI Semibold", 14),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            profile_text,
-            textvariable=self.account_type_var,
-            bg=C_PANEL_2,
-            fg=C_AMBER,
-            font=("Consolas", 9, "bold"),
-            anchor="w",
-        ).pack(fill="x", pady=(4, 0))
-        tk.Label(
-            profile_text,
-            textvariable=self.account_note_var,
-            bg=C_PANEL_2,
-            fg=C_MUTED,
-            font=("Segoe UI", 9),
-            anchor="w",
-            wraplength=150,
-            justify="left",
-        ).pack(fill="x", pady=(5, 0))
+        profile_text.pack(side="left", fill="both", expand=True, padx=(0, 10), pady=d["item_gap"])
+        tk.Label(profile_text, textvariable=self.account_name_var, bg=C_PANEL_2, fg=C_INK,
+                 font=("Segoe UI Semibold", 13 if d["hints"] else 12), anchor="w").pack(fill="x")
+        tk.Label(profile_text, textvariable=self.account_type_var, bg=C_PANEL_2, fg=C_AMBER,
+                 font=("Consolas", 9, "bold"), anchor="w").pack(fill="x", pady=(3, 0))
+        tk.Label(profile_text, textvariable=self.account_note_var, bg=C_PANEL_2, fg=C_MUTED, font=("Segoe UI", 9),
+                 anchor="w", wraplength=165, justify="left").pack(fill="x", pady=(3, 0))
 
-        mode = tk.Frame(left, bg=C_PANEL)
-        mode.pack(fill="x", padx=22, pady=(16, 0))
-        self.offline_radio = tk.Radiobutton(
-            mode,
-            text="OFFLINE",
-            variable=self.auth_var,
-            value="offline",
-            command=self._sync_auth_fields,
-            bg=C_PANEL,
-            fg=C_INK,
-            activebackground=C_PANEL,
-            activeforeground=C_AMBER,
-            selectcolor=C_FIELD,
-            font=("Consolas", 9, "bold"),
-        )
-        self.offline_radio.pack(side="left")
-        self.microsoft_radio = tk.Radiobutton(
-            mode,
-            text="MICROSOFT",
-            variable=self.auth_var,
-            value="microsoft",
-            command=self._sync_auth_fields,
-            bg=C_PANEL,
-            fg=C_INK,
-            activebackground=C_PANEL,
-            activeforeground=C_AMBER,
-            selectcolor=C_FIELD,
-            font=("Consolas", 9, "bold"),
-        )
-        self.microsoft_radio.pack(side="left", padx=(18, 0))
+        mode = tk.Frame(panel, bg=C_PANEL)
+        mode.pack(fill="x", padx=pad, pady=(d["item_gap"], 0))
+        radio = dict(bg=C_PANEL, fg=C_INK, activebackground=C_PANEL, activeforeground=C_AMBER, selectcolor=C_FIELD,
+                     font=("Consolas", 9, "bold"), command=self._auth_mode_changed)
+        self.microsoft_radio = tk.Radiobutton(mode, text="ЛИЦЕНЗИЯ", variable=self.auth_var, value="microsoft", **radio)
+        self.microsoft_radio.pack(side="left")
+        self.offline_radio = tk.Radiobutton(mode, text="БЕЗ ЛИЦЕНЗИИ", variable=self.auth_var, value="offline", **radio)
+        self.offline_radio.pack(side="left", padx=(14, 0))
 
-        self.nick_label = tk.Label(left, text="ИГРОВОЙ НИК", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 8, "bold"))
-        self.nick_label.pack(anchor="w", padx=22, pady=(16, 5))
-        self.username_entry = self._entry(left, self.username_var)
-        self.username_entry.pack(fill="x", padx=22, ipady=8)
+        # Microsoft mode: sign in / switch / sign out
+        self.ms_box = tk.Frame(panel, bg=C_PANEL)
+        ms_hint = "Вход на официальной странице Microsoft. Пароль лаунчер не видит и не хранит."
+        self.microsoft_hint = tk.Label(self.ms_box, text=ms_hint, bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 9),
+                                       justify="left", wraplength=275)
+        if d["hints"]:
+            self.microsoft_hint.pack(anchor="w", pady=(d["item_gap"], 0))
+        ms_row = tk.Frame(self.ms_box, bg=C_PANEL)
+        ms_row.pack(fill="x", pady=(d["item_gap"], 0))
+        self.login_btn = self._button(ms_row, "ВОЙТИ ЧЕРЕЗ MICROSOFT", self._login_microsoft)
+        self.login_btn.pack(side="left", fill="x", expand=True)
+        self.logout_btn = self._button(ms_row, "ВЫЙТИ", self._logout_microsoft)
+        self.logout_btn.pack(side="left", padx=(8, 0))
+        if not d["hints"]:
+            Tooltip(self.login_btn, lambda: ms_hint)
 
-        self.microsoft_hint = tk.Label(
-            left,
-            text="Microsoft-вход откроется на официальной странице.\nПочту и пароль лаунчер не запрашивает.",
-            bg=C_PANEL,
-            fg=C_MUTED,
-            font=("Segoe UI", 9),
-            justify="left",
-            wraplength=275,
-        )
-        self.microsoft_hint.pack(anchor="w", padx=22, pady=(12, 0))
+        # Offline mode: nickname; the server protects it with a password
+        self.offline_box = tk.Frame(panel, bg=C_PANEL)
+        self.nick_label = tk.Label(self.offline_box, text="ИГРОВОЙ НИК", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 8, "bold"))
+        self.nick_label.pack(anchor="w", pady=(d["item_gap"], 3))
+        self.username_entry = self._entry(self.offline_box, self.username_var)
+        self.username_entry.pack(fill="x", ipady=d["entry_ipady"])
+        offline_hint = ("Ник: 3–16 символов (A–Z, 0–9, _). При первом входе на сервер придумайте пароль: "
+                        "/register пароль пароль, потом /login пароль. Не используйте пароли от других сайтов.")
+        self.offline_hint = tk.Label(self.offline_box, text=offline_hint, bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 8),
+                                     justify="left", wraplength=275)
+        if d["hints"]:
+            self.offline_hint.pack(anchor="w", pady=(4, 0))
+        else:
+            Tooltip(self.username_entry, lambda: offline_hint)
+        self.username_var.trace_add("write", lambda *_: self._sync_auth_fields())
 
-        self.login_btn = self._button(left, "ПОДКЛЮЧИТЬ MICROSOFT", self._login_microsoft, accent=False)
-        self.login_btn.pack(fill="x", padx=22, pady=(10, 0))
+        self.skin_btn = self._button(panel, "МОЙ СКИН", self._open_skin_dialog)
+        self.skin_btn.pack(side="bottom", fill="x", padx=pad, pady=(d["item_gap"], pad))
 
-        tk.Label(left, text="02 / КАНАЛ СБОРКИ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
-            anchor="w", padx=22, pady=(18, 7)
-        )
-        channel_row = tk.Frame(left, bg=C_PANEL)
-        channel_row.pack(fill="x", padx=22)
-        self.stable_radio = tk.Radiobutton(
-            channel_row,
-            text="STABLE",
-            variable=self.channel_var,
-            value="stable",
-            command=self._channel_changed,
-            bg=C_PANEL,
-            fg=C_INK,
-            activebackground=C_PANEL,
-            activeforeground=C_COPPER,
-            selectcolor=C_FIELD,
-            font=("Consolas", 9, "bold"),
-        )
-        self.stable_radio.pack(side="left")
-        self.dev_radio = tk.Radiobutton(
-            channel_row,
-            text="DEV / БРОНЯ",
-            variable=self.channel_var,
-            value="dev",
-            command=self._channel_changed,
-            bg=C_PANEL,
-            fg=C_TELEMETRY,
-            activebackground=C_PANEL,
-            activeforeground=C_TELEMETRY,
-            selectcolor=C_FIELD,
-            font=("Consolas", 9, "bold"),
-        )
-        self.dev_radio.pack(side="left", padx=(18, 0))
-        self.channel_hint = tk.Label(
-            left,
-            text="DEV ищет свежую броню в сети, «Загрузках» и PrismLauncher.",
-            bg=C_PANEL,
-            fg=C_MUTED,
-            font=("Segoe UI", 8),
-            justify="left",
-            wraplength=275,
-        )
-        self.channel_hint.pack(anchor="w", padx=22, pady=(3, 0))
-
-        self.channel_update_btn = self._button(
-            left,
-            "↻  ОБНОВИТЬ DEV-БРОНЮ",
-            self._update_pack,
-        )
-        self.channel_update_btn.pack(fill="x", padx=22, pady=(8, 0))
-
-        tk.Label(left, text="03 / ПАМЯТЬ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
-            anchor="w", padx=22, pady=(12, 4)
-        )
-        ram_line = tk.Frame(left, bg=C_PANEL)
-        ram_line.pack(fill="x", padx=22)
+    def _build_settings(self, panel: tk.Frame) -> None:
+        d = self._d
+        pad = d["pad"]
+        self._section(panel, "02 / ПАМЯТЬ", first=True)
+        ram_line = tk.Frame(panel, bg=C_PANEL)
+        ram_line.pack(fill="x", padx=pad)
         self.ram_scale = RamSlider(ram_line, self.ram_var, from_=4, to=16)
         self.ram_scale.pack(side="left", fill="x", expand=True)
-        self.ram_label = tk.Label(
-            ram_line,
-            textvariable=self.ram_var,
-            bg=C_PANEL,
-            fg=C_AMBER,
-            font=("Consolas", 13, "bold"),
-            width=3,
-        )
+        self.ram_label = tk.Label(ram_line, textvariable=self.ram_var, bg=C_PANEL, fg=C_AMBER, font=("Consolas", 13, "bold"), width=3)
         self.ram_label.pack(side="left")
         tk.Label(ram_line, text="ГБ", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 9, "bold")).pack(side="left")
+        if d["hints"]:
+            tk.Label(panel, text="Рекомендуется 6–8 ГБ. Больше половины памяти ПК не ставьте.", bg=C_PANEL, fg=C_MUTED,
+                     font=("Segoe UI", 8), justify="left", wraplength=250).pack(anchor="w", padx=pad, pady=(3, 0))
 
-        tools = tk.Frame(left, bg=C_PANEL)
-        tools.pack(fill="x", padx=22, pady=(10, 12))
+        self._section(panel, "03 / ФАЙЛЫ ИГРЫ")
+        tools = tk.Frame(panel, bg=C_PANEL)
+        tools.pack(fill="x", padx=pad, pady=(0, pad))
         row = tk.Frame(tools, bg=C_PANEL)
         row.pack(fill="x")
-        self._button(row, "ПАПКА", self._open_game_folder).pack(side="left", fill="x", expand=True)
-        self._button(row, "ЛОГИ", self._open_logs).pack(side="left", fill="x", expand=True, padx=(8, 0))
-        self._button(tools, "ПРОВЕРИТЬ / ПОЧИНИТЬ", self._repair_pack).pack(fill="x", pady=(7, 0))
+        self.folder_btn = self._button(row, "ПАПКА ИГРЫ", self._open_game_folder)
+        self.folder_btn.pack(side="left", fill="x", expand=True)
+        self.logs_btn = self._button(row, "ЖУРНАЛ", self._open_log_dialog)
+        self.logs_btn.pack(side="left", fill="x", expand=True, padx=(8, 0))
+        self.repair_btn = self._button(tools, "ПРОВЕРИТЬ / ПОЧИНИТЬ ФАЙЛЫ", self._repair_pack)
+        self.repair_btn.pack(fill="x", pady=(d["item_gap"], 0))
+        Tooltip(self.repair_btn, lambda: "Сверяет каждый файл сборки с эталоном (SHA-256) и заново скачивает только "
+                                         "повреждённые. Миры, скриншоты и настройки не затрагиваются.")
 
-        # Dashboard
-        right = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-        right.grid(row=0, column=1, sticky="nsew")
+    def _build_launch(self, right: tk.Frame) -> None:
+        d = self._d
+        pad = d["pad"] + 4
         right.grid_rowconfigure(6, weight=1)
         right.grid_columnconfigure(0, weight=1)
 
-        tk.Label(
-            right,
-            text="MERIDIAN // LAUNCH CONTROL",
-            bg=C_PANEL,
-            fg=C_AMBER,
-            font=("Consolas", 10, "bold"),
-        ).grid(row=0, column=0, sticky="w", padx=26, pady=(23, 0))
-
+        tk.Label(right, text="MERIDIAN // LAUNCH CONTROL", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).grid(
+            row=0, column=0, sticky="w", padx=pad, pady=(d["sec"][0] + 2, 0)
+        )
         self.status_label = tk.Label(
             right,
             textvariable=self.status_var,
             bg=C_PANEL,
             fg=C_INK,
-            font=("Segoe UI Black", 25),
+            font=("Segoe UI Black", d["status_font"]),
             anchor="w",
             justify="left",
+            wraplength=380,
         )
-        self.status_label.grid(row=1, column=0, sticky="ew", padx=26, pady=(12, 2))
-
-        tk.Label(
+        self.status_label.grid(row=1, column=0, sticky="ew", padx=pad, pady=(d["sec"][1], 2))
+        self.detail_label = tk.Label(
             right,
             textvariable=self.detail_var,
             bg=C_PANEL,
@@ -1519,60 +1773,60 @@ class MeridianLauncher(tk.Tk):
             font=("Consolas", 10),
             anchor="w",
             justify="left",
-        ).grid(row=2, column=0, sticky="ew", padx=26)
+            wraplength=380,
+        )
+        self.detail_label.grid(row=2, column=0, sticky="ew", padx=pad)
+        # long status texts wrap to the real column width instead of being cut off
+        right.bind("<Configure>", lambda e: [lbl.configure(wraplength=max(px(200), e.width - 2 * px(pad)))
+                                             for lbl in (self.status_label, self.detail_label)], add="+")
 
         progress_shell = tk.Frame(right, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-        progress_shell.grid(row=3, column=0, sticky="ew", padx=26, pady=(22, 14))
+        progress_shell.grid(row=3, column=0, sticky="ew", padx=pad, pady=(d["item_gap"] + 4, d["item_gap"]))
         self.progress = ttk.Progressbar(progress_shell, mode="determinate", maximum=100)
-        self.progress.pack(fill="x", padx=1, pady=(1, 7))
-        tk.Label(
-            progress_shell,
-            textvariable=self.progress_var,
-            bg=C_PANEL_2,
-            fg=C_MUTED,
-            font=("Consolas", 9),
-            anchor="w",
-        ).pack(fill="x", padx=12, pady=(0, 9))
+        self.progress.pack(fill="x", padx=1, pady=(1, 5))
+        tk.Label(progress_shell, textvariable=self.progress_var, bg=C_PANEL_2, fg=C_MUTED, font=("Consolas", 9), anchor="w").pack(
+            fill="x", padx=12, pady=(0, 6)
+        )
 
         initial_play_text = "ИГРАТЬ" if any(INSTANCE_DIR.iterdir()) else "УСТАНОВИТЬ И ИГРАТЬ"
         self.play_btn = self._button(right, initial_play_text, self._play, accent=True)
-        self.play_btn.configure(font=("Consolas", 14, "bold"), pady=15)
-        self.play_btn.grid(row=4, column=0, sticky="ew", padx=26)
+        self.play_btn.configure(font=("Consolas", d["play_font"], "bold"), pady=d["play_pady"])
+        self.play_btn.grid(row=4, column=0, sticky="ew", padx=pad)
 
         info = tk.Frame(right, bg=C_PANEL)
-        info.grid(row=5, column=0, sticky="ew", padx=26, pady=(16, 12))
-        for idx in range(3):
-            info.grid_columnconfigure(idx, weight=1)
-
-        self.pack_value = tk.StringVar(value="KoshPack // current")
-        self.core_value = tk.StringVar(value=f"{MC_VERSION} // NF {NEOFORGE_VERSION}")
-        self.account_value = tk.StringVar(value="OFFLINE")
-        for idx, (caption, var) in enumerate((
-            ("СБОРКА", self.pack_value),
-            ("ЯДРО", self.core_value),
-            ("АККАУНТ", self.account_value),
-        )):
-            card = tk.Frame(info, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-            card.grid(row=0, column=idx, sticky="ew", padx=(0 if idx == 0 else 5, 0 if idx == 2 else 5))
-            tk.Label(card, text=caption, bg=C_PANEL_2, fg="#65645f", font=("Consolas", 8, "bold")).pack(
-                anchor="w", padx=11, pady=(9, 3)
-            )
-            tk.Label(card, textvariable=var, bg=C_PANEL_2, fg=C_INK, font=("Consolas", 9, "bold")).pack(
-                anchor="w", padx=11, pady=(0, 10)
-            )
+        info.grid(row=5, column=0, sticky="ew", padx=pad, pady=(d["item_gap"] + 2, d["item_gap"]))
+        cards = (("СБОРКА", self.pack_value), ("ЯДРО", self.core_value), ("АККАУНТ", self.account_value))
+        if self._columns == 3:
+            # one compact row per value: the launch column is narrower than in the two-column layout
+            info.grid_columnconfigure(1, weight=1)
+            for idx, (caption, var) in enumerate(cards):
+                tk.Label(info, text=caption, bg=C_PANEL, fg="#65645f", font=("Consolas", 8, "bold"), anchor="w").grid(
+                    row=idx, column=0, sticky="w", pady=1)
+                tk.Label(info, textvariable=var, bg=C_PANEL, fg=C_INK, font=("Consolas", 9, "bold"), anchor="w").grid(
+                    row=idx, column=1, sticky="w", padx=(10, 0), pady=1)
+        else:
+            for idx in range(3):
+                info.grid_columnconfigure(idx, weight=1)
+            for idx, (caption, var) in enumerate(cards):
+                card = tk.Frame(info, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
+                card.grid(row=0, column=idx, sticky="ew", padx=(0 if idx == 0 else 5, 0 if idx == 2 else 5))
+                tk.Label(card, text=caption, bg=C_PANEL_2, fg="#65645f", font=("Consolas", 8, "bold")).pack(anchor="w", padx=10, pady=(6, 2))
+                tk.Label(card, textvariable=var, bg=C_PANEL_2, fg=C_INK, font=("Consolas", 9, "bold")).pack(anchor="w", padx=10, pady=(0, 7))
 
         console_wrap = tk.Frame(right, bg=C_FIELD, highlightthickness=1, highlightbackground=C_LINE)
-        console_wrap.grid(row=6, column=0, sticky="nsew", padx=26, pady=(0, 24))
-        tk.Label(
-            console_wrap,
-            text="/// SYSTEM LOG",
-            bg=C_FIELD,
-            fg=C_AMBER,
-            font=("Consolas", 8, "bold"),
-        ).pack(anchor="w", padx=12, pady=(10, 0))
+        console_wrap.grid(row=6, column=0, sticky="nsew", padx=pad, pady=(0, pad))
+        log_head = tk.Frame(console_wrap, bg=C_FIELD)
+        log_head.pack(fill="x", padx=12, pady=(6, 0))
+        tk.Label(log_head, text="/// ЖУРНАЛ ДИАГНОСТИКИ", bg=C_FIELD, fg=C_AMBER, font=("Consolas", 8, "bold")).pack(side="left")
+        more = tk.Label(log_head, text="ОТКРЫТЬ ПОЛНОСТЬЮ ›", bg=C_FIELD, fg=C_TELEMETRY, font=("Consolas", 8, "bold"), cursor="hand2")
+        more.pack(side="right")
+        more.bind("<Button-1>", lambda _e: self._open_log_dialog())
+        log_frame = tk.Frame(console_wrap, bg=C_FIELD)
+        log_frame.pack(fill="both", expand=True)
         self.log_text = tk.Text(
-            console_wrap,
-            height=8,
+            log_frame,
+            height=d["log_lines"],
+            width=40,
             bg=C_FIELD,
             fg="#a4a39c",
             insertbackground=C_AMBER,
@@ -1580,19 +1834,27 @@ class MeridianLauncher(tk.Tk):
             wrap="word",
             font=("Consolas", 9),
             padx=12,
-            pady=9,
+            pady=6,
         )
-        self.log_text.pack(fill="both", expand=True)
+        log_bar = ttk.Scrollbar(log_frame, orient="vertical", command=self.log_text.yview)
+        self.log_text.configure(yscrollcommand=log_bar.set)
+        log_bar.pack(side="right", fill="y")  # the only scrolling area: the message log
+        self.log_text.pack(side="left", fill="both", expand=True)
         self.log_text.configure(state="disabled")
-        self._log("MERIDIAN_SYS ready. Сборка изолирована от обычного .minecraft.")
+        for line in self.log_lines[-50:]:
+            self.log_text.configure(state="normal")
+            self.log_text.insert("end", line + "\n")
+            self.log_text.configure(state="disabled")
+        if not self.log_lines:
+            self._log(f"Project Meridian Launcher {APP_VERSION}. Игра установлена отдельно от обычного .minecraft.")
 
-    def _draw_brand_icon(self) -> None:
-        """Draw the same mark used in the website header (.meridian-mark)."""
+    def _draw_brand_icon(self, k: float = 1.0) -> None:
+        """Draw the same mark used in the website header (.meridian-mark); k = size relative to 48 px."""
         cv = self.brand_icon
         cv.delete("all")
-        cx, cy = 27, 24
-        r = 15
-        ext = 20
+        cx, cy = 27 * k, 24 * k
+        r = 15 * k
+        ext = 20 * k
 
         # Website: a square rotated 45deg -> diamond.
         cv.create_polygon(
@@ -1610,7 +1872,7 @@ class MeridianLauncher(tk.Tk):
         cv.create_line(cx + ext, cy - ext, cx - ext, cy + ext, fill=C_COPPER, width=1)
 
         # Inner telemetry square, also rotated with the outer mark.
-        ir = 7
+        ir = 7 * k
         cv.create_polygon(
             cx, cy - ir,
             cx + ir, cy,
@@ -1624,12 +1886,20 @@ class MeridianLauncher(tk.Tk):
     def _animate_ui(self) -> None:
         self._animation_phase += 0.12
         pulse = (math.sin(self._animation_phase) + 1.0) / 2.0
+
         def blend(a: str, b: str, t: float) -> str:
             av = tuple(int(a[i:i+2], 16) for i in (1, 3, 5))
             bv = tuple(int(b[i:i+2], 16) for i in (1, 3, 5))
             rv = tuple(round(x + (y - x) * t) for x, y in zip(av, bv))
             return "#" + "".join(f"{v:02x}" for v in rv)
-        glow = blend(C_INK, C_AMBER_2, pulse * 0.34)
+
+        frame = getattr(self, "_boot_frame", 0)
+        self._boot_frame = frame + 1
+        if frame < len(BOOT_FLICKER):
+            # power-on flicker of the title, like an old game menu (a dozen frames, then a calm glow)
+            glow = blend(C_BG, C_INK, BOOT_FLICKER[frame])
+        else:
+            glow = blend(C_INK, C_AMBER_2, pulse * 0.34)
         dot = blend("#614500", C_AMBER_2, 0.25 + pulse * 0.75)
         try:
             self.brand_title.configure(fg=glow)
@@ -1639,34 +1909,38 @@ class MeridianLauncher(tk.Tk):
         self.after(70, self._animate_ui)
 
     def _sync_auth_fields(self) -> None:
-        is_ms = self.auth_var.get() == "microsoft"
-        msa_name = str(self.state_data.get("msa_username") or "").strip()
-
-        if is_ms:
-            self.username_entry.configure(state="disabled")
-            self.login_btn.configure(
-                text="СМЕНИТЬ MICROSOFT" if msa_name else "ПОДКЛЮЧИТЬ MICROSOFT",
-                state="normal",
-            )
-            if msa_name:
-                self.account_name_var.set(msa_name)
-                self.account_type_var.set("MICROSOFT // CONNECTED")
-                self.account_note_var.set("Minecraft-профиль подтверждён Microsoft.")
-                self.account_value.set(msa_name)
+        try:
+            is_ms = self.auth_var.get() == "microsoft"
+            msa_name = str(self.state_data.get("msa_username") or "").strip()
+            if is_ms:
+                self.offline_box.pack_forget()
+                self.ms_box.pack(fill="x", padx=self._d["pad"], before=self.skin_btn)
+                self.login_btn.configure(text="СМЕНИТЬ АККАУНТ" if msa_name else "ВОЙТИ ЧЕРЕЗ MICROSOFT")
+                self.logout_btn.configure(state="normal" if msa_name and not self.busy else "disabled")
+                if msa_name:
+                    self.account_name_var.set(msa_name)
+                    self.account_type_var.set("ЛИЦЕНЗИЯ // MICROSOFT")
+                    self.account_note_var.set("Профиль подтверждён Microsoft. Скин — официальный.")
+                    self.account_value.set(msa_name)
+                else:
+                    self.account_name_var.set("Вход не выполнен")
+                    self.account_type_var.set("ЛИЦЕНЗИЯ // НЕТ ВХОДА")
+                    self.account_note_var.set("Войдите через официальную страницу Microsoft.")
+                    self.account_value.set("НЕТ ВХОДА")
+                    self._set_skin_placeholder()
             else:
-                self.account_name_var.set("Microsoft не подключён")
-                self.account_type_var.set("MICROSOFT // WAITING")
-                self.account_note_var.set("Подключи аккаунт через безопасную страницу Microsoft.")
-                self.account_value.set("НЕ ПОДКЛЮЧЁН")
-        else:
-            self.username_entry.configure(state="normal")
-            self.login_btn.configure(state="disabled")
-            nick = self.username_var.get().strip() or "Player"
-            self.account_name_var.set(nick)
-            self.account_type_var.set("OFFLINE // LOCAL PROFILE")
-            self.account_note_var.set("Локальный профиль без Microsoft.")
-            self.account_value.set(nick)
-            self._set_skin_placeholder()
+                self.ms_box.pack_forget()
+                self.offline_box.pack(fill="x", padx=self._d["pad"], before=self.skin_btn)
+                nick = self.username_var.get().strip()
+                valid = bool(NICK_RE.match(nick))
+                self.account_name_var.set(nick or "Ник не указан")
+                self.account_type_var.set("БЕЗ ЛИЦЕНЗИИ // ПАРОЛЬ НА СЕРВЕРЕ" if valid else "БЕЗ ЛИЦЕНЗИИ // НЕВЕРНЫЙ НИК")
+                self.account_note_var.set("Ник защищается паролем на сервере." if valid
+                                          else "3–16 символов: латиница, цифры, «_».")
+                self.account_value.set(nick if valid else "—")
+                self._set_skin_placeholder()
+        except (tk.TclError, AttributeError):
+            pass
 
     def _set_skin_placeholder(self) -> None:
         self.skin_photo = None
@@ -1677,9 +1951,10 @@ class MeridianLauncher(tk.Tk):
 
     def _set_skin_image(self, path_value: str) -> None:
         try:
-            image = skin_head_rgba(Path(path_value), 104)
+            size = px(getattr(self, "_skin_base", 96))
+            image = skin_head_rgba(Path(path_value), size)
             self.skin_photo = ImageTk.PhotoImage(image)
-            self.skin_label.configure(image=self.skin_photo, text="", width=104, height=104)
+            self.skin_label.configure(image=self.skin_photo, text="")
         except Exception:
             self._set_skin_placeholder()
 
@@ -1698,11 +1973,32 @@ class MeridianLauncher(tk.Tk):
         threading.Thread(target=worker, daemon=True).start()
 
     def _log(self, text: str) -> None:
+        text = mask_secrets(str(text))
         stamp = time.strftime("%H:%M:%S")
-        self.log_text.configure(state="normal")
-        self.log_text.insert("end", f"[{stamp}] {text}\n")
-        self.log_text.see("end")
-        self.log_text.configure(state="disabled")
+        line = f"[{stamp}] {text}"
+        self.log_lines.append(line)
+        del self.log_lines[:-1000]
+        try:
+            LOG_DIR.mkdir(parents=True, exist_ok=True)
+            with (LOG_DIR / "launcher.log").open("a", encoding="utf-8") as f:
+                f.write(time.strftime("%Y-%m-%d ") + line + "\n")
+        except OSError:
+            pass
+        try:
+            self.log_text.configure(state="normal")
+            self.log_text.insert("end", line + "\n")
+            self.log_text.see("end")
+            self.log_text.configure(state="disabled")
+        except (tk.TclError, AttributeError):
+            pass
+        if self.log_dialog_text is not None:
+            try:
+                self.log_dialog_text.configure(state="normal")
+                self.log_dialog_text.insert("end", line + "\n")
+                self.log_dialog_text.see("end")
+                self.log_dialog_text.configure(state="disabled")
+            except tk.TclError:
+                self.log_dialog_text = None
 
     def _emit(self, kind: str, value: Any = None) -> None:
         self.events.put((kind, value))
@@ -1747,8 +2043,20 @@ class MeridianLauncher(tk.Tk):
                 self._set_skin_image(str(value))
             elif kind == "pack_value":
                 self.pack_value.set(str(value))
-            elif kind == "channel_ui":
-                self._update_channel_ui()
+            elif kind == "skin_preview":
+                self._show_skin_preview(dict(value))
+            elif kind == "skin_signed":
+                self._skin_signed(str(value))
+            elif kind == "auth_changed":
+                self._sync_auth_fields()
+                self._set_skin_placeholder()
+            elif kind == "launcher_update":
+                self.launcher_update_var.set(f"ДОСТУПЕН ЛАУНЧЕР v{value} — СКАЧАТЬ ›")
+                try:
+                    self.update_link.pack(anchor="e")
+                except tk.TclError:
+                    pass
+                self._log(f"Доступна новая версия лаунчера {value}: {LAUNCHER_DOWNLOAD_PAGE}")
             elif kind == "busy":
                 self._set_busy(bool(value))
             elif kind == "play_text":
@@ -1856,85 +2164,149 @@ class MeridianLauncher(tk.Tk):
 
         dialog = tk.Toplevel(self)
         self.auth_dialog = dialog
+        dialog.withdraw()
         dialog.title("Project Meridian // Microsoft")
-        dialog.geometry("560x470")
-        dialog.resizable(False, False)
+        apply_window_icon(dialog, self._icon_images)
         dialog.configure(bg=C_BG)
         dialog.transient(self)
 
-        shell = tk.Frame(dialog, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-        shell.pack(fill="both", expand=True, padx=18, pady=18)
-
-        top = tk.Frame(shell, bg=C_PANEL)
-        top.pack(fill="x", padx=24, pady=(22, 0))
-        icon = tk.Canvas(top, width=58, height=38, bg=C_PANEL, bd=0, highlightthickness=0)
-        icon.pack(side="left", padx=(0, 12))
-        icon.create_oval(12, 7, 42, 37, outline=C_AMBER, width=2)
-        icon.create_line(27, 0, 27, 38, fill=C_AMBER, width=1)
-        icon.create_line(5, 22, 49, 22, fill=C_AMBER, width=1)
-        tk.Label(
-            top,
-            text="ВХОД ЧЕРЕЗ MICROSOFT",
-            bg=C_PANEL,
-            fg=C_INK,
-            font=("Segoe UI Black", 19),
-        ).pack(side="left")
-
-        tk.Label(
-            shell,
-            text="Это вход по коду устройства. Код из Microsoft Authenticator здесь НЕ нужен.",
-            bg=C_PANEL,
-            fg=C_MUTED,
-            font=("Segoe UI", 10),
-            wraplength=470,
-            justify="left",
-        ).pack(anchor="w", padx=24, pady=(16, 16))
-
-        steps = tk.Frame(shell, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
-        steps.pack(fill="x", padx=24)
-        for n, text_value in (
-            ("01", "Лаунчер получит одноразовый код Microsoft."),
-            ("02", "Откроется официальная страница Microsoft."),
-            ("03", "Вставь код ниже и подтверди нужный аккаунт."),
-            ("04", "Вернись сюда — лаунчер закончит вход автоматически."),
-        ):
-            row = tk.Frame(steps, bg=C_PANEL_2)
-            row.pack(fill="x", padx=12, pady=5)
-            tk.Label(row, text=n, bg=C_PANEL_2, fg=C_AMBER, font=("Consolas", 9, "bold"), width=3).pack(side="left")
-            tk.Label(row, text=text_value, bg=C_PANEL_2, fg=C_INK, font=("Segoe UI", 9), anchor="w").pack(side="left")
-
-        tk.Label(shell, text="КОД ИЗ ЛАУНЧЕРА", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 9, "bold")).pack(
-            anchor="w", padx=24, pady=(18, 5)
-        )
-        tk.Label(
-            shell,
-            textvariable=self.auth_code_var,
-            bg=C_FIELD,
-            fg=C_AMBER_2,
-            font=("Consolas", 24, "bold"),
-            padx=14,
-            pady=10,
-            highlightthickness=1,
-            highlightbackground=C_LINE,
-        ).pack(fill="x", padx=24)
-
-        tk.Label(
-            shell,
-            textvariable=self.auth_step_var,
-            bg=C_PANEL,
-            fg=C_MUTED,
-            font=("Segoe UI", 9),
-            anchor="w",
-        ).pack(fill="x", padx=24, pady=(8, 0))
-
-        actions = tk.Frame(shell, bg=C_PANEL)
-        actions.pack(fill="x", padx=24, pady=(18, 22))
-        self.auth_copy_btn = self._button(actions, "СКОПИРОВАТЬ КОД", self._copy_auth_code)
-        self.auth_copy_btn.pack(side="left", fill="x", expand=True)
-        self.auth_open_btn = self._button(actions, "ОТКРЫТЬ MICROSOFT", self._open_auth_uri, accent=True)
-        self.auth_open_btn.pack(side="left", fill="x", expand=True, padx=(10, 0))
-
+        left, top, work_w, work_h = work_area(self)
+        extra_w, extra_h = frame_extra(False)
+        avail_w, avail_h = work_w - extra_w, work_h - extra_h
+        main_density = DENSITY.index(self._d) if self._d in DENSITY else 0
+        shell = None
+        for density in range(main_density, len(DENSITY)):
+            if shell is not None:
+                shell.destroy()
+            shell = self._build_auth_content(dialog, DENSITY[density])
+            self._apply_ui_scale(dialog)
+            dialog.update_idletasks()
+            req_w, req_h = dialog.winfo_reqwidth(), dialog.winfo_reqheight()
+            if req_w <= avail_w and req_h <= avail_h:
+                break
+        w, h = min(req_w, avail_w), min(req_h, avail_h)
+        x = left + max(0, (work_w - (w + extra_w)) // 2)
+        y = top + max(0, (work_h - (h + extra_h)) // 2)
+        dialog.geometry(f"{w}x{h}+{x}+{y}")
+        dialog.resizable(False, False)
+        self.auth_layout_info = {"density": density, "required": (req_w, req_h), "available": (avail_w, avail_h),
+                                 "size": (w, h), "fits": req_w <= avail_w and req_h <= avail_h}
+        dialog.deiconify()
         dialog.protocol("WM_DELETE_WINDOW", self._close_auth_dialog)
+
+    def _build_auth_content(self, dialog: tk.Toplevel, d: dict[str, Any]) -> tk.Frame:
+        """Content of the Microsoft sign-in dialog at one density (no scrolling)."""
+        pad = d["pad"] + 4
+        saved = self._d
+        self._d = d  # buttons take their padding from the density
+        try:
+            shell = tk.Frame(dialog, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+            shell.pack(fill="both", expand=True, padx=d["outer"][1], pady=d["outer"][1])
+
+            top = tk.Frame(shell, bg=C_PANEL)
+            top.pack(fill="x", padx=pad, pady=(d["sec"][0] + 4, 0))
+            icon = tk.Canvas(top, width=58, height=38, bg=C_PANEL, bd=0, highlightthickness=0)
+            icon.pack(side="left", padx=(0, 12))
+            icon.create_oval(12, 7, 42, 37, outline=C_AMBER, width=2)
+            icon.create_line(27, 0, 27, 38, fill=C_AMBER, width=1)
+            icon.create_line(5, 22, 49, 22, fill=C_AMBER, width=1)
+            tk.Label(
+                top,
+                text="ВХОД ЧЕРЕЗ MICROSOFT",
+                bg=C_PANEL,
+                fg=C_INK,
+                font=("Segoe UI Black", max(14, d["title_font"] - 5)),
+            ).pack(side="left")
+
+            tk.Label(
+                shell,
+                text="Это вход по коду устройства. Код из Microsoft Authenticator здесь НЕ нужен.",
+                bg=C_PANEL,
+                fg=C_MUTED,
+                font=("Segoe UI", 10),
+                wraplength=470,
+                justify="left",
+            ).pack(anchor="w", padx=pad, pady=(d["sec"][0], d["sec"][0]))
+
+            steps = tk.Frame(shell, bg=C_PANEL_2, highlightthickness=1, highlightbackground=C_LINE)
+            steps.pack(fill="x", padx=pad)
+            for n, text_value in (
+                ("01", "Лаунчер получит одноразовый код Microsoft."),
+                ("02", "Откроется официальная страница Microsoft."),
+                ("03", "Вставь код ниже и подтверди нужный аккаунт."),
+                ("04", "Вернись сюда — лаунчер закончит вход автоматически."),
+            ):
+                row = tk.Frame(steps, bg=C_PANEL_2)
+                row.pack(fill="x", padx=12, pady=max(1, d["item_gap"] // 2))
+                tk.Label(row, text=n, bg=C_PANEL_2, fg=C_AMBER, font=("Consolas", 9, "bold"), width=3).pack(side="left")
+                tk.Label(row, text=text_value, bg=C_PANEL_2, fg=C_INK, font=("Segoe UI", 9), anchor="w").pack(side="left")
+
+            tk.Label(shell, text="КОД ИЗ ЛАУНЧЕРА", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 9, "bold")).pack(
+                anchor="w", padx=pad, pady=(d["sec"][0], 4)
+            )
+            tk.Label(
+                shell,
+                textvariable=self.auth_code_var,
+                bg=C_FIELD,
+                fg=C_AMBER_2,
+                font=("Consolas", max(16, d["status_font"]), "bold"),
+                padx=14,
+                pady=max(4, d["btn_pady"]),
+                highlightthickness=1,
+                highlightbackground=C_LINE,
+            ).pack(fill="x", padx=pad)
+
+            tk.Label(
+                shell,
+                textvariable=self.auth_step_var,
+                bg=C_PANEL,
+                fg=C_MUTED,
+                font=("Segoe UI", 9),
+                anchor="w",
+                justify="left",
+                wraplength=470,
+            ).pack(fill="x", padx=pad, pady=(d["item_gap"], 0))
+
+            actions = tk.Frame(shell, bg=C_PANEL)
+            actions.pack(fill="x", padx=pad, pady=(d["sec"][0], d["sec"][0] + 4))
+            self.auth_copy_btn = self._button(actions, "СКОПИРОВАТЬ КОД", self._copy_auth_code)
+            self.auth_copy_btn.pack(side="left", fill="x", expand=True)
+            self.auth_open_btn = self._button(actions, "ОТКРЫТЬ MICROSOFT", self._open_auth_uri, accent=True)
+            self.auth_open_btn.pack(side="left", fill="x", expand=True, padx=(10, 0))
+        finally:
+            self._d = saved
+        return shell
+
+    LAYOUT_KEY_WIDGETS = ("skin_label", "offline_radio", "microsoft_radio", "username_entry", "login_btn", "logout_btn",
+                          "skin_btn", "ram_scale", "ram_label", "folder_btn", "logs_btn", "repair_btn",
+                          "status_label", "progress", "play_btn", "log_text", "ui_scale_btn", "auth_copy_btn", "auth_open_btn")
+
+    def write_layout_report(self, path: str) -> None:
+        """Writes the chosen layout and, for every key control, whether it is shown whole inside its window."""
+        rows = {}
+        # controls of the other sign-in mode are hidden on purpose
+        hidden = {"login_btn", "logout_btn"} if self.auth_var.get() == "offline" else {"username_entry"}
+        for name in self.LAYOUT_KEY_WIDGETS:
+            if name in hidden:
+                continue
+            w = getattr(self, name, None)
+            try:
+                if w is None or not w.winfo_exists():
+                    continue
+                top = w.winfo_toplevel()
+                x, y = w.winfo_rootx() - top.winfo_rootx(), w.winfo_rooty() - top.winfo_rooty()
+                ww, wh = w.winfo_width(), w.winfo_height()
+                inside = x >= 0 and y >= 0 and x + ww <= top.winfo_width() + 1 and y + wh <= top.winfo_height() + 1
+                squeezed = name != "log_text" and (ww + 1 < w.winfo_reqwidth() or wh + 1 < w.winfo_reqheight())
+                rows[name] = {"window": top.title(), "mapped": bool(w.winfo_ismapped()), "inside": inside, "squeezed": squeezed,
+                              "rect": [x, y, ww, wh], "needed": [w.winfo_reqwidth(), w.winfo_reqheight()]}
+            except tk.TclError:
+                rows[name] = {"error": True}
+        report = {"version": APP_VERSION, "layout": getattr(self, "layout_info", None), "auth_layout": getattr(self, "auth_layout_info", None),
+                  "icon": getattr(self, "icon_source", None), "main_size": [self.winfo_width(), self.winfo_height()],
+                  "min_size": list(self.minsize()), "widgets": rows,
+                  "ok": all(r.get("mapped") and r.get("inside") and not r.get("squeezed") for r in rows.values())}
+        Path(path).write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
 
     def _close_auth_dialog(self) -> None:
         if self.auth_dialog is not None:
@@ -1991,7 +2363,7 @@ class MeridianLauncher(tk.Tk):
             self._emit("status", "Подтверди вход Microsoft")
             self._emit("detail", f"Код: {user_code}" if user_code else "Открыта страница Microsoft")
             self._emit("progress_text", "Не используй код из Authenticator — вставь код из лаунчера")
-            self._emit("log", f"Код Microsoft: {user_code} (одноразовый код лаунчера)")
+            self._emit("log", "Получен одноразовый код Microsoft (показан в окне входа).")
         elif code == "auth_wait":
             self._emit("status", "Жду подтверждения Microsoft…")
             self._emit("progress_indeterminate", True)
@@ -2018,177 +2390,22 @@ class MeridianLauncher(tk.Tk):
             self._emit("progress_text", code)
             self._emit("log", "PortableMC auth: " + " | ".join(parts))
 
-    def _update_channel_ui(self) -> None:
-        channel = self.channel_var.get()
-        if channel == "dev":
-            name = str(self.state_data.get("dev_armor_name") or "").strip()
-            self.pack_value.set(f"DEV // {name}" if name else "DEV // БРОНЯ")
-            self.channel_hint.configure(
-                text="DEV: обновляет броню и связанные KubeJS-рецепты; локальная броня — резерв.",
-                fg=C_TELEMETRY,
-            )
-            self.channel_update_btn.configure(text="↻  ОБНОВИТЬ DEV-БРОНЮ")
-        else:
-            self.pack_value.set("KoshPack // current")
-            self.channel_hint.configure(
-                text="STABLE: обычная сборка без тестовых версий брони.",
-                fg=C_MUTED,
-            )
-            self.channel_update_btn.configure(text="↻  ОБНОВИТЬ STABLE")
-
-    def _channel_changed(self) -> None:
-        channel = self.channel_var.get()
-        self.state_data["channel"] = channel
-        atomic_write_json(STATE_FILE, self.state_data)
-    
-        self._update_channel_ui()
-        self.status_var.set("DEV-канал выбран" if channel == "dev" else "STABLE-канал выбран")
-        self.detail_var.set(
-            "Нажми «Обновить сборку», чтобы применить тестовую броню."
-            if channel == "dev"
-            else f"Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}"
-        )
-    
-        if channel == "stable":
-            def restore_job() -> None:
-                restored = restore_stable_armor()
-                restored_extras = restore_stable_dev_extras()
-    
-                if restored:
-                    self._emit("log", "DEV-броня отключена. Стабильная версия восстановлена.")
-                if restored_extras:
-                    self._emit("log", "DEV-рецепты отключены; стабильные KubeJS-файлы восстановлены.")
-    
-            self._start_thread(restore_job)
-
-    def _ensure_dev_armor(self) -> None:
-        if self.channel_var.get() != "dev":
-            return
-
-        self._emit("status", "Ищу свежую DEV-броню…")
-        self._emit("detail", "Проверяю DEV-канал, «Загрузки» и PrismLauncher.")
-
-        def progress(done: int, total: int) -> None:
-            pct = (done / total * 100.0) if total else 0.0
-            self._emit("progress", pct)
-            if total:
-                self._emit("progress_text", f"DEV броня • {format_bytes(done)} / {format_bytes(total)}")
-
-        source: Path | None = None
-        source_kind = "DEV-канал"
-        remote_version = ""
-        manifest: dict[str, Any] | None = None
-
-        def retry_note(message: str) -> None:
-            self._emit("status", "Обновляю DEV-броню…")
-            self._emit("detail", message)
-            self._emit("log", message)
-
-        try:
-            manifest = get_dev_armor_manifest()
-            remote_version = str(manifest["version"])
-            expected_digest = str(manifest["sha256"])
-            extra_paths = install_dev_extras(manifest)
-            if extra_paths:
-                self._emit("log", f"DEV-рецепты проверены: {len(extra_paths)} файла.")
-            installed = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
-
-            if installed.is_file():
-                try:
-                    installed_digest = sha256_file(installed)
-                    if installed_digest == expected_digest:
-                        validate_dev_armor_jar(installed)
-                        self.state_data["dev_armor_digest"] = installed_digest
-                        self.state_data["dev_armor_name"] = remote_version
-                        self.state_data["dev_armor_source"] = "удалённый DEV"
-                        atomic_write_json(STATE_FILE, self.state_data)
-                        self._emit("progress_indeterminate", False)
-                        self._emit("progress", 100)
-                        self._emit("status", "DEV-броня уже актуальна")
-                        self._emit("detail", f"{remote_version} • скачивание не требуется")
-                        self._emit("pack_value", f"DEV // {remote_version}")
-                        self._emit("log", f"DEV JAR уже актуален: {remote_version}")
-                        return
-                except Exception:
-                    pass
-
-            source, remote_version = download_dev_armor_remote(progress, retry_note, manifest)
-            source_kind = "удалённый DEV"
-            self._emit("log", f"DEV-канал: свежий удалённый JAR скачан ({remote_version}).")
-        except Exception as e:
-            self._emit("log", f"DEV-сеть: {type(e).__name__}: {e}")
-
-            # Never downgrade an already installed DEV build just because the
-            # network hiccupped. Keep it and let the same button retry.
-            installed = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
-            if installed.is_file():
-                try:
-                    validate_dev_armor_jar(installed)
-                    digest = sha256_file(installed)
-                    label = str(self.state_data.get("dev_armor_name") or f"remote-{digest[:8]}")
-                    self._emit("progress_indeterminate", False)
-                    self._emit("status", "Сеть не ответила • DEV сохранена")
-                    self._emit("detail", "Текущая DEV-броня не изменена. Можно сразу нажать «Обновить DEV-броню» ещё раз.")
-                    self._emit("progress_text", "Повторный запуск лаунчера не нужен")
-                    self._emit("pack_value", f"DEV // {label}")
-                    self._emit("log", f"Оставлена установленная DEV: {label}. Перезапуск лаунчера не требуется.")
-                    return
-                except Exception:
-                    pass
-
-            self._emit("detail", "Удалённая DEV недоступна • ищу локальный резерв")
-            source = find_local_dev_armor()
-            source_kind = "локальный резерв"
-
-        if source is None:
-            self._emit("progress_indeterminate", False)
-            self._emit("status", "DEV не обновилась")
-            self._emit("detail", "Сеть не ответила. Нажми «Обновить DEV-броню» ещё раз — перезапуск не нужен.")
-            self._emit("progress_text", "Готово к повторной попытке")
-            self._emit("log", "DEV не обновилась; кнопка готова к повторной попытке без перезапуска.")
-            return
-
-        source_digest = sha256_file(source)
-        current_digest = str(self.state_data.get("dev_armor_digest") or "")
-        target = INSTANCE_DIR / "mods" / DEV_ARMOR_TARGET
-        if current_digest == source_digest and target.is_file() and sha256_file(target) == source_digest:
-            label = (remote_version or f"remote-{source_digest[:8]}") if source_kind == "удалённый DEV" else (remote_version or source.name)
-            self._emit("status", "DEV-броня уже актуальна")
-            self._emit("detail", f"{label} • {source_kind}")
-            self._emit("pack_value", f"DEV // {label}")
-            self._emit("log", f"DEV JAR уже установлен: {label}")
-            return
-
-        self._emit("status", "Устанавливаю DEV-броню…")
-        installed_name, digest = apply_dev_armor(source)
-        display_name = (remote_version or f"remote-{digest[:8]}") if source_kind == "удалённый DEV" else (remote_version or source.name)
-        self.state_data["dev_armor_digest"] = digest
-        self.state_data["dev_armor_name"] = display_name
-        self.state_data["dev_armor_source"] = source_kind
-        atomic_write_json(STATE_FILE, self.state_data)
-        self._emit("progress", 100)
-        self._emit("status", "DEV-броня установлена")
-        self._emit("detail", f"{display_name} • источник: {source_kind}")
-        self._emit("pack_value", f"DEV // {display_name}")
-        self._emit("log", f"DEV JAR установлен как {installed_name}: {display_name}")
-
     def _set_busy(self, busy: bool) -> None:
         self.busy = busy
         state = "disabled" if busy else "normal"
-        self.play_btn.configure(state=state)
-        if hasattr(self, "channel_update_btn"):
-            self.channel_update_btn.configure(state=state)
-        if hasattr(self, "stable_radio"):
-            self.stable_radio.configure(state=state)
-        if hasattr(self, "dev_radio"):
-            self.dev_radio.configure(state=state)
+        for name in ("play_btn", "repair_btn", "login_btn"):
+            widget = getattr(self, name, None)
+            if widget is not None:
+                try:
+                    widget.configure(state=state)
+                except tk.TclError:
+                    pass
+        self._sync_auth_fields()
 
     def _save_preferences(self) -> None:
-        self.state_data["username"] = self.username_var.get().strip() or "Player"
-        self.state_data["email"] = self.email_var.get().strip()
+        self.state_data["username"] = self.username_var.get().strip()
         self.state_data["auth_mode"] = self.auth_var.get()
         self.state_data["ram_gb"] = max(4, min(16, int(self.ram_var.get())))
-        self.state_data["channel"] = self.channel_var.get()
         atomic_write_json(STATE_FILE, self.state_data)
 
     def _start_thread(self, target: Callable[[], None]) -> None:
@@ -2217,205 +2434,120 @@ class MeridianLauncher(tk.Tk):
 
     def _initial_check(self) -> None:
         self._sync_auth_fields()
-        self._update_channel_ui()
+        if INSTALL_JOURNAL.exists():
+            self._log("Предыдущая установка была прервана — при запуске сборка будет восстановлена.")
         self._start_thread(lambda: self._check_update_only())
 
     def _check_update_only(self) -> None:
-        if self.channel_var.get() == "stable":
-            restore_stable_armor()
-        self._emit("status", "Проверяю локальный пакет…")
-        local_pack = bundled_pack_path()
-        if local_pack is not None and not any(INSTANCE_DIR.iterdir()):
-            self._emit("status", "Готов к установке")
-            self._emit("detail", "KoshPack найден • нажми «Установить и играть»")
-            self._emit("play_text", "УСТАНОВИТЬ И ИГРАТЬ")
-            self._emit("log", f"Найден локальный пакет сборки: {local_pack}")
-            return
-
         self._emit("status", "Проверяю обновления…")
         try:
             asset = get_release_asset()
         except Exception as e:
-            if any(INSTANCE_DIR.iterdir()):
+            if self._pack_installed() and not INSTALL_JOURNAL.exists():
                 self._emit("status", "Сборка установлена")
-                self._emit("detail", "Автообновление сейчас недоступно • можно играть офлайн")
+                self._emit("detail", "Нет связи с сервером обновлений • можно играть")
             else:
                 self._emit("status", "Нужна установка сборки")
-                self._emit("detail", "GitHub сейчас недоступен • можно установить minecraft.zip вручную")
+                self._emit("detail", "Нет связи с сервером обновлений • проверьте интернет")
             self._emit("log", f"Не удалось проверить обновления: {type(e).__name__}: {e}")
             return
-
-        current = self.state_data.get("pack_identity") == asset["identity"] and INSTANCE_DIR.exists()
-        if current:
-            if self.channel_var.get() == "dev":
-                local_dev = find_local_dev_armor()
-                self._emit("status", "DEV-канал готов")
-                self._emit(
-                    "detail",
-                    f"Найдено: {local_dev.name}" if local_dev else "Нажми «Обновить сборку» для проверки DEV-брони",
-                )
-                self._emit("pack_value", f"DEV // {local_dev.name}" if local_dev else "DEV // БРОНЯ")
-            else:
-                self._emit("status", "Сборка установлена")
-                self._emit("detail", f"{asset['release_name']} • {MC_VERSION} • NeoForge")
-                self._emit("pack_value", str(asset["release_name"]))
-            self._emit("log", "Обновлений базовой сборки не найдено.")
-        else:
+        try:
+            self._check_launcher_version(asset)
+        except RuntimeError as e:
+            self._emit("status", "Нужен новый лаунчер")
+            self._emit("detail", str(e))
+            return
+        current = self.state_data.get("pack_identity") == asset["identity"] and self._pack_installed()
+        if INSTALL_JOURNAL.exists():
+            self._emit("status", "Установка не завершена")
+            self._emit("detail", "Нажмите «ИГРАТЬ» — лаунчер восстановит сборку")
+            self._emit("play_text", "ВОССТАНОВИТЬ И ИГРАТЬ")
+        elif current and not legacy_dev_state_present(self.state_data):
+            self._emit("status", "Сборка установлена")
+            self._emit("detail", f"{asset['release_name']} • Minecraft {MC_VERSION} • NeoForge")
+            self._emit("pack_value", asset["release_name"])
+            self._emit("log", "Сборка актуальна.")
+        elif self._pack_installed():
             self._emit("status", "Доступно обновление")
-            self._emit("detail", f"{asset['release_name']} • {asset['updated_at'] or 'новый архив'}")
-            self._emit("log", "Есть новая версия minecraft.zip. Нажми «Обновить сборку» или сразу «Играть».")
+            self._emit("detail", f"{asset['release_name']} • {format_bytes(asset['size'])} • установится при запуске")
+            self._emit("play_text", "ОБНОВИТЬ И ИГРАТЬ")
+            self._emit("log", f"Доступна сборка {asset['release_name']}. Нажмите «ОБНОВИТЬ И ИГРАТЬ».")
+        else:
+            self._emit("status", "Готов к установке")
+            self._emit("detail", f"{asset['release_name']} • {format_bytes(asset['size'])} • Minecraft {MC_VERSION}")
+            self._emit("play_text", "УСТАНОВИТЬ И ИГРАТЬ")
 
     def _ensure_pack(self, force: bool = False) -> None:
-        local_pack = bundled_pack_path()
-        if local_pack is not None:
-            local_digest = sha256_file(local_pack)
-            local_identity = f"bundled:{local_digest}"
-            if not force and self.state_data.get("pack_identity") == local_identity and any(INSTANCE_DIR.iterdir()):
-                self._emit("log", "Локальная сборка уже установлена.")
-                return
-            self._emit("status", "Устанавливаю KoshPack…")
-            self._emit("detail", f"{local_pack.name} • локальный пакет")
-            self._emit("log", "Использую minecraft.zip рядом с лаунчером.")
-            staging = Path(tempfile.mkdtemp(prefix="meridian-bundled-", dir=str(APP_ROOT)))
-            try:
-                safe_extract(local_pack, staging)
-                payload = choose_payload_root(staging)
-                managed = install_payload(payload, list(self.state_data.get("managed_files", [])))
-                discard_stale_dev_extra_backups()
-            finally:
-                shutil.rmtree(staging, ignore_errors=True)
-            self.state_data["pack_digest"] = f"sha256:{local_digest}"
-            self.state_data["pack_identity"] = local_identity
-            self.state_data["managed_files"] = managed
-            atomic_write_json(STATE_FILE, self.state_data)
-            self._emit("progress", 100)
-            self._emit("status", "Сборка установлена")
-            self._emit("detail", f"{len(managed)} файлов • дальше Minecraft и NeoForge")
-            self._emit("play_text", "ИГРАТЬ")
-            self._emit("log", "KoshPack установлен из локального пакета.")
-            return
-
         asset = get_release_asset()
-        if not force and self.state_data.get("pack_identity") == asset["identity"] and any(INSTANCE_DIR.iterdir()):
-            self._emit("log", "Сборка уже актуальна.")
+        self._check_launcher_version(asset)
+        up_to_date = (self.state_data.get("pack_identity") == asset["identity"] and self._pack_installed()
+                      and not INSTALL_JOURNAL.exists() and not legacy_dev_state_present(self.state_data))
+        if up_to_date and not force:
+            self._emit("log", "Сборка актуальна.")
             return
-
-        cache_zip = cached_pack_path(asset)
-        expected = expected_sha256(asset)
-        valid_cache = cache_zip.is_file()
-        if valid_cache and expected:
-            self._emit("log", "Проверяю кэш архива…")
-            valid_cache = sha256_file(cache_zip) == expected
-            if not valid_cache:
-                cache_zip.unlink(missing_ok=True)
-
-        if not valid_cache:
-            self._emit("status", "Скачиваю KoshPack…")
-            self._emit("detail", f"{asset['size'] / (1024**2):.0f} МБ • публичный канал Project Meridian")
-            self._emit("log", f"Скачивание {PACK_ASSET_NAME}…")
-
-            def progress(done: int, total: int) -> None:
-                pct = (done / total * 100) if total else 0
-                self._emit("progress", pct)
-                if total:
-                    self._emit("detail", f"{done / (1024**2):.0f} / {total / (1024**2):.0f} МБ")
-
-            download_file(asset["url"], cache_zip, asset["size"], progress)
-        else:
-            self._emit("log", "Использую уже скачанный проверенный архив.")
-
-        if expected:
-            self._emit("status", "Проверяю архив…")
-            actual = sha256_file(cache_zip)
-            if actual != expected:
-                cache_zip.unlink(missing_ok=True)
-                raise RuntimeError("SHA-256 архива не совпал. Файл удалён из кэша.")
-            self._emit("log", "SHA-256 архива совпадает с GitHub Release.")
-
-        self._emit("status", "Распаковываю сборку…")
-        self._emit("progress", 0)
-        staging = Path(tempfile.mkdtemp(prefix="meridian-pack-", dir=str(APP_ROOT)))
-        try:
-            safe_extract(cache_zip, staging)
-            payload = choose_payload_root(staging)
-            self._emit("log", f"Корень сборки: {payload.name}")
-            managed = install_payload(payload, list(self.state_data.get("managed_files", [])))
-            discard_stale_dev_extra_backups()
-        finally:
-            shutil.rmtree(staging, ignore_errors=True)
-
-        self.state_data["pack_digest"] = asset.get("digest", "")
-        self.state_data["pack_identity"] = asset["identity"]
-        self.state_data["managed_files"] = managed
-        atomic_write_json(STATE_FILE, self.state_data)
-        self._emit("progress", 100)
+        self._install_zip(self._obtain_verified_zip(asset), asset)
         self._emit("status", "Сборка готова")
-        self._emit("detail", f"{asset['release_name']} • {len(managed)} файлов под управлением лаунчера")
+        self._emit("detail", f"{asset['release_name']} • Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}")
         self._emit("play_text", "ИГРАТЬ")
-        self._emit("pack_value", str(asset["release_name"]) if self.channel_var.get() == "stable" else "DEV // БРОНЯ")
-        self._emit("log", "KoshPack установлен/обновлён.")
-
-    def _install_local_pack(self) -> None:
-        selected = filedialog.askopenfilename(
-            title="Выбери minecraft.zip",
-            filetypes=[("ZIP-архив", "*.zip"), ("Все файлы", "*.*")],
-        )
-        if not selected:
-            return
-        zip_path = Path(selected)
-
-        def job() -> None:
-            self._emit("status", "Проверяю ZIP…")
-            try:
-                with zipfile.ZipFile(zip_path) as zf:
-                    bad = zf.testzip()
-                    if bad:
-                        raise RuntimeError(f"Повреждён файл внутри ZIP: {bad}")
-            except zipfile.BadZipFile as e:
-                raise RuntimeError("Выбранный файл не является исправным ZIP-архивом.") from e
-
-            digest = sha256_file(zip_path)
-            self._emit("log", f"Локальный ZIP: {zip_path.name}")
-            self._emit("log", f"SHA-256: {digest}")
-
-            self._emit("status", "Устанавливаю локальную сборку…")
-            staging = Path(tempfile.mkdtemp(prefix="meridian-local-", dir=str(APP_ROOT)))
-            try:
-                safe_extract(zip_path, staging)
-                payload = choose_payload_root(staging)
-                managed = install_payload(payload, list(self.state_data.get("managed_files", [])))
-                discard_stale_dev_extra_backups()
-            finally:
-                shutil.rmtree(staging, ignore_errors=True)
-
-            self.state_data["pack_digest"] = f"sha256:{digest}"
-            self.state_data["pack_identity"] = f"local:{digest}"
-            self.state_data["managed_files"] = managed
-            atomic_write_json(STATE_FILE, self.state_data)
-            self._emit("progress", 100)
-            self._emit("status", "Сборка установлена")
-            self._emit("detail", f"Локальный ZIP • {len(managed)} файлов • Minecraft {MC_VERSION}")
-            self._emit("play_text", "ИГРАТЬ")
-            self._emit("log", "Локальная сборка установлена. Теперь можно нажимать «Играть».")
-
-        self._start_thread(job)
-
-    def _update_pack(self) -> None:
-        def job() -> None:
-            if self.channel_var.get() == "stable":
-                restore_stable_armor()
-                self._ensure_pack(force=False)
-            else:
-                self._ensure_pack(force=False)
-                self._ensure_dev_armor()
-        self._start_thread(job)
 
     def _repair_pack(self) -> None:
         def job() -> None:
-            restore_stable_armor()
-            self._ensure_pack(force=True)
-            if self.channel_var.get() == "dev":
-                self._ensure_dev_armor()
+            self._emit("status", "Проверяю файлы сборки…")
+            self._emit("progress", 0)
+            index = load_file_index()
+            asset: dict[str, Any] | None = None
+            try:
+                asset = get_release_asset()
+                self._check_launcher_version(asset)
+            except RuntimeError as e:
+                if "устарела" in str(e):
+                    raise
+                self._emit("log", f"Манифест недоступен ({e}); проверяю по сохранённому эталону.")
+            except Exception as e:
+                self._emit("log", f"Манифест недоступен ({type(e).__name__}); проверяю по сохранённому эталону.")
+            if not index or INSTALL_JOURNAL.exists() or legacy_dev_state_present(self.state_data):
+                if asset is None:
+                    raise RuntimeError("Для восстановления нужен интернет: эталон файлов ещё не сохранён.")
+                self._emit("log", "Эталона файлов нет (установка старым лаунчером) — переустанавливаю сборку целиком.")
+                self._install_zip(self._obtain_verified_zip(asset), asset)
+                self._emit("status", "Сборка восстановлена")
+                self._emit("detail", f"{asset['release_name']} • все файлы проверены")
+                return
+            broken = verify_installed_files(index)
+            unknown = unknown_mod_files(index)
+            if unknown:
+                self._emit("log", "Посторонние файлы в mods (лаунчер их не удаляет; при ошибках игры уберите вручную): "
+                                  + ", ".join(unknown[:20]) + (" …" if len(unknown) > 20 else ""))
+            if asset is not None and self.state_data.get("pack_identity") != asset["identity"]:
+                self._emit("log", "Есть более новая сборка — она установится при запуске игры.")
+            if not broken:
+                self._emit("progress", 100)
+                self._emit("status", "Файлы в порядке")
+                self._emit("detail", f"Проверено файлов: {len(index)} • повреждений нет")
+                self._emit("log", f"Проверка: {len(index)} файлов совпадают с эталоном.")
+                return
+            self._emit("log", f"Повреждены или отсутствуют: {len(broken)} — " + ", ".join(broken[:10])
+                              + (" …" if len(broken) > 10 else ""))
+            digest = str(self.state_data.get("pack_digest") or "")
+            source = cached_pack_path({"digest": digest, "identity": "-"})
+            if not (source.is_file() and digest.startswith("sha256:") and sha256_file(source) == digest.split(":", 1)[1]):
+                if asset is None or asset["digest"] != digest:
+                    raise RuntimeError("Нет проверенного архива этой версии и нет связи с сервером. Подключитесь к "
+                                       "интернету и повторите — или нажмите «ИГРАТЬ» для установки новой версии.")
+                source = self._obtain_verified_zip(asset)
+            self._emit("status", "Восстанавливаю файлы…")
+            fixed = restore_files_from_zip(source, broken)
+            index.update(fixed)
+            atomic_write_json(FILE_INDEX, {"identity": self.state_data.get("pack_identity"), "files": index})
+            still = verify_installed_files({rel: index[rel] for rel in broken if rel in index})
+            self._emit("progress", 100)
+            if still:
+                raise RuntimeError(f"Не удалось восстановить {len(still)} файлов (возможно, заняты игрой или антивирусом): "
+                                   + ", ".join(still[:5]))
+            self._emit("status", "Файлы восстановлены")
+            self._emit("detail", f"Исправлено файлов: {len(fixed)} • остальные в порядке")
+            self._emit("log", f"Восстановлено файлов: {len(fixed)}.")
+
         self._start_thread(job)
 
     def _login_microsoft(self) -> None:
@@ -2443,65 +2575,469 @@ class MeridianLauncher(tk.Tk):
     def _play(self) -> None:
         if self.auth_var.get() == "offline":
             username = self.username_var.get().strip()
-            if not username:
-                messagebox.showwarning(APP_NAME, "Укажи игровой ник.")
+            if not NICK_RE.match(username):
+                messagebox.showwarning(APP_NAME, "Ник: от 3 до 16 символов — латинские буквы, цифры и «_».")
                 return
-        else:
-            pass
+        elif not str(self.state_data.get("msa_uuid") or "").strip():
+            messagebox.showwarning(APP_NAME, "Сначала войдите через Microsoft или выберите режим «БЕЗ ЛИЦЕНЗИИ».")
+            return
 
         def job() -> None:
             try:
-                if self.channel_var.get() == "stable":
-                    restore_stable_armor()
-                    self._ensure_pack(force=False)
-                else:
-                    self._ensure_pack(force=False)
-                    self._ensure_dev_armor()
+                self._ensure_pack(force=False)
             except Exception as e:
-                if any(INSTANCE_DIR.iterdir()):
-                    self._emit("log", f"Автообновление недоступно, запускаю установленную сборку: {type(e).__name__}: {e}")
+                if self._pack_installed() and not INSTALL_JOURNAL.exists() and "устарела" not in str(e):
+                    self._emit("log", f"Обновление недоступно, запускаю установленную сборку: {type(e).__name__}: {e}")
                 else:
                     raise
-            self._emit("status", "Готовлю Minecraft…")
-            channel_label = "DEV / БРОНЯ" if self.channel_var.get() == "dev" else "STABLE"
-            self._emit("detail", f"{channel_label} • {MC_VERSION} • NeoForge {NEOFORGE_VERSION} • RAM {self.ram_var.get()} ГБ")
-            self._emit("log", "PortableMC проверит Minecraft, библиотеки, NeoForge и Java.")
-
             ram = max(4, min(16, int(self.ram_var.get())))
+            self._emit("status", "Готовлю Minecraft…")
+            self._emit("detail", f"{self.pack_value.get()} • {MC_VERSION} • NeoForge {NEOFORGE_VERSION} • RAM {ram} ГБ")
+            self._emit("log", "Проверяю Minecraft, библиотеки, NeoForge и Java.")
             jvm_args = f"-Xms2G,-Xmx{ram}G,-XX:+UseG1GC,-XX:MaxGCPauseMillis=100"
-            args = [
-                "--main-dir", str(INSTANCE_DIR),
-                "--output", "machine",
-                "start",
-                f"--jvm-arg={jvm_args}",
-            ]
+            args = ["--main-dir", str(INSTANCE_DIR), "--output", "machine", "start", f"--jvm-arg={jvm_args}"]
             if SERVER_HOST:
                 args += ["--join-server", SERVER_HOST, "--join-server-port", str(SERVER_PORT)]
             if self.auth_var.get() == "microsoft":
-                msa_uuid = str(self.state_data.get("msa_uuid") or "").strip()
-                msa_username = str(self.state_data.get("msa_username") or "").strip()
-                if msa_uuid:
-                    args += ["--auth", "--uuid", msa_uuid]
-                elif msa_username:
-                    args += ["--auth", "--username", msa_username]
-                else:
-                    raise RuntimeError("Сначала нажми «Войти через Microsoft» и заверши вход в браузере.")
+                args += ["--auth", "--uuid", str(self.state_data.get("msa_uuid")).strip()]
             else:
-                args += ["--username", self.username_var.get().strip()]
+                nick = self.username_var.get().strip()
+                args += ["--username", nick, "--uuid", offline_uuid(nick)]
             args += [LAUNCH_SPEC]
-
-            self._emit("status", "Готовлю Minecraft…")
             self._emit("progress", 0)
             self._emit("progress_indeterminate", True)
             self._emit("progress_text", "Проверяю Minecraft, NeoForge, Java и библиотеки…")
             code = run_pmc(args, LAUNCH_LOG, on_event=self._handle_pmc_event)
             if code != 0:
-                raise RuntimeError(f"Minecraft/PortableMC завершился с кодом {code}. Открой «Логи».")
+                raise RuntimeError(f"Minecraft завершился с ошибкой (код {code}). Нажмите «ЖУРНАЛ» — там причина. "
+                                   "Если ошибка повторяется, нажмите «ПРОВЕРИТЬ / ПОЧИНИТЬ ФАЙЛЫ».")
             self._emit("status", "Minecraft закрыт")
             self._emit("detail", "Можно запускать снова")
             self._emit("log", "Игровой процесс завершён.")
 
         self._start_thread(job)
+
+    def _auth_mode_changed(self) -> None:
+        self._sync_auth_fields()
+        self.state_data["auth_mode"] = self.auth_var.get()
+        atomic_write_json(STATE_FILE, self.state_data)
+        if self.auth_var.get() == "microsoft":
+            self._refresh_skin_async()
+
+    def _open_log_dialog(self) -> None:
+        if self.log_dialog is not None and self.log_dialog.winfo_exists():
+            self.log_dialog.lift()
+            return
+        dialog = tk.Toplevel(self)
+        self.log_dialog = dialog
+        dialog.title("Project Meridian // Журнал диагностики")
+        apply_window_icon(dialog, self._icon_images)
+        dialog.configure(bg=C_BG)
+        dialog.transient(self)
+        shell = tk.Frame(dialog, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+        shell.pack(fill="both", expand=True, padx=10, pady=10)
+        tk.Label(shell, text="/// ЖУРНАЛ ДИАГНОСТИКИ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 10, "bold")).pack(
+            anchor="w", padx=14, pady=(12, 2))
+        tk.Label(shell, text="События лаунчера и последние строки запуска игры. Токены входа в журнал не попадают.",
+                 bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 9)).pack(anchor="w", padx=14)
+        frame = tk.Frame(shell, bg=C_FIELD, highlightthickness=1, highlightbackground=C_LINE)
+        frame.pack(fill="both", expand=True, padx=14, pady=10)
+        text = tk.Text(frame, width=100, height=26, bg=C_FIELD, fg="#a4a39c", relief="flat", wrap="word",
+                       font=("Consolas", 9), padx=10, pady=8)
+        bar = ttk.Scrollbar(frame, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=bar.set)
+        bar.pack(side="right", fill="y")
+        text.pack(side="left", fill="both", expand=True)
+        text.insert("end", "\n".join(self.log_lines) + "\n")
+        tail = self._launch_log_tail(200)
+        if tail:
+            text.insert("end", "\n----- minecraft-launch.log (последние строки) -----\n" + tail + "\n")
+        text.see("end")
+        text.configure(state="disabled")
+        self.log_dialog_text = text
+        actions = tk.Frame(shell, bg=C_PANEL)
+        actions.pack(fill="x", padx=14, pady=(0, 12))
+        self._button(actions, "СКОПИРОВАТЬ ЖУРНАЛ", lambda: self._copy_text(text.get("1.0", "end"))).pack(side="left")
+        self._button(actions, "ОТКРЫТЬ ПАПКУ ЛОГОВ", self._open_logs).pack(side="left", padx=(8, 0))
+        self._button(actions, "ЗАКРЫТЬ", dialog.destroy).pack(side="right")
+        self._apply_ui_scale(dialog)
+
+    @staticmethod
+    def _launch_log_tail(lines: int) -> str:
+        try:
+            with LAUNCH_LOG.open("r", encoding="utf-8", errors="replace") as f:
+                f.seek(max(0, LAUNCH_LOG.stat().st_size - 256 * 1024))
+                return mask_secrets("\n".join(f.read().splitlines()[-lines:]))
+        except OSError:
+            return ""
+
+    def _copy_text(self, value: str) -> None:
+        try:
+            self.clipboard_clear()
+            self.clipboard_append(value)
+            self.update_idletasks()
+        except tk.TclError:
+            pass
+
+    def _open_skin_dialog(self) -> None:
+        if self.skin_dialog is not None and self.skin_dialog.winfo_exists():
+            self.skin_dialog.lift()
+            return
+        is_ms = self.auth_var.get() == "microsoft" and bool(self.state_data.get("msa_uuid"))
+        default_source = "official" if is_ms else "default"
+        source = str(self.state_data.get("skin_source") or default_source)
+        if source == "official" and not is_ms:
+            source = "default"
+        self.skin_source_var.set(source)
+        self.skin_nick_var.set(str(self.state_data.get("skin_nick") or ""))
+        self.skin_slim_var.set(bool(self.state_data.get("skin_slim")))
+        self.skin_cmd_var.set("")
+        self.skin_info_var.set("Выберите источник и нажмите «ПОКАЗАТЬ».")
+        self._skin_pending: dict[str, Any] = {}
+
+        dialog = tk.Toplevel(self)
+        self.skin_dialog = dialog
+        dialog.title("Project Meridian // Мой скин")
+        apply_window_icon(dialog, self._icon_images)
+        dialog.configure(bg=C_BG)
+        dialog.transient(self)
+        shell = tk.Frame(dialog, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+        shell.pack(fill="both", expand=True, padx=10, pady=10)
+        tk.Label(shell, text="МОЙ СКИН", bg=C_PANEL, fg=C_INK, font=("Segoe UI Black", 18)).grid(
+            row=0, column=0, columnspan=2, sticky="w", padx=16, pady=(14, 2))
+        tk.Label(shell, text="Скин на сервере устанавливается командой — его увидят все игроки. Источник скина "
+                             "не меняет ваш аккаунт, права и прогресс.", bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 9),
+                 wraplength=560, justify="left").grid(row=1, column=0, columnspan=2, sticky="w", padx=16)
+
+        left = tk.Frame(shell, bg=C_PANEL)
+        left.grid(row=2, column=0, sticky="nw", padx=16, pady=10)
+        for value, label in SKIN_SOURCES:
+            rb = tk.Radiobutton(left, text=label, variable=self.skin_source_var, value=value, command=self._skin_source_changed,
+                                bg=C_PANEL, fg=C_INK, activebackground=C_PANEL, activeforeground=C_AMBER,
+                                selectcolor=C_FIELD, font=("Segoe UI", 10), anchor="w")
+            rb.pack(fill="x")
+            if value == "official" and not is_ms:
+                rb.configure(state="disabled")
+        tk.Label(left, text="НИК В ИСТОЧНИКЕ", bg=C_PANEL, fg=C_MUTED, font=("Consolas", 8, "bold")).pack(anchor="w", pady=(10, 3))
+        self.skin_nick_entry = self._entry(left, self.skin_nick_var)
+        self.skin_nick_entry.pack(fill="x", ipady=4)
+        self.skin_file_btn = self._button(left, "ВЫБРАТЬ PNG…", self._skin_pick_file)
+        self.skin_file_btn.pack(fill="x", pady=(8, 0))
+        model = tk.Frame(left, bg=C_PANEL)
+        model.pack(fill="x", pady=(8, 0))
+        for value, label in ((False, "Steve (обычные руки)"), (True, "Alex (тонкие руки)")):
+            tk.Radiobutton(model, text=label, variable=self.skin_slim_var, value=value, bg=C_PANEL, fg=C_INK,
+                           activebackground=C_PANEL, selectcolor=C_FIELD, font=("Segoe UI", 9),
+                           command=self._skin_refresh_command).pack(anchor="w")
+        self._button(left, "ПОКАЗАТЬ", self._skin_preview, accent=True).pack(fill="x", pady=(10, 0))
+
+        right = tk.Frame(shell, bg=C_PANEL)
+        right.grid(row=2, column=1, sticky="nsew", padx=(0, 16), pady=10)
+        preview_box = tk.Frame(right, bg=C_FIELD, width=180, height=330, highlightthickness=1, highlightbackground=C_LINE)
+        preview_box.pack_propagate(False)
+        preview_box.pack()
+        self.skin_canvas = tk.Label(preview_box, bg=C_FIELD, text="ПРЕДПРОСМОТР", fg=C_MUTED, font=("Consolas", 9, "bold"))
+        self.skin_canvas.pack(fill="both", expand=True)
+        tk.Label(shell, textvariable=self.skin_info_var, bg=C_PANEL, fg=C_TELEMETRY, font=("Segoe UI", 9),
+                 wraplength=560, justify="left").grid(row=3, column=0, columnspan=2, sticky="w", padx=16)
+        tk.Label(shell, text="КОМАНДА ДЛЯ ЧАТА ИГРЫ", bg=C_PANEL, fg=C_AMBER, font=("Consolas", 9, "bold")).grid(
+            row=4, column=0, columnspan=2, sticky="w", padx=16, pady=(10, 3))
+        cmd = tk.Entry(shell, textvariable=self.skin_cmd_var, state="readonly", readonlybackground=C_FIELD, fg=C_INK,
+                       relief="flat", font=("Consolas", 9), highlightthickness=1, highlightbackground=C_LINE)
+        cmd.grid(row=5, column=0, columnspan=2, sticky="ew", padx=16, ipady=5)
+        actions = tk.Frame(shell, bg=C_PANEL)
+        actions.grid(row=6, column=0, columnspan=2, sticky="ew", padx=16, pady=(10, 14))
+        self.skin_sign_btn = self._button(actions, "ПОДГОТОВИТЬ PNG ДЛЯ СЕРВЕРА", self._skin_sign_file)
+        self.skin_sign_btn.pack(side="left")
+        self._button(actions, "СКОПИРОВАТЬ КОМАНДУ", self._skin_copy_command, accent=True).pack(side="left", padx=(8, 0))
+        self._button(actions, "СБРОСИТЬ", self._skin_reset).pack(side="right")
+        tk.Label(shell, text="В игре нажмите T, вставьте команду (Ctrl+V) и Enter. Чтобы увидеть новый скин, "
+                             "другим игрокам ничего делать не нужно.", bg=C_PANEL, fg=C_MUTED, font=("Segoe UI", 8),
+                 wraplength=560, justify="left").grid(row=7, column=0, columnspan=2, sticky="w", padx=16, pady=(0, 12))
+        self._skin_source_changed()
+        self._apply_ui_scale(dialog)
+
+    def _skin_source_changed(self) -> None:
+        source = self.skin_source_var.get()
+        try:
+            self.skin_nick_entry.configure(state="normal" if source in ("elyby", "tlauncher") else "disabled")
+            self.skin_file_btn.configure(state="normal" if source == "file" else "disabled")
+            self.skin_sign_btn.configure(state="normal" if source == "file" else "disabled")
+        except (tk.TclError, AttributeError):
+            pass
+        self._skin_pending = {}
+        self.skin_cmd_var.set("")
+        notes = {
+            "official": "Официальный скин аккаунта Microsoft. Команда вернёт его, если вы ставили другой.",
+            "elyby": "Публичный скин Ely.by по нику. Вход в Ely.by и пароль не нужны.",
+            "tlauncher": "Публичный скин TLauncher по нику. Вход в TLauncher и пароль не нужны.",
+            "file": "Свой PNG 64×64. Для показа другим игрокам файл подписывается сервисом MineSkin (с вашего согласия).",
+            "default": "Стандартный скин Minecraft (Steve/Alex).",
+        }
+        self.skin_info_var.set(notes.get(source, ""))
+        if source in ("official", "default"):
+            self.skin_cmd_var.set(skin_command(source))
+
+    def _skin_pick_file(self) -> None:
+        selected = filedialog.askopenfilename(parent=self.skin_dialog, title="Выберите PNG-скин",
+                                              filetypes=[("PNG", "*.png")])
+        if selected:
+            self._skin_file_path = selected
+            self._skin_preview()
+
+    def _skin_preview(self) -> None:
+        source = self.skin_source_var.get()
+        nick = self.skin_nick_var.get().strip()
+        self.skin_info_var.set("Загружаю скин…")
+
+        def worker() -> None:
+            try:
+                url = ""
+                if source in ("elyby", "tlauncher"):
+                    data, url = resolve_external_skin(source, nick)
+                elif source == "file":
+                    path = Path(getattr(self, "_skin_file_path", "") or "")
+                    if not path.is_file():
+                        raise ValueError("Сначала выберите PNG-файл.")
+                    if path.stat().st_size > SKIN_MAX_BYTES:
+                        raise ValueError(f"Файл больше {SKIN_MAX_BYTES // 1024} КБ.")
+                    data = path.read_bytes()
+                elif source == "official":
+                    skin_path = minecraft_skin_path(str(self.state_data.get("msa_uuid") or ""))
+                    if skin_path is None:
+                        raise RuntimeError("Не удалось получить официальный скин (нет сети или скин не задан).")
+                    data = skin_path.read_bytes()
+                else:
+                    self._emit("skin_preview", {"source": source, "info": "Стандартный скин Minecraft."})
+                    return
+                facts = validate_skin_png(data)
+                self._emit("skin_preview", {"source": source, "facts": facts, "url": url, "data": data})
+            except Exception as e:
+                self._emit("skin_preview", {"source": source, "error": str(e)})
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _show_skin_preview(self, result: dict[str, Any]) -> None:
+        if self.skin_dialog is None or not self.skin_dialog.winfo_exists() or result.get("source") != self.skin_source_var.get():
+            return
+        if result.get("error"):
+            self.skin_info_var.set("Не получилось: " + str(result["error"]))
+            self._skin_pending = {}
+            self.skin_cmd_var.set("")
+            return
+        facts = result.get("facts")
+        if not facts:
+            self.skin_info_var.set(str(result.get("info") or ""))
+            return
+        image = skin_preview_image(facts["image"], max(4, px(5)))
+        self._skin_preview_photo = ImageTk.PhotoImage(image)
+        self.skin_canvas.configure(image=self._skin_preview_photo, text="")
+        if facts["slim"] != self.skin_slim_var.get() and result["source"] != "official":
+            self.skin_slim_var.set(facts["slim"])
+        self._skin_pending = {"source": result["source"], "url": result.get("url", ""), "data": result.get("data")}
+        parts = [f"PNG {facts['width']}×{facts['height']}", "есть прозрачность" if facts["has_transparency"] else "без прозрачности",
+                 "модель Alex" if facts["slim"] else "модель Steve"]
+        self.skin_info_var.set("Скин проверен: " + ", ".join(parts) + ".")
+        self.state_data["skin_source"] = result["source"]
+        self.state_data["skin_nick"] = self.skin_nick_var.get().strip()
+        self.state_data["skin_slim"] = bool(self.skin_slim_var.get())
+        atomic_write_json(STATE_FILE, self.state_data)
+        self._skin_refresh_command()
+
+    def _skin_refresh_command(self) -> None:
+        pending = getattr(self, "_skin_pending", {}) or {}
+        source = self.skin_source_var.get()
+        if source in ("official", "default"):
+            self.skin_cmd_var.set(skin_command(source))
+        elif pending.get("url") and pending.get("source") == source:
+            self.skin_cmd_var.set(skin_command(source, pending["url"], bool(self.skin_slim_var.get())))
+        else:
+            self.skin_cmd_var.set("")
+
+    def _skin_sign_file(self) -> None:
+        pending = getattr(self, "_skin_pending", {}) or {}
+        if pending.get("source") != "file" or not pending.get("data"):
+            self.skin_info_var.set("Сначала выберите PNG и нажмите «ПОКАЗАТЬ».")
+            return
+        if not messagebox.askyesno(
+                "Свой скин",
+                "Чтобы другие игроки видели ваш PNG, лаунчер загрузит его в сервис MineSkin.org (без вашего ника, "
+                "с пометкой «не в общем каталоге»). MineSkin получит подпись Mojang и вернёт ссылку на "
+                "textures.minecraft.net.\n\nЗагрузить скин?", parent=self.skin_dialog):
+            return
+        data, variant = pending["data"], "slim" if self.skin_slim_var.get() else "classic"
+        self.skin_info_var.set("Отправляю скин в MineSkin… это может занять до минуты.")
+
+        def worker() -> None:
+            try:
+                url = mineskin_sign_png(data, variant)
+                self._emit("skin_signed", url)
+            except Exception as e:
+                self._emit("skin_preview", {"source": "file", "error": str(e)})
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _skin_signed(self, url: str) -> None:
+        if self.skin_dialog is None or not self.skin_dialog.winfo_exists():
+            return
+        self._skin_pending = {"source": "file", "url": url}
+        self._skin_refresh_command()
+        self.skin_info_var.set("Готово: скин подписан Mojang. Скопируйте команду и выполните её в игре.")
+        self._log("Свой скин подготовлен через MineSkin.")
+
+    def _skin_copy_command(self) -> None:
+        command = self.skin_cmd_var.get().strip()
+        if not command:
+            self.skin_info_var.set("Команды пока нет: нажмите «ПОКАЗАТЬ»" +
+                                   (" и «ПОДГОТОВИТЬ PNG»." if self.skin_source_var.get() == "file" else "."))
+            return
+        self._copy_text(command)
+        self.skin_info_var.set("Команда скопирована. В игре: T → Ctrl+V → Enter.")
+
+    def _skin_reset(self) -> None:
+        source = "official" if self.auth_var.get() == "microsoft" and self.state_data.get("msa_uuid") else "default"
+        self.skin_source_var.set(source)
+        for key in ("skin_source", "skin_nick", "skin_slim"):
+            self.state_data.pop(key, None)
+        atomic_write_json(STATE_FILE, self.state_data)
+        self.skin_nick_var.set("")
+        self._skin_source_changed()
+        self.skin_canvas.configure(image="", text="ПРЕДПРОСМОТР")
+
+    def _logout_microsoft(self) -> None:
+        uuid_value = str(self.state_data.get("msa_uuid") or "").strip()
+        name = str(self.state_data.get("msa_username") or "").strip()
+        if not uuid_value or not messagebox.askyesno(APP_NAME, f"Выйти из аккаунта {name}? Сохранённый вход будет удалён "
+                                                                "с этого компьютера."):
+            return
+
+        def job() -> None:
+            code = run_pmc(["--main-dir", str(INSTANCE_DIR), "--output", "machine", "auth", "forget", uuid_value], LAUNCH_LOG)
+            if code != 0:
+                raise RuntimeError("Не удалось удалить сохранённый вход. Подробности — в «ЖУРНАЛ».")
+            for key in ("msa_uuid", "msa_username"):
+                self.state_data[key] = ""
+            atomic_write_json(STATE_FILE, self.state_data)
+            (CACHE_DIR / f"skin-{uuid_value.replace('-', '')}.png").unlink(missing_ok=True)
+            self._emit("auth_changed", None)
+            self._emit("status", "Вы вышли из аккаунта")
+            self._emit("detail", "Сохранённый вход Microsoft удалён с этого компьютера")
+            self._emit("log", f"Выход из аккаунта {name} выполнен.")
+
+        self._start_thread(job)
+
+    def _check_launcher_version(self, asset: dict[str, Any]) -> None:
+        latest, minimum = asset.get("launcher_version") or "", asset.get("launcher_min") or ""
+        if latest and version_tuple(latest) > version_tuple(APP_VERSION):
+            self._emit("launcher_update", latest)
+        if minimum and version_tuple(APP_VERSION) < version_tuple(minimum):
+            raise RuntimeError(f"Эта версия лаунчера ({APP_VERSION}) устарела для текущей сборки. Скачайте лаунчер "
+                               f"{latest or minimum} на сайте Project Meridian: {LAUNCHER_DOWNLOAD_PAGE}")
+
+    def _pack_installed(self) -> bool:
+        return INSTANCE_DIR.is_dir() and any(INSTANCE_DIR.iterdir()) and bool(self.state_data.get("pack_identity"))
+
+    def _obtain_verified_zip(self, asset: dict[str, Any]) -> Path:
+        cache_zip = cached_pack_path(asset)
+        expected = expected_sha256(asset)
+        if cache_zip.is_file():
+            self._emit("status", "Проверяю скачанный архив…")
+            if sha256_file(cache_zip) == expected:
+                self._emit("log", "Использую уже скачанный проверенный архив.")
+                return cache_zip
+            cache_zip.unlink(missing_ok=True)
+        partial = cache_zip.with_suffix(cache_zip.suffix + ".part")
+        already = partial.stat().st_size if partial.exists() else 0
+        ensure_free_space(CACHE_DIR, max(0, int(asset["size"]) - already), "скачивания сборки")
+        self._emit("status", "Скачиваю сборку Project Meridian…")
+        self._emit("log", f"Скачивание {asset['release_name']} ({format_bytes(asset['size'])})"
+                          + (f", докачка с {format_bytes(already)}" if already else "") + "…")
+
+        def progress(done: int, total: int) -> None:
+            pct = (done / total * 100) if total else 0
+            self._emit("progress", pct)
+            if total:
+                self._emit("progress_text", f"{pct:.1f}% • {format_bytes(done)} / {format_bytes(total)}")
+
+        download_file(asset["url"], cache_zip, asset["size"], progress)
+        self._emit("status", "Проверяю архив…")
+        if sha256_file(cache_zip) != expected:
+            cache_zip.unlink(missing_ok=True)
+            raise RuntimeError("Скачанный архив повреждён (SHA-256 не совпал) и удалён. Нажмите «ИГРАТЬ» ещё раз.")
+        self._emit("log", "SHA-256 архива совпадает с манифестом.")
+        return cache_zip
+
+    def _install_zip(self, zip_path: Path, asset: dict[str, Any]) -> None:
+        previous = {k: self.state_data.get(k) for k in ("pack_identity", "pack_digest")}
+        previous_managed = list(self.state_data.get("managed_files", []))
+        atomic_write_json(INSTALL_JOURNAL, {"target": asset["identity"], "previous": previous,
+                                            "started": time.strftime("%Y-%m-%d %H:%M:%S")})
+        if legacy_dev_state_present(self.state_data):
+            removed = cleanup_legacy_dev_files()
+            self._emit("log", f"Переход с тестовой версии: удалено устаревших файлов — {len(removed)}.")
+        self._emit("status", "Устанавливаю сборку…")
+        self._emit("progress", 0)
+
+        def progress(done: int, total: int) -> None:
+            self._emit("progress", done / total * 100)
+            self._emit("progress_text", f"Файлы сборки: {done} / {total}")
+
+        try:
+            managed, index = install_from_zip(zip_path, previous_managed, progress)
+        except Exception as e:
+            self._emit("log", f"Установка прервана: {type(e).__name__}: {e}")
+            restored = self._rollback(previous, zip_path)
+            raise RuntimeError(
+                f"Не удалось установить сборку: {e}\n\n"
+                + ("Прежняя версия восстановлена — можно играть." if restored else
+                   "Лаунчер завершит установку при следующем запуске; миры и настройки не затронуты.")
+            ) from e
+
+        self.state_data["pack_digest"] = asset["digest"]
+        self.state_data["pack_identity"] = asset["identity"]
+        self.state_data["pack_version"] = asset["release_name"]
+        self.state_data["managed_files"] = managed
+        self.state_data.pop("channel", None)
+        atomic_write_json(FILE_INDEX, {"identity": asset["identity"], "files": index})
+        atomic_write_json(STATE_FILE, self.state_data)
+        finish_legacy_dev_cleanup()
+        INSTALL_JOURNAL.unlink(missing_ok=True)
+        self._prune_pack_cache(keep={zip_path.name, cached_pack_path({"digest": previous.get("pack_digest") or "",
+                                                                     "identity": "-"}).name})
+        self._emit("progress", 100)
+        self._emit("pack_value", asset["release_name"])
+        self._emit("log", f"Сборка {asset['release_name']} установлена: {len(managed)} файлов.")
+
+    def _rollback(self, previous: dict[str, Any], failed_zip: Path) -> bool:
+        """Restores the previous working version from its verified cached archive, if there is one."""
+        digest = str(previous.get("pack_digest") or "")
+        if not digest.startswith("sha256:"):
+            return False
+        old_zip = cached_pack_path({"digest": digest, "identity": "-"})
+        try:
+            if not old_zip.is_file() or sha256_file(old_zip) != digest.split(":", 1)[1]:
+                return False
+            self._emit("status", "Восстанавливаю прежнюю версию…")
+            with zipfile.ZipFile(failed_zip) as zf:
+                new_files = [rel for rel in pack_members(zf) if not is_preserved(rel)]
+            with zipfile.ZipFile(old_zip) as zf:
+                old_files = set(pack_members(zf))
+            managed, index = install_from_zip(old_zip, [rel for rel in new_files if rel not in old_files])
+        except Exception as e:
+            self._emit("log", f"Откат не удался: {type(e).__name__}: {e}")
+            return False
+        self.state_data["managed_files"] = managed
+        atomic_write_json(FILE_INDEX, {"identity": previous.get("pack_identity"), "files": index})
+        atomic_write_json(STATE_FILE, self.state_data)
+        INSTALL_JOURNAL.unlink(missing_ok=True)
+        self._emit("log", "Прежняя версия сборки восстановлена из проверенного архива.")
+        return True
+
+    @staticmethod
+    def _prune_pack_cache(keep: set[str]) -> None:
+        for path in CACHE_DIR.glob("minecraft-*.zip"):
+            if path.name not in keep:
+                path.unlink(missing_ok=True)
 
     def _open_game_folder(self) -> None:
         ensure_dirs()
@@ -2525,6 +3061,21 @@ def main() -> None:
     hide_console_if_needed()
     ensure_dirs()
     app = MeridianLauncher()
+    if "--ui-preview=skin" in sys.argv:
+        app.after(300, app._open_skin_dialog)
+    if "--ui-preview=log" in sys.argv:
+        app.after(300, app._open_log_dialog)
+    if "--ui-preview=auth" in sys.argv:
+        # screenshots of the sign-in dialog: no Microsoft request, placeholder code
+        app.auth_code_var.set("XXXX-XXXX")
+        app.auth_step_var.set("Предпросмотр окна входа: код скрыт, запрос к Microsoft не отправлялся.")
+        app.after(300, app._open_auth_dialog)
+    for arg in sys.argv:
+        if arg.startswith("--layout-report="):
+            target = arg.split("=", 1)[1]
+            app.after(2500, lambda t=target: app.write_layout_report(t))
+            # a second report after the test resized the window (used to check the minimum size)
+            app.after(6500, lambda t=target: app.write_layout_report(t[:-5] + "-2.json" if t.endswith(".json") else t + "-2"))
     if "--smoke-ui" in sys.argv:
         app.update_idletasks()
         app.destroy()
