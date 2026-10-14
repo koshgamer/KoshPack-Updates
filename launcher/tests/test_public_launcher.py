@@ -111,7 +111,7 @@ class FakeApp:
         return [str(v) for k, v in self.events if k == "log"]
 
 
-for name in ("_install_zip", "_rollback", "_prune_pack_cache", "_obtain_verified_zip", "_check_launcher_version",
+for name in ("_check_update_only", "_install_zip", "_rollback", "_prune_pack_cache", "_obtain_verified_zip", "_check_launcher_version",
              "_pack_installed", "_ensure_pack", "_repair_pack"):
     setattr(FakeApp, name, L.MeridianLauncher.__dict__[name])
 
@@ -344,6 +344,27 @@ def test_power_loss(app):
     check("power loss: no temporary files remain", not list(L.INSTANCE_DIR.rglob("*.meridian-new")))
 
 
+def test_offline(app):
+    """No internet: an installed pack stays playable; a first start explains what is missing."""
+    import urllib.error
+
+    def no_network():
+        raise urllib.error.URLError("no network")
+
+    L.get_release_asset = no_network
+    app.events.clear()
+    app._check_update_only()
+    status = [v for k, v in app.events if k == "status"]
+    detail = [v for k, v in app.events if k == "detail"]
+    check("no internet, pack installed: stays playable", status[-1:] == ["Сборка установлена"]
+          and "можно играть" in str(detail[-1:]), f"{status[-1:]} {detail[-1:]}")
+    fresh = FakeApp()
+    fresh.state_data["pack_identity"] = ""
+    fresh._check_update_only()
+    status = [v for k, v in fresh.events if k == "status"]
+    check("no internet, first start: clear message, no crash", status[-1:] == ["Нужна установка сборки"], str(status[-1:]))
+
+
 def test_legacy_dev_migration():
     app = FakeApp()
     mods = L.INSTANCE_DIR / "mods"
@@ -477,6 +498,7 @@ def main():
     test_disk_full_and_rollback(app, a1, a2)
     test_interrupted_download(app)
     test_power_loss(app)
+    test_offline(app)
     test_legacy_dev_migration()
     test_zip_safety()
     test_skins()
