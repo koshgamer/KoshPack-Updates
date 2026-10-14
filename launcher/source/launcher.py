@@ -8,6 +8,7 @@ import math
 import json
 import os
 import queue
+import random
 import re
 import shutil
 import subprocess
@@ -23,10 +24,10 @@ import zipfile
 from pathlib import Path
 from typing import Any, Callable
 
-from PIL import Image, ImageTk
+from PIL import Image, ImageDraw, ImageTk
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, font as tkfont, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
 APP_VERSION = "1.0.0"
@@ -63,16 +64,8 @@ C_AMBER = C_COPPER
 C_AMBER_2 = C_TELEMETRY
 
 # Launcher interface scale (independent of Minecraft's GUI Scale). "auto" follows the Windows display scale;
-# a fixed value is relative to a 100 % (96 DPI) display. Stored in state.json as "ui_scale".
+# a fixed value (relative to a 100 % / 96 DPI display) is only used for layout tests via --ui-scale=.
 UI_SCALE_CHOICES: tuple[str, ...] = ("auto", "100", "125", "150", "175", "200")
-UI_SCALE_LABELS: dict[str, str] = {
-    "auto": "Авто по DPI Windows",
-    "100": "100%",
-    "125": "125%",
-    "150": "150%",
-    "175": "175%",
-    "200": "200%",
-}
 UI_SCALE = 1.0
 
 
@@ -1274,6 +1267,212 @@ class RamSlider(tk.Canvas):
         )
 
 
+def _hex(c: str) -> tuple[int, int, int]:
+    return int(c[1:3], 16), int(c[3:5], 16), int(c[5:7], 16)
+
+
+def blend_hex(a: str, b: str, t: float) -> str:
+    """Colour a -> b at t (0..1): canvas items cannot be translucent, so faint layers are pre-blended."""
+    av, bv = _hex(a), _hex(b)
+    return "#" + "".join(f"{round(x + (y - x) * t):02x}" for x, y in zip(av, bv))
+
+
+def windows_animations_enabled() -> bool:
+    """Respects Windows 'Show animations' (Accessibility > Visual effects)."""
+    if os.name != "nt":
+        return True
+    try:
+        value = ctypes.c_int(1)
+        ctypes.windll.user32.SystemParametersInfoW(0x1042, 0, ctypes.byref(value), 0)  # SPI_GETCLIENTAREAANIMATION
+        return bool(value.value)
+    except Exception:
+        return True
+
+
+def render_backdrop(width: int, height: int) -> Image.Image:
+    """Static layer of the launcher background: dark CRT gradient, faint expedition grid, an industrial
+    skyline on the horizon and scanlines. Everything is composited at low opacity over the base colour."""
+    w, h = max(1, width), max(1, height)
+    base = Image.new("RGB", (w, h), _hex(C_BG))
+    glow = Image.new("L", (w, h), 0)
+    gd = ImageDraw.Draw(glow)
+    cx, cy, r = int(w * 0.68), int(h * 0.42), int(max(w, h) * 0.62)
+    for i in range(24, 0, -1):  # soft radial glow behind the globe
+        rr = r * i / 24
+        gd.ellipse((cx - rr, cy - rr * 0.8, cx + rr, cy + rr * 0.8), fill=int(70 * (1 - i / 24) ** 1.6))
+    base.paste(Image.new("RGB", (w, h), (20, 46, 48)), (0, 0), glow)
+
+    layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    step = 48
+    for x in range(0, w, step):
+        d.line((x, 0, x, h), fill=(82, 188, 175, 16))
+    for y in range(0, h, step):
+        d.line((0, y, w, y), fill=(82, 188, 175, 16))
+
+    # industrial skyline on the horizon: stacks, a crane, tanks, a water wheel
+    horizon = int(h * 0.80)
+    far = (24, 44, 47, 245)
+    pts = [(0, horizon + 30)]
+    x = 0
+    rnd = random.Random(7)
+    while x < w:
+        kind = rnd.random()
+        if kind < 0.18:      # chimney
+            cw = rnd.randint(10, 18)
+            ch = rnd.randint(60, 130)
+            pts += [(x, horizon), (x, horizon - ch), (x + cw, horizon - ch), (x + cw, horizon)]
+            x += cw + rnd.randint(6, 30)
+        elif kind < 0.36:    # tank
+            tw = rnd.randint(40, 80)
+            th = rnd.randint(30, 55)
+            pts += [(x, horizon), (x, horizon - th), (x + tw // 2, horizon - th - 10), (x + tw, horizon - th), (x + tw, horizon)]
+            x += tw + rnd.randint(8, 30)
+        else:                # low halls with saw-tooth roofs
+            hw = rnd.randint(70, 150)
+            hh = rnd.randint(18, 40)
+            pts.append((x, horizon - hh))
+            for k in range(0, hw, 22):
+                pts += [(x + k + 16, horizon - hh - 12), (x + k + 22, horizon - hh)]
+            x += hw
+            pts.append((x, horizon - hh))
+    pts += [(w, horizon + 30), (w, h), (0, h)]
+    d.polygon(pts, fill=far)
+    # crane
+    kx = int(w * 0.22)
+    d.line((kx, horizon, kx, horizon - 170), fill=far, width=5)
+    d.line((kx - 40, horizon - 165, kx + 150, horizon - 165), fill=far, width=4)
+    d.line((kx + 120, horizon - 165, kx + 120, horizon - 120), fill=far, width=2)
+    # water wheel (Create)
+    wx, wy, wr = int(w * 0.47), horizon - 10, 46
+    d.ellipse((wx - wr, wy - wr, wx + wr, wy + wr), outline=far, width=4)
+    for a in range(0, 360, 30):
+        rad = math.radians(a)
+        d.line((wx, wy, wx + wr * math.cos(rad), wy + wr * math.sin(rad)), fill=far, width=3)
+    # teal haze along the horizon
+    for i in range(18):
+        d.rectangle((0, horizon - 4 - i * 3, w, horizon - 1 - i * 3), fill=(82, 188, 175, max(0, 22 - i)))
+    # near ground and fog
+    d.polygon([(0, h), (0, h - 40)] + [(i, h - 40 - 14 * math.sin(i / 90.0)) for i in range(0, w + 40, 40)] + [(w, h)],
+              fill=(6, 11, 12, 245))
+    for i in range(30):
+        d.rectangle((0, horizon - 60 + i * 4, w, horizon - 56 + i * 4), fill=(16, 34, 36, 4))
+
+    out = Image.alpha_composite(base.convert("RGBA"), layer)
+    # CRT scanlines and vignette
+    scan = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(scan)
+    for y in range(0, h, 3):
+        sd.line((0, y, w, y), fill=(0, 0, 0, 24))
+    out = Image.alpha_composite(out, scan)
+    vig = Image.new("L", (w, h), 0)
+    vd = ImageDraw.Draw(vig)
+    for i in range(18):
+        inset = i * min(w, h) / 40
+        vd.rectangle((inset, inset, w - inset, h - inset), outline=int(110 * (1 - i / 18) ** 2), width=int(min(w, h) / 40) + 1)
+    out.paste(Image.new("RGBA", (w, h), (0, 0, 0, 255)), (0, 0), vig)
+    return out.convert("RGB")
+
+
+class MeridianBackdrop:
+    """Animated, semi-transparent background drawn on the main window canvas behind the panels:
+    a slowly turning wireframe globe (meridians), a Create-style gear, blinking lights on the skyline,
+    rising embers and a CRT scan line. Faint colours are pre-blended with the background."""
+
+    def __init__(self, canvas: tk.Canvas, animate: bool) -> None:
+        self.cv = canvas
+        self.animate = animate
+        self.size = (0, 0)
+        self.photo: Any = None
+        self.phase = 0.0
+        self.pending: str | None = None
+        self.items: dict[str, Any] = {}
+        self.particles: list[list[float]] = []
+        self.rnd = random.Random(11)
+        canvas.bind("<Configure>", self._on_configure, add="+")
+
+    def _on_configure(self, event: tk.Event) -> None:
+        if (event.width, event.height) == self.size:
+            return
+        if self.pending:
+            self.cv.after_cancel(self.pending)
+        self.pending = self.cv.after(120, lambda: self.rebuild(event.width, event.height))
+
+    def rebuild(self, w: int, h: int) -> None:
+        self.pending = None
+        if w < 50 or h < 50:
+            return
+        self.size = (w, h)
+        self.photo = ImageTk.PhotoImage(render_backdrop(w, h), master=self.cv)
+        self.cv.delete("backdrop")
+        self.cv.create_image(0, 0, image=self.photo, anchor="nw", tags=("backdrop",))
+        line = blend_hex(C_BG, C_TELEMETRY, 0.30)
+        copper = blend_hex(C_BG, C_COPPER, 0.50)
+        self.globe = (w * 0.36, h * 0.86, min(w, h) * 0.30)
+        gx, gy, gr = self.globe
+        self.items = {
+            "rim": self.cv.create_oval(gx - gr, gy - gr, gx + gr, gy + gr, outline=line, width=1, tags=("backdrop",)),
+            "meridians": [self.cv.create_oval(0, 0, 0, 0, outline=line, width=1, tags=("backdrop",)) for _ in range(6)],
+            "prime": self.cv.create_oval(0, 0, 0, 0, outline=copper, width=2, tags=("backdrop",)),
+            "parallels": [self.cv.create_oval(gx - gr * math.cos(lat), gy + gr * math.sin(lat) - gr * math.cos(lat) * 0.16,
+                                              gx + gr * math.cos(lat), gy + gr * math.sin(lat) + gr * math.cos(lat) * 0.16,
+                                              outline=blend_hex(C_BG, C_TELEMETRY, 0.20), width=1, tags=("backdrop",))
+                          for lat in (-1.0, -0.55, 0.0, 0.55, 1.0)],
+            "gear": self.cv.create_polygon(0, 0, 0, 0, 0, 0, outline=blend_hex(C_BG, C_COPPER, 0.30), fill="", width=2,
+                                           tags=("backdrop",)),
+            "scan": self.cv.create_line(0, 0, w, 0, fill=blend_hex(C_BG, C_TELEMETRY, 0.18), width=2, tags=("backdrop",)),
+            "beacons": [self.cv.create_oval(0, 0, 0, 0, fill=C_COPPER, outline="", tags=("backdrop",)) for _ in range(5)],
+        }
+        horizon = h * 0.80
+        self.beacon_pos = [(w * f, horizon - self.rnd.randint(40, 120)) for f in (0.08, 0.27, 0.41, 0.63, 0.86)]
+        self.particles = [[self.rnd.uniform(0, w), self.rnd.uniform(h * 0.3, h), self.rnd.uniform(0.3, 1.1),
+                           self.rnd.uniform(0, 6.28)] for _ in range(26)]
+        self.items["sparks"] = [self.cv.create_oval(0, 0, 0, 0, fill=blend_hex(C_BG, C_COPPER, 0.60), outline="",
+                                                    tags=("backdrop",)) for _ in self.particles]
+        self.cv.tag_lower("backdrop")
+        self.frame()
+
+    def frame(self) -> None:
+        """Draws one animation step (also used once when animations are off)."""
+        if not self.items:
+            return
+        w, h = self.size
+        gx, gy, gr = self.globe
+        t = self.phase
+        for i, item in enumerate(self.items["meridians"]):
+            rx = gr * abs(math.cos(t + i * math.pi / 6))
+            self.cv.coords(item, gx - rx, gy - gr, gx + rx, gy + gr)
+        rx = gr * abs(math.sin(t * 1.0))
+        self.cv.coords(self.items["prime"], gx - rx, gy - gr, gx + rx, gy + gr)
+        # gear in the lower left corner, partly outside the window
+        cx, cy, R = w * 0.04, h * 0.92, min(w, h) * 0.30
+        pts: list[float] = []
+        teeth = 14
+        for k in range(teeth * 4):
+            a = -t * 0.35 + k * math.pi * 2 / (teeth * 4)
+            rr = R if (k % 4) in (1, 2) else R * 0.86
+            pts += [cx + rr * math.cos(a), cy + rr * math.sin(a)]
+        self.cv.coords(self.items["gear"], *pts)
+        sy = (t * 60) % (h + 80) - 40
+        self.cv.coords(self.items["scan"], 0, sy, w, sy)
+        for k, (bx, by) in enumerate(self.beacon_pos):
+            on = math.sin(t * 2.2 + k * 1.7) > 0.35
+            s = 2.5 if on else 1.2
+            self.cv.coords(self.items["beacons"][k], bx - s, by - s, bx + s, by + s)
+        for p, item in zip(self.particles, self.items["sparks"]):
+            p[1] -= p[2]
+            p[3] += 0.05
+            if p[1] < h * 0.25:
+                p[0], p[1] = self.rnd.uniform(0, w), h + 5
+            x = p[0] + math.sin(p[3]) * 6
+            self.cv.coords(item, x - 1.2, p[1] - 1.2, x + 1.2, p[1] + 1.2)
+
+    def tick(self) -> None:
+        if self.animate:
+            self.phase += 0.012
+            self.frame()
+
+
 class MeridianLauncher(tk.Tk):
     def __init__(self) -> None:
         global UI_SCALE
@@ -1288,8 +1487,11 @@ class MeridianLauncher(tk.Tk):
         self.events: queue.Queue[tuple[str, Any]] = queue.Queue()
         self.busy = False
 
-        self.ui_scale_choice = normalize_ui_scale_choice(self.state_data.get("ui_scale", "auto"))
-        self.ui_scale_var = tk.StringVar(value=self.ui_scale_choice)
+        # Interface scale follows Windows; a fixed value only through --ui-scale=125 (layout tests).
+        self.state_data.pop("ui_scale", None)
+        cli_scale = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--ui-scale=")), "auto")
+        self.ui_scale_choice = normalize_ui_scale_choice(cli_scale)
+        self._animations = windows_animations_enabled()
         self._d = DENSITY[0]
         self._root_frame: tk.Frame | None = None
 
@@ -1374,11 +1576,9 @@ class MeridianLauncher(tk.Tk):
                             "density": picked["density"], "required": (req_w, req_h), "available": (avail_w, avail_h),
                             "work": (left, top, work_w, work_h), "frame": (extra_w, extra_h), "size": (w, h), "pos": (x, y),
                             "fits": picked.get("fits", True), "tried": len(tried)}
-        limited = picked["scale"] < chosen - 1e-6
-        self.ui_scale_btn.configure(text=self._ui_scale_label(self.ui_scale_choice, picked["scale"] if limited else None))
-        if limited:
-            self._log(f"Масштаб {round(chosen * 100)}% не помещается на этом экране: интерфейс показан в "
-                      f"{round(picked['scale'] * 100)}%. Выбранная настройка сохранена.")
+        if picked["scale"] < chosen - 1e-6:
+            self._log(f"Окно не помещается на экран при масштабе {round(chosen * 100)}%: интерфейс уменьшен до "
+                      f"{round(picked['scale'] * 100)}%.")
         self.deiconify()
         dark_title_bar(self)
 
@@ -1392,6 +1592,7 @@ class MeridianLauncher(tk.Tk):
         self._build_style()
         self._build_ui()
         self._apply_ui_scale(self)
+        self._place_header()
         self._sync_auth_fields()
         self.update_idletasks()
         return self.winfo_reqwidth(), self.winfo_reqheight()
@@ -1468,55 +1669,6 @@ class MeridianLauncher(tk.Tk):
             if minsize:
                 widget.grid_rowconfigure(index, minsize=px(minsize))
 
-    def _show_ui_scale_menu(self) -> None:
-        menu = tk.Menu(self, tearoff=0, bg=C_PANEL_2, fg=C_INK, activebackground=C_AMBER, activeforeground="#161106",
-                       selectcolor=C_AMBER_2, font=("Segoe UI", 10))
-        for choice in UI_SCALE_CHOICES:
-            label = UI_SCALE_LABELS[choice]
-            if choice == "auto":
-                label += f" ({round(system_dpi_scale() * 100)}%)"
-            menu.add_radiobutton(label=label, value=choice, variable=self.ui_scale_var, command=self._ui_scale_changed)
-        try:
-            x = self.ui_scale_btn.winfo_rootx()
-            y = self.ui_scale_btn.winfo_rooty() + self.ui_scale_btn.winfo_height()
-            menu.tk_popup(x, y)
-        finally:
-            menu.grab_release()
-
-    def _ui_scale_label(self, choice: str, effective: float | None = None) -> str:
-        label = "ИНТЕРФЕЙС: " + ("АВТО" if choice == "auto" else choice + "%")
-        if effective is not None:
-            label += f" → {round(effective * 100)}% (не помещается)"
-        return label
-
-    def _ui_scale_changed(self) -> None:
-        choice = normalize_ui_scale_choice(self.ui_scale_var.get())
-        self.ui_scale_var.set(choice)
-        if choice == self.ui_scale_choice:
-            return
-        self._save_preferences()
-        self.state_data["ui_scale"] = choice
-        atomic_write_json(STATE_FILE, self.state_data)
-        self.ui_scale_btn.configure(text=self._ui_scale_label(choice) + " *")
-        self._log(f"Масштаб интерфейса лаунчера: {UI_SCALE_LABELS[choice]} (GUI Scale Minecraft не меняется).")
-        if self.busy:
-            messagebox.showinfo("Масштаб интерфейса", "Сохранено. Новый масштаб применится при следующем запуске лаунчера.", parent=self)
-            return
-        if messagebox.askyesno("Масштаб интерфейса", "Сохранено. Перезапустить лаунчер сейчас, чтобы применить масштаб?", parent=self):
-            self._restart_launcher()
-
-    def _restart_launcher(self) -> None:
-        if getattr(sys, "frozen", False):
-            command = [sys.executable] + sys.argv[1:]
-        else:
-            command = [sys.executable, str(Path(__file__).resolve())] + sys.argv[1:]
-        try:
-            subprocess.Popen(command, close_fds=True)
-        except Exception as exc:
-            messagebox.showerror("Масштаб интерфейса", f"Не удалось перезапустить: {exc}. Масштаб применится при следующем запуске.", parent=self)
-            return
-        self.destroy()
-
     def _build_style(self) -> None:
         style = ttk.Style(self)
         try:
@@ -1585,99 +1737,92 @@ class MeridianLauncher(tk.Tk):
 
     def _build_ui(self) -> None:
         d = self._d
-        root = tk.Frame(self, bg=C_BG)
-        root.pack(fill="both", expand=True, padx=d["outer"][0], pady=d["outer"][1])
+        # The whole window is a canvas with the animated background; the header is drawn on it and the panels
+        # are gridded on top. Row 0 only reserves the header height (set in _place_header).
+        root = tk.Canvas(self, bg=C_BG, bd=0, highlightthickness=0)
+        root._meridian_scroll = True  # type: ignore[attr-defined]  # drawn at real pixels, not rescaled
+        root.pack(fill="both", expand=True)
         self._root_frame = root
-
-        # Header: emblem, title, system state, version and the interface scale setting
-        header = tk.Frame(root, bg=C_BG)
-        header.pack(fill="x")
-        icon = d["icon"]
-        self.brand_icon = tk.Canvas(header, width=round(icon * 54 / 48), height=icon, bg=C_BG, bd=0, highlightthickness=0)
-        self.brand_icon.pack(side="left", padx=(0, 12))
-        self._draw_brand_icon(icon / 48.0)
-
-        brand_box = tk.Frame(header, bg=C_BG)
-        brand_box.pack(side="left", fill="y")
-        self.brand_title = tk.Label(
-            brand_box,
-            text="PROJECT MERIDIAN",
-            bg=C_BG,
-            fg=C_INK,
-            font=("Segoe UI Black", d["title_font"]),
-            anchor="w",
-        )
-        self.brand_title.pack(anchor="w")
-        if d["subtitle"]:
-            tk.Label(
-                brand_box,
-                text="EXPEDITION NETWORK // LAUNCH TERMINAL",
-                bg=C_BG,
-                fg=C_MUTED,
-                font=("Consolas", 9, "bold"),
-            ).pack(anchor="w", pady=(1, 0))
-
-        head_right = tk.Frame(header, bg=C_BG)
-        head_right.pack(side="right", anchor="n")
-        status_row = tk.Frame(head_right, bg=C_BG)
-        status_row.pack(anchor="e")
-        self.system_dot = tk.Canvas(status_row, width=12, height=12, bg=C_BG, bd=0, highlightthickness=0)
-        self.system_dot.pack(side="left", padx=(0, 7))
-        self.system_dot_id = self.system_dot.create_oval(2, 2, 10, 10, fill=C_AMBER, outline="")
-        tk.Label(status_row, text="SYSTEM ONLINE", bg=C_BG, fg=C_MUTED, font=("Consolas", 9, "bold")).pack(side="left")
-        tk.Label(status_row, text=f"   v{APP_VERSION}  //  STABLE", bg=C_BG, fg=C_AMBER, font=("Consolas", 9, "bold")).pack(side="left")
-        self.update_link = tk.Label(head_right, textvariable=self.launcher_update_var, bg=C_BG, fg=C_TELEMETRY,
+        self.backdrop = MeridianBackdrop(root, self._animations)
+        root.bind("<Configure>", lambda e: self._place_header_right(e.width), add="+")
+        self.update_link = tk.Label(root, textvariable=self.launcher_update_var, bg=C_BG, fg=C_TELEMETRY,
                                     font=("Consolas", 9, "bold"), cursor="hand2")
         self.update_link.bind("<Button-1>", lambda _e: webbrowser.open(LAUNCHER_DOWNLOAD_PAGE))
-        if self.launcher_update_var.get():
-            self.update_link.pack(anchor="e")
-        self.ui_scale_btn = tk.Button(
-            head_right,
-            text=self._ui_scale_label(self.ui_scale_choice),
-            command=self._show_ui_scale_menu,
-            bg=C_BG,
-            fg=C_MUTED,
-            activebackground=C_PANEL_2,
-            activeforeground=C_INK,
-            relief="flat",
-            bd=0,
-            highlightthickness=1,
-            highlightbackground=C_LINE,
-            font=("Consolas", 9, "bold"),
-            cursor="hand2",
-            padx=8,
-            pady=2,
-        )
-        self.ui_scale_btn.pack(anchor="e", pady=(d["item_gap"], 0))
-        Tooltip(self.ui_scale_btn, lambda: "Масштаб окна лаунчера (не GUI Scale Minecraft). 100% — размер как на экране "
-                                           "с масштабом Windows 100%; «Авто» следует масштабу Windows.")
 
-        tk.Frame(root, bg=C_LINE, height=1).pack(fill="x", pady=d["sep"])
+        ox, oy, gap = d["outer"][0], d["outer"][1], d["gap"]
 
-        body = tk.Frame(root, bg=C_BG)
-        body.pack(fill="both", expand=True)
-        body.grid_rowconfigure(0, weight=1)
+        def panel() -> tk.Frame:
+            return tk.Frame(root, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
+
+        account, settings, right = panel(), panel(), panel()
         if self._columns == 3:
-            account = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-            account.grid(row=0, column=0, sticky="nsew", padx=(0, d["gap"]))
-            settings = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-            settings.grid(row=0, column=1, sticky="nsew", padx=(0, d["gap"]))
-            launch_col = 2
+            # left and middle panels keep their natural height: the background shows below them
+            account.grid(row=1, column=0, sticky="new", padx=(ox, gap), pady=(0, oy))
+            settings.grid(row=1, column=1, sticky="new", padx=(0, gap), pady=(0, oy))
+            right.grid(row=1, column=2, sticky="nsew", padx=(0, ox), pady=(0, oy))
+            root.grid_columnconfigure(2, weight=1)
+            root.grid_rowconfigure(1, weight=1)
         else:
-            stack = tk.Frame(body, bg=C_BG)
-            stack.grid(row=0, column=0, sticky="nsew", padx=(0, d["gap"]))
-            account = tk.Frame(stack, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-            account.pack(fill="x")
-            settings = tk.Frame(stack, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-            settings.pack(fill="both", expand=True, pady=(d["gap"], 0))
-            launch_col = 1
-        body.grid_columnconfigure(launch_col, weight=1)
-
+            account.grid(row=1, column=0, sticky="new", padx=(ox, gap), pady=(0, gap))
+            settings.grid(row=2, column=0, sticky="nsew", padx=(ox, gap), pady=(0, oy))
+            right.grid(row=1, column=1, rowspan=2, sticky="nsew", padx=(0, ox), pady=(0, oy))
+            root.grid_columnconfigure(1, weight=1)
+            root.grid_rowconfigure(2, weight=1)
         self._build_account(account)
         self._build_settings(settings)
-        right = tk.Frame(body, bg=C_PANEL, highlightthickness=1, highlightbackground=C_LINE)
-        right.grid(row=0, column=launch_col, sticky="nsew")
         self._build_launch(right)
+
+    def _place_header(self) -> None:
+        """Emblem, title and status drawn on the background canvas (real pixels, after scaling)."""
+        d = self._d
+        cv = self._root_frame
+        cv.delete("header")
+        ox, oy = px(d["outer"][0]), px(d["outer"][1])
+        icon = px(d["icon"])
+        self._draw_brand_icon(cv, ox, oy, icon / 48.0)
+        title_font = tkfont.Font(family="Segoe UI Black", size=d["title_font"])
+        sub_font = tkfont.Font(family="Consolas", size=9, weight="bold")
+        tx = ox + round(icon * 54 / 48) + px(12)
+        self.title_item = cv.create_text(tx, oy - px(2), text="PROJECT MERIDIAN", anchor="nw", font=title_font,
+                                         fill=C_INK, tags=("header",))
+        y = oy + title_font.metrics("linespace") - px(2)
+        if d["subtitle"]:
+            cv.create_text(tx, y + px(1), text="EXPEDITION NETWORK // LAUNCH TERMINAL", anchor="nw", font=sub_font,
+                           fill=C_MUTED, tags=("header",))
+            y += sub_font.metrics("linespace") + px(1)
+        bottom = max(oy + icon, y)
+        self._sep_y = bottom + px(d["sep"][0])
+        cv.grid_rowconfigure(0, minsize=self._sep_y + 1 + px(d["sep"][1]))
+        self._title_font, self._sub_font = title_font, sub_font  # Tk forgets fonts without a reference
+        self.system_dot_item = cv.create_oval(0, 0, 0, 0, fill=C_AMBER, outline="", tags=("header",))
+        self.status_item = cv.create_text(0, 0, text="SYSTEM ONLINE", anchor="ne", font=sub_font, fill=C_MUTED,
+                                          tags=("header",))
+        self.version_item = cv.create_text(0, 0, text=f"v{APP_VERSION}  //  STABLE", anchor="ne", font=sub_font,
+                                           fill=C_AMBER, tags=("header",))
+        self.sep_item = cv.create_line(0, 0, 0, 0, fill=C_LINE, tags=("header",))
+        self.update_item = cv.create_window(0, 0, window=self.update_link, anchor="ne", tags=("header",),
+                                            state="normal" if self.launcher_update_var.get() else "hidden")
+        self._place_header_right(max(cv.winfo_width(), cv.winfo_reqwidth()))
+
+    def _place_header_right(self, width: int) -> None:
+        cv = self._root_frame
+        if cv is None or not hasattr(self, "version_item"):
+            return
+        d = self._d
+        ox, oy = px(d["outer"][0]), px(d["outer"][1])
+        right = width - ox
+        line_h = self._sub_font.metrics("linespace")
+        try:
+            cv.coords(self.version_item, right, oy)
+            vx = cv.bbox(self.version_item)[0]
+            cv.coords(self.status_item, vx - px(16), oy)
+            sx = cv.bbox(self.status_item)[0]
+            mid = oy + line_h / 2
+            cv.coords(self.system_dot_item, sx - px(15), mid - px(4), sx - px(7), mid + px(4))
+            cv.coords(self.update_item, right, oy + line_h + px(d["item_gap"]))
+            cv.coords(self.sep_item, ox, self._sep_y, width - ox, self._sep_y)
+        except (tk.TclError, TypeError):
+            pass
 
     def _build_account(self, panel: tk.Frame) -> None:
         d = self._d
@@ -1745,7 +1890,7 @@ class MeridianLauncher(tk.Tk):
         self.username_var.trace_add("write", lambda *_: self._sync_auth_fields())
 
         self.skin_btn = self._button(panel, "МОЙ СКИН", self._open_skin_dialog)
-        self.skin_btn.pack(side="bottom", fill="x", padx=pad, pady=(d["item_gap"], pad))
+        self.skin_btn.pack(fill="x", padx=pad, pady=(d["item_gap"] + 6, pad))
 
     def _build_settings(self, panel: tk.Frame) -> None:
         d = self._d
@@ -1879,40 +2024,18 @@ class MeridianLauncher(tk.Tk):
         if not self.log_lines:
             self._log(f"Project Meridian Launcher {APP_VERSION}. Игра установлена отдельно от обычного .minecraft.")
 
-    def _draw_brand_icon(self, k: float = 1.0) -> None:
+    def _draw_brand_icon(self, cv: tk.Canvas, x0: float, y0: float, k: float = 1.0) -> None:
         """Draw the same mark used in the website header (.meridian-mark); k = size relative to 48 px."""
-        cv = self.brand_icon
-        cv.delete("all")
-        cx, cy = 27 * k, 24 * k
-        r = 15 * k
-        ext = 20 * k
-
-        # Website: a square rotated 45deg -> diamond.
-        cv.create_polygon(
-            cx, cy - r,
-            cx + r, cy,
-            cx, cy + r,
-            cx - r, cy,
-            outline=C_COPPER,
-            fill="",
-            width=2,
-        )
-
-        # Website pseudo-elements rotate with the square, producing diagonal cross-lines.
-        cv.create_line(cx - ext, cy - ext, cx + ext, cy + ext, fill=C_COPPER, width=1)
-        cv.create_line(cx + ext, cy - ext, cx - ext, cy + ext, fill=C_COPPER, width=1)
-
-        # Inner telemetry square, also rotated with the outer mark.
-        ir = 7 * k
-        cv.create_polygon(
-            cx, cy - ir,
-            cx + ir, cy,
-            cx, cy + ir,
-            cx - ir, cy,
-            outline=C_TELEMETRY,
-            fill="",
-            width=2,
-        )
+        cx, cy = x0 + 27 * k, y0 + 24 * k
+        r, ext, ir = 15 * k, 20 * k, 7 * k
+        tags = ("header",)
+        # Website: a square rotated 45deg -> diamond, its pseudo-elements become diagonal cross-lines
+        cv.create_polygon(cx, cy - r, cx + r, cy, cx, cy + r, cx - r, cy, outline=C_COPPER, fill="", width=2, tags=tags)
+        cv.create_line(cx - ext, cy - ext, cx + ext, cy + ext, fill=C_COPPER, width=1, tags=tags)
+        cv.create_line(cx + ext, cy - ext, cx - ext, cy + ext, fill=C_COPPER, width=1, tags=tags)
+        # inner telemetry square
+        cv.create_polygon(cx, cy - ir, cx + ir, cy, cx, cy + ir, cx - ir, cy, outline=C_TELEMETRY, fill="", width=2,
+                          tags=tags)
 
     def _animate_ui(self) -> None:
         self._animation_phase += 0.12
@@ -1933,10 +2056,12 @@ class MeridianLauncher(tk.Tk):
             glow = blend(C_INK, C_AMBER_2, pulse * 0.34)
         dot = blend("#614500", C_AMBER_2, 0.25 + pulse * 0.75)
         try:
-            self.brand_title.configure(fg=glow)
-            self.system_dot.itemconfigure(self.system_dot_id, fill=dot)
-        except tk.TclError:
-            return
+            cv = self._root_frame
+            cv.itemconfigure(self.title_item, fill=glow)
+            cv.itemconfigure(self.system_dot_item, fill=dot)
+            self.backdrop.tick()
+        except (tk.TclError, AttributeError):
+            pass
         self.after(70, self._animate_ui)
 
     def _sync_auth_fields(self) -> None:
@@ -2084,8 +2209,8 @@ class MeridianLauncher(tk.Tk):
             elif kind == "launcher_update":
                 self.launcher_update_var.set(f"ДОСТУПЕН ЛАУНЧЕР v{value} — СКАЧАТЬ ›")
                 try:
-                    self.update_link.pack(anchor="e")
-                except tk.TclError:
+                    self._root_frame.itemconfigure(self.update_item, state="normal")
+                except (tk.TclError, AttributeError):
                     pass
                 self._log(f"Доступна новая версия лаунчера {value}: {LAUNCHER_DOWNLOAD_PAGE}")
             elif kind == "busy":
@@ -2311,7 +2436,7 @@ class MeridianLauncher(tk.Tk):
 
     LAYOUT_KEY_WIDGETS = ("skin_label", "offline_radio", "microsoft_radio", "username_entry", "login_btn", "logout_btn",
                           "skin_btn", "ram_scale", "ram_label", "folder_btn", "logs_btn", "repair_btn",
-                          "status_label", "progress", "play_btn", "log_text", "ui_scale_btn", "auth_copy_btn", "auth_open_btn")
+                          "status_label", "progress", "play_btn", "log_text", "auth_copy_btn", "auth_open_btn")
 
     def write_layout_report(self, path: str) -> None:
         """Writes the chosen layout and, for every key control, whether it is shown whole inside its window."""

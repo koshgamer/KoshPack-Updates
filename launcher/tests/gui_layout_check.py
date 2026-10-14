@@ -66,7 +66,7 @@ def run(out: Path, scale: str, exe: str | None, extra: list[str], mode: str = "o
     (root / "state.json").write_text(json.dumps({"ui_scale": scale, "auth_mode": mode, "username": "Tester_01"}), "utf-8")
     report = out / f"layout-{scale}.json"
     env = dict(os.environ, LOCALAPPDATA=str(sandbox))
-    cmd = ([exe] if exe else [sys.executable, str(SOURCE)]) + [f"--layout-report={report}"] + extra
+    cmd = ([exe] if exe else [sys.executable, str(SOURCE)]) + [f"--layout-report={report}", f"--ui-scale={scale}"] + extra
     proc = subprocess.Popen(cmd, env=env)
     try:
         time.sleep(5)
