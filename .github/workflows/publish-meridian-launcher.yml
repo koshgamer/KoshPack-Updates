@@ -7,6 +7,8 @@ on:
       - main
     paths:
       - "launcher/source/**"
+      - "launcher/tests/**"
+      - "launcher/build/**"
       - ".github/workflows/publish-meridian-launcher.yml"
 
 permissions:
@@ -46,10 +48,15 @@ jobs:
         run: |
           python launcher/source/launcher.py --smoke-ui
 
+      - name: Launcher functional tests (install, update, rollback, repair, migration, skins)
+        shell: pwsh
+        run: |
+          python launcher/tests/test_public_launcher.py
+
       - name: Build Windows EXE
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --icon launcher/meridian.ico --name Project-Meridian-Launcher launcher/source/launcher.py
+          pyinstaller --noconfirm --clean --onefile --windowed --icon launcher/meridian.ico --add-data "launcher/meridian.ico;." --add-data "launcher/meridian.png;." --version-file launcher/build/version_info.txt --name Project-Meridian-Launcher launcher/source/launcher.py
 
       - name: Publish stable launcher asset
         shell: pwsh
