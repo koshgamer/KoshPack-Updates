@@ -23,6 +23,10 @@ import time
 import zipfile
 from pathlib import Path
 
+# CI consoles may use a legacy code page; the report contains Russian status texts.
+for _stream in (sys.stdout, sys.stderr):
+    _stream.reconfigure(encoding="utf-8", errors="replace")
+
 SANDBOX = Path(tempfile.mkdtemp(prefix="meridian-launcher-test-"))
 os.environ["LOCALAPPDATA"] = str(SANDBOX / "localappdata")
 SOURCE = Path(__file__).resolve().parents[1] / "source" / "launcher.py"
