@@ -174,7 +174,7 @@ def test_versions_and_identity():
     check("log masking: tokens removed", "eyJ" not in masked and "123abc" not in masked, masked)
     app = FakeApp()
     try:
-        app._check_launcher_version({"launcher_version": "1.0.1", "launcher_min": "1.0.0"})
+        app._check_launcher_version({"launcher_version": "99.0.0", "launcher_min": "1.0.0"})  # always newer than APP_VERSION
         update_notice = any(k == "launcher_update" for k, _ in app.events)
         ok = True
     except RuntimeError:

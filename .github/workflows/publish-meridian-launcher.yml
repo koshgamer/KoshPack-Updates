@@ -56,7 +56,7 @@ jobs:
       - name: Build Windows EXE
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --icon launcher/meridian.ico --add-data "launcher/meridian.ico;." --add-data "launcher/meridian.png;." --version-file launcher/build/version_info.txt --name Project-Meridian-Launcher launcher/source/launcher.py
+          pyinstaller --noconfirm --clean --onefile --windowed --icon launcher/meridian.ico --add-data "launcher/meridian.ico;." --add-data "launcher/meridian.png;." --add-data "launcher/meridian-keygen.wav;." --version-file launcher/build/version_info.txt --name Project-Meridian-Launcher launcher/source/launcher.py
 
       - name: Publish stable launcher asset
         shell: pwsh
