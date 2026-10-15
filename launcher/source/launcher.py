@@ -1529,22 +1529,20 @@ def keygen_sound(path: Path | None, on: bool) -> bool:
 
 
 class KeygenShow:
-    """Easter egg behind the Meridian emblem: a keygen/demoscene-style intro with music.
-
-    All graphics are drawn here (no bundled images); canvas items are created once and only moved each frame."""
+    """Easter egg behind the Meridian emblem: a keygen/demoscene-style intro with music, drawn on the launcher's
+    own canvas after the menu slid away. All graphics are drawn here (no bundled images); canvas items are created
+    once (tag "keygen") and only moved each frame."""
 
     FPS_MS = 33
+    TAG = "keygen"
 
-    def __init__(self, master: tk.Misc, sound: bool = True) -> None:
-        self.master = master
-        self.win = tk.Toplevel(master, bg="#000000")
-        self.win.title("PROJECT MERIDIAN // INTRO")
-        self.win.resizable(False, False)
-        self._icons: list[Any] = []
-        apply_window_icon(self.win, self._icons)
-        self.W, self.H = px(780), px(470)
-        self.cv = tk.Canvas(self.win, width=self.W, height=self.H, bg="#020405", bd=0, highlightthickness=0)
-        self.cv.pack()
+    def __init__(self, canvas: tk.Canvas, width: int, height: int, on_exit: Callable[[], None],
+                 sound: bool = True) -> None:
+        self.cv = canvas
+        self.on_exit = on_exit
+        self.W, self.H = width, height
+        before = set(canvas.find_all())
+        self.bg = canvas.create_rectangle(0, 0, width + px(2000), height + px(2000), fill=C_BG, outline="")
         self.music = resource_file("meridian-keygen.wav")
         self.sound_on = keygen_sound(self.music, True) if sound else False
         self.start = time.perf_counter()
@@ -1585,7 +1583,7 @@ class KeygenShow:
         for _ in range(28):
             self.emblem_lines.append(cv.create_line(0, 0, 0, 0, width=max(2, px(3)), capstyle="round"))
         # title letters and the sine scroller
-        self.title_font = tkfont.Font(family="Segoe UI Black", size=max(14, round(26 * self.W / 780)))
+        self.title_font = tkfont.Font(family="Segoe UI Black", size=max(14, round(26 * min(W / 780, H / 470))))
         self.title = "PROJECT MERIDIAN"
         self.title_items = [cv.create_text(0, 0, text=ch, font=self.title_font, fill=C_INK) for ch in self.title]
         widths = [self.title_font.measure(ch) for ch in self.title]
@@ -1594,22 +1592,24 @@ class KeygenShow:
         for w in widths:
             self.title_x.append(x + w / 2)
             x += w
-        self.scroll_font = tkfont.Font(family="Consolas", size=max(12, round(22 * self.W / 780)), weight="bold")
+        self.scroll_font = tkfont.Font(family="Consolas", size=max(12, round(22 * min(W / 780, H / 470))),
+                                       weight="bold")
         self.char_w = self.scroll_font.measure("M")
         self.scroll_items = [cv.create_text(0, 0, text="", font=self.scroll_font) for _ in range(W // self.char_w + 2)]
         self.hint = cv.create_text(W - px(8), H - px(6), anchor="se", font=("Consolas", 8), fill="#4d6466",
                                    text=self._hint_text())
-        self.flash = cv.create_rectangle(0, 0, W, H, fill="#ffffff", outline="", stipple="")
-        self.win.bind("<Escape>", lambda _e: self.close())
-        self.win.bind("<KeyPress-m>", lambda _e: self.toggle_sound())
-        self.win.bind("<KeyPress-M>", lambda _e: self.toggle_sound())
-        self.win.bind("<KeyPress-Cyrillic_softsign>", lambda _e: self.toggle_sound())  # M on the Russian layout
-        self.win.protocol("WM_DELETE_WINDOW", self.close)
-        self.win.focus_set()
+        self.back = cv.create_text(px(14), px(12), anchor="nw", text="\u25c4 МЕНЮ", font=("Consolas", 10, "bold"),
+                                   fill=C_TELEMETRY, activefill=C_COPPER)
+        cv.tag_bind(self.back, "<Button-1>", lambda _e: self.on_exit())
+        cv.tag_bind(self.back, "<Enter>", lambda _e: cv.configure(cursor="hand2"))
+        cv.tag_bind(self.back, "<Leave>", lambda _e: cv.configure(cursor=""))
+        self.flash = cv.create_rectangle(0, 0, W, H, fill="#ffffff", outline="")
+        for item in set(cv.find_all()) - before:
+            cv.addtag_withtag(self.TAG, item)
         self.tick()
 
     def _hint_text(self) -> str:
-        return f"ESC — выход    M — звук {'вкл' if self.sound_on else 'выкл'}"
+        return f"ESC — меню    M — звук {'вкл' if self.sound_on else 'выкл'}"
 
     def toggle_sound(self) -> None:
         self.sound_on = keygen_sound(self.music, not self.sound_on)
@@ -1621,7 +1621,8 @@ class KeygenShow:
         self.closed = True
         keygen_sound(None, False)
         try:
-            self.win.destroy()
+            self.cv.delete(self.TAG)
+            self.cv.configure(cursor="")
         except tk.TclError:
             pass
 
@@ -1644,7 +1645,7 @@ class KeygenShow:
         except tk.TclError:
             self.close()
             return
-        self.win.after(self.FPS_MS, self.tick)
+        self.cv.after(self.FPS_MS, self.tick)
 
     def _frame(self, t: float) -> None:
         cv, W, H = self.cv, self.W, self.H
@@ -1763,6 +1764,7 @@ class KeygenShow:
             cv.coords(item, x, y)
             cv.itemconfigure(item, text=ch, fill=blend_hex(C_TELEMETRY, C_COPPER, hue))
         cv.tag_raise(self.hint)
+        cv.tag_raise(self.back)
         cv.tag_raise(self.flash)
 
 
@@ -2134,11 +2136,13 @@ class MeridianLauncher(tk.Tk):
 
     # ---------- canvas layout ----------
     def _on_canvas_configure(self, event: tk.Event) -> None:
+        if getattr(self, "_show_mode", None):
+            return  # the menu is off screen; it is laid out again when it slides back
         self._place_header_right(event.width)
         self._request_relayout()
 
     def _request_relayout(self) -> None:
-        if getattr(self, "_relayout_pending", True):
+        if getattr(self, "_relayout_pending", True) or getattr(self, "_show_mode", None):
             return
         self._relayout_pending = True
         self.after_idle(self._relayout_now)
@@ -2382,17 +2386,92 @@ class MeridianLauncher(tk.Tk):
             self._root_frame.configure(cursor="hand2" if over else "")
 
     def _on_canvas_click(self, event: tk.Event) -> None:
-        if self._over_brand(event):
+        if not getattr(self, "_show_mode", None) and self._over_brand(event):
             self._open_keygen()
 
-    def _open_keygen(self, sound: bool = True) -> KeygenShow:
-        show = getattr(self, "_keygen", None)
-        if show is not None and not show.closed:
-            show.win.lift()
-            show.win.focus_set()
-            return show
-        self._keygen = KeygenShow(self, sound=sound)
-        return self._keygen
+    # ---------- keygen intro: the menu slides away, the show plays in the window, Esc slides the menu back ----------
+    SLIDE_SECONDS = 0.6
+    SHOW_KEYS = ("<KeyPress-m>", "<KeyPress-M>", "<KeyPress-Cyrillic_softsign>", "<KeyPress-Cyrillic_SOFTSIGN>")
+
+    def _slide_menu_to(self, offset: float) -> None:
+        """Moves the whole menu (texts, controls, header, glass panels) horizontally to `offset` px."""
+        cv = self._root_frame
+        delta = offset - getattr(self, "_slide_off", 0.0)
+        if delta:
+            cv.move("ui", delta, 0)
+            cv.move("header", delta, 0)
+            for item in self._windows.values():
+                cv.move(item, delta, 0)
+        self._slide_off = offset
+        base = getattr(self, "_slide_panels", None) or []
+        self.backdrop.set_panels([(x0 + offset, y0, x1 + offset, y1) for x0, y0, x1, y1 in base])
+
+    def _animate_slide(self, start: float, end: float, done: Callable[[], None]) -> None:
+        t0 = time.perf_counter()
+
+        def step() -> None:
+            p = min(1.0, (time.perf_counter() - t0) / self.SLIDE_SECONDS)
+            ease = p * p * (3 - 2 * p)
+            try:
+                self._slide_menu_to(start + (end - start) * ease)
+            except tk.TclError:
+                return
+            if p < 1.0:
+                self.after(16, step)
+            else:
+                done()
+        step()
+
+    def _open_keygen(self, sound: bool = True, animate: bool = True) -> KeygenShow | None:
+        if getattr(self, "_show_mode", None):
+            return getattr(self, "_keygen", None)
+        cv = self._root_frame
+        self._show_mode = "opening"
+        self._slide_off = 0.0
+        self._slide_panels = list(self.backdrop.panels)
+        width, height = max(cv.winfo_width(), 200), max(cv.winfo_height(), 200)
+        self._brand_hover = False
+        cv.configure(cursor="")
+
+        def start_show() -> None:
+            self._show_mode = "show"
+            self._keygen = KeygenShow(cv, width, height, self._close_keygen, sound=sound)
+            self.bind("<Escape>", lambda _e: self._close_keygen())
+            for key in self.SHOW_KEYS:
+                self.bind(key, lambda _e: self._keygen.toggle_sound())
+
+        if animate:
+            self._animate_slide(0.0, -(width + px(40)), start_show)
+        else:
+            self._slide_menu_to(-(width + px(40)))
+            start_show()
+        return getattr(self, "_keygen", None)
+
+    def _close_keygen(self, animate: bool = True) -> None:
+        if getattr(self, "_show_mode", None) != "show":
+            return
+        self._show_mode = "closing"
+        for key in ("<Escape>",) + self.SHOW_KEYS:
+            self.unbind(key)
+        self._keygen.close()
+        cv = self._root_frame
+        width = max(cv.winfo_width(), 200)
+        # lay the menu out for the current window size, then bring it in from the left
+        self._slide_off = 0.0
+        self._place_header()   # header drawn again at its normal place (it was moved off screen)
+        self._relayout(cv.winfo_width(), cv.winfo_height())
+        self._slide_panels = list(self.backdrop.panels)
+        self._slide_menu_to(-(width + px(40)))
+
+        def finished() -> None:
+            self._show_mode = None
+            self._slide_panels = None
+
+        if animate:
+            self._animate_slide(-(width + px(40)), 0.0, finished)
+        else:
+            self._slide_menu_to(0.0)
+            finished()
 
     def _animate_ui(self) -> None:
         self._animation_phase += 0.12
@@ -2416,7 +2495,8 @@ class MeridianLauncher(tk.Tk):
             cv = self._root_frame
             cv.itemconfigure(self.title_item, fill=glow)
             cv.itemconfigure(self.system_dot_item, fill=dot)
-            self.backdrop.tick()
+            if getattr(self, "_show_mode", None) != "show":
+                self.backdrop.tick()
         except (tk.TclError, AttributeError):
             pass
         self.after(70, self._animate_ui)
@@ -3595,11 +3675,12 @@ def main() -> None:
             app.after(6500, lambda t=target: app.write_layout_report(t[:-5] + "-2.json" if t.endswith(".json") else t + "-2"))
     if "--smoke-ui" in sys.argv:
         app.update_idletasks()
-        show = app._open_keygen(sound=False)   # the intro draws a few frames without errors
+        show = app._open_keygen(sound=False, animate=False)   # the intro draws a few frames without errors
         for _ in range(5):
             show._frame(time.perf_counter() - show.start + 1.0)
             app.update_idletasks()
-        show.close()
+        app._close_keygen(animate=False)
+        assert app._show_mode is None and not app._root_frame.find_withtag("keygen")
         app.destroy()
         return
     app.mainloop()
