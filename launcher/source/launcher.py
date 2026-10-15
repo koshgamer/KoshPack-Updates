@@ -30,7 +30,7 @@ import tkinter as tk
 from tkinter import filedialog, font as tkfont, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 # The public launcher reads only the Stable manifest; there is no other channel in this build.
