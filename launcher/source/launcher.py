@@ -1505,6 +1505,267 @@ class MeridianBackdrop:
             self.frame()
 
 
+KEYGEN_SCROLL = ("PROJECT MERIDIAN  ///  EXPEDITION NETWORK ONLINE  ///  BRASS * GEARS * COPPER * STEAM  ///  "
+                 "MINECRAFT 1.21.1 + NEOFORGE  ///  GREETINGS TO EVERY EXPLORER OF THE MERIDIAN  ///  "
+                 "KEEP THE GEARS TURNING  ///  ESC - BACK TO BASE    M - SOUND ON/OFF  ///          ")
+C_BRASS, C_BRASS_HI, C_BRASS_LO = "#b5832f", "#e2ac57", "#5a3f16"
+
+
+def keygen_sound(path: Path | None, on: bool) -> bool:
+    """Loops the intro music (Windows only); returns whether it is playing."""
+    try:
+        import winsound
+    except ImportError:
+        return False
+    try:
+        if on and path is not None:
+            winsound.PlaySound(str(path), winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP
+                               | winsound.SND_NODEFAULT)
+            return True
+        winsound.PlaySound(None, 0)
+    except RuntimeError:
+        pass
+    return False
+
+
+class KeygenShow:
+    """Easter egg behind the Meridian emblem: a keygen/demoscene-style intro with music.
+
+    All graphics are drawn here (no bundled images); canvas items are created once and only moved each frame."""
+
+    FPS_MS = 33
+
+    def __init__(self, master: tk.Misc, sound: bool = True) -> None:
+        self.master = master
+        self.win = tk.Toplevel(master, bg="#000000")
+        self.win.title("PROJECT MERIDIAN // INTRO")
+        self.win.resizable(False, False)
+        self._icons: list[Any] = []
+        apply_window_icon(self.win, self._icons)
+        self.W, self.H = px(780), px(470)
+        self.cv = tk.Canvas(self.win, width=self.W, height=self.H, bg="#020405", bd=0, highlightthickness=0)
+        self.cv.pack()
+        self.music = resource_file("meridian-keygen.wav")
+        self.sound_on = keygen_sound(self.music, True) if sound else False
+        self.start = time.perf_counter()
+        self.closed = False
+        rnd = random.Random(1985)
+        W, H = self.W, self.H
+        cv = self.cv
+        # starfield
+        self.stars = [[rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(0.05, 1)] for _ in range(80)]
+        self.star_items = [cv.create_rectangle(0, 0, 0, 0, fill="#9fb3b4", outline="") for _ in self.stars]
+        # perspective grid floor
+        self.horizon = H * 0.66
+        self.grid_h = [cv.create_line(0, 0, 0, 0, fill="#123c3a") for _ in range(12)]
+        self.grid_v = [cv.create_line(W / 2 + j * W / 70, self.horizon, W / 2 + j * W / 7, H, fill="#123c3a")
+                       for j in range(-10, 11)]
+        # copper raster bars
+        self.bar_cols = []
+        for i in range(4):
+            base = (208, 121, 64) if i % 2 == 0 else (82, 188, 175)
+            self.bar_cols.append([blend_hex("#020405", "#%02x%02x%02x" % base, 1 - abs(s - 4) / 4.6) for s in range(9)])
+        self.bar_items = [[cv.create_rectangle(0, 0, W, 0, fill=c, outline="") for c in cols] for cols in self.bar_cols]
+        # gears (left big, left small meshing, right big)
+        self.gears = [
+            {"x": W * 0.13, "y": H * 0.47, "r": px(54), "teeth": 14, "speed": 0.9},
+            {"x": W * 0.13 + px(54) + px(29), "y": H * 0.47 - px(40), "r": px(30), "teeth": 8, "speed": -0.9 * 14 / 8},
+            {"x": W * 0.87, "y": H * 0.47, "r": px(54), "teeth": 14, "speed": -0.9},
+        ]
+        for g in self.gears:
+            g["poly"] = cv.create_polygon(0, 0, 0, 0, fill=C_BRASS, outline=C_BRASS_HI, width=2)
+            g["hub"] = cv.create_oval(g["x"] - g["r"] * 0.32, g["y"] - g["r"] * 0.32, g["x"] + g["r"] * 0.32,
+                                      g["y"] + g["r"] * 0.32, fill=C_BRASS_LO, outline=C_BRASS_HI)
+            g["axle"] = [cv.create_line(0, 0, 0, 0, fill="#8f9a9b", width=max(2, px(4))) for _ in range(2)]
+        # voxel blocks orbiting the emblem: 6 faces each, drawn back to front
+        self.cubes = [{"phase": k * math.pi, "faces": [cv.create_polygon(0, 0, 0, 0, outline="") for _ in range(6)]}
+                      for k in range(2)]
+        # 3D Meridian emblem (two diamonds + cross, extruded)
+        self.emblem_lines = []
+        for _ in range(28):
+            self.emblem_lines.append(cv.create_line(0, 0, 0, 0, width=max(2, px(3)), capstyle="round"))
+        # title letters and the sine scroller
+        self.title_font = tkfont.Font(family="Segoe UI Black", size=max(14, round(26 * self.W / 780)))
+        self.title = "PROJECT MERIDIAN"
+        self.title_items = [cv.create_text(0, 0, text=ch, font=self.title_font, fill=C_INK) for ch in self.title]
+        widths = [self.title_font.measure(ch) for ch in self.title]
+        x = W / 2 - sum(widths) / 2
+        self.title_x = []
+        for w in widths:
+            self.title_x.append(x + w / 2)
+            x += w
+        self.scroll_font = tkfont.Font(family="Consolas", size=max(12, round(22 * self.W / 780)), weight="bold")
+        self.char_w = self.scroll_font.measure("M")
+        self.scroll_items = [cv.create_text(0, 0, text="", font=self.scroll_font) for _ in range(W // self.char_w + 2)]
+        self.hint = cv.create_text(W - px(8), H - px(6), anchor="se", font=("Consolas", 8), fill="#4d6466",
+                                   text=self._hint_text())
+        self.flash = cv.create_rectangle(0, 0, W, H, fill="#ffffff", outline="", stipple="")
+        self.win.bind("<Escape>", lambda _e: self.close())
+        self.win.bind("<KeyPress-m>", lambda _e: self.toggle_sound())
+        self.win.bind("<KeyPress-M>", lambda _e: self.toggle_sound())
+        self.win.bind("<KeyPress-Cyrillic_softsign>", lambda _e: self.toggle_sound())  # M on the Russian layout
+        self.win.protocol("WM_DELETE_WINDOW", self.close)
+        self.win.focus_set()
+        self.tick()
+
+    def _hint_text(self) -> str:
+        return f"ESC — выход    M — звук {'вкл' if self.sound_on else 'выкл'}"
+
+    def toggle_sound(self) -> None:
+        self.sound_on = keygen_sound(self.music, not self.sound_on)
+        self.cv.itemconfigure(self.hint, text=self._hint_text())
+
+    def close(self) -> None:
+        if self.closed:
+            return
+        self.closed = True
+        keygen_sound(None, False)
+        try:
+            self.win.destroy()
+        except tk.TclError:
+            pass
+
+    @staticmethod
+    def _rot(p: tuple[float, float, float], ay: float, ax: float) -> tuple[float, float, float]:
+        x, y, z = p
+        x, z = x * math.cos(ay) + z * math.sin(ay), -x * math.sin(ay) + z * math.cos(ay)
+        y, z = y * math.cos(ax) - z * math.sin(ax), y * math.sin(ax) + z * math.cos(ax)
+        return x, y, z
+
+    def _proj(self, p: tuple[float, float, float], cx: float, cy: float, s: float) -> tuple[float, float]:
+        k = 3.2 / (3.2 + p[2])
+        return cx + p[0] * s * k, cy + p[1] * s * k
+
+    def tick(self) -> None:
+        if self.closed:
+            return
+        try:
+            self._frame(time.perf_counter() - self.start)
+        except tk.TclError:
+            self.close()
+            return
+        self.win.after(self.FPS_MS, self.tick)
+
+    def _frame(self, t: float) -> None:
+        cv, W, H = self.cv, self.W, self.H
+        beat = 60 / 140                                     # the music's tempo
+        kick = math.exp(-((t % beat) / beat) * 5)            # 1 on every beat, decays
+        # intro flash
+        if t < 0.6:
+            cv.itemconfigure(self.flash, fill=blend_hex("#020405", "#ffffff", 1 - t / 0.6), state="normal")
+        else:
+            cv.itemconfigure(self.flash, state="hidden")
+        # stars fly towards the viewer
+        for s, item in zip(self.stars, self.star_items):
+            s[2] -= 0.006 + 0.01 * kick
+            if s[2] <= 0.04:
+                s[0], s[1], s[2] = random.uniform(-1, 1), random.uniform(-1, 1), 1.0
+            sx, sy = W / 2 + s[0] / s[2] * W * 0.25, H * 0.4 + s[1] / s[2] * H * 0.25
+            size = max(1, px(2.6 * (1 - s[2])))
+            cv.coords(item, sx, sy, sx + size, sy + size)
+            cv.itemconfigure(item, fill=blend_hex("#1b2a2b", "#cfe3e0", 1 - s[2]))
+        # grid floor scrolls towards the viewer
+        off = (t * 1.6) % 1.0
+        for i, item in enumerate(self.grid_h):
+            d = (i + off) / len(self.grid_h)
+            y = self.horizon + (H - self.horizon) * d * d
+            cv.coords(item, 0, y, W, y)
+            cv.itemconfigure(item, fill=blend_hex("#020405", "#1f7f77", 0.25 + 0.75 * d))
+        # raster bars swing behind the logo
+        for i, items in enumerate(self.bar_items):
+            cy = H * 0.3 + math.sin(t * 1.7 + i * 0.85) * H * 0.17
+            strip = max(2, px(3))
+            for s, item in enumerate(items):
+                y0 = cy + (s - 4.5) * strip
+                cv.coords(item, 0, y0, W, y0 + strip)
+        # gears
+        for g in self.gears:
+            a0 = t * g["speed"]
+            pts = []
+            n = g["teeth"]
+            for k in range(n * 4):
+                a = a0 + k * math.pi * 2 / (n * 4)
+                r = g["r"] * (1.0 if k % 4 in (1, 2) else 0.8)
+                pts += [g["x"] + math.cos(a) * r, g["y"] + math.sin(a) * r]
+            cv.coords(g["poly"], *pts)
+            for j, item in enumerate(g["axle"]):
+                a = a0 + j * math.pi / 2
+                r = g["r"] * 0.3
+                cv.coords(item, g["x"] - math.cos(a) * r, g["y"] - math.sin(a) * r, g["x"] + math.cos(a) * r,
+                          g["y"] + math.sin(a) * r)
+        # emblem: outer diamond (copper), inner diamond (teal), cross lines; extruded front/back
+        cx, cy, sc = W / 2, H * 0.43, px(92) * (1 + 0.06 * kick)
+        ay, ax = t * 1.1, math.sin(t * 0.7) * 0.35
+        depth = 0.16
+        segs: list[tuple[tuple, tuple, str]] = []
+        for r, col in ((1.0, C_COPPER), (0.46, C_TELEMETRY)):
+            for z in (-depth, depth):
+                ring = [(0, -r, z), (r, 0, z), (0, r, z), (-r, 0, z)]
+                segs += [(ring[k], ring[(k + 1) % 4], col) for k in range(4)]
+            segs += [((0, -r, -depth), (0, -r, depth), col), ((r, 0, -depth), (r, 0, depth), col),
+                     ((0, r, -depth), (0, r, depth), col), ((-r, 0, -depth), (-r, 0, depth), col)]
+        e = 0.94  # cross lines reach past the outer diamond, as in the 2D mark
+        segs += [((-e, -e, z), (e, e, z), C_COPPER) for z in (-0.02, 0.02)]
+        segs += [((e, -e, z), (-e, e, z), C_COPPER) for z in (-0.02, 0.02)]
+        for item, (a, b, col) in zip(self.emblem_lines, segs):
+            pa, pb = self._rot(a, ay, ax), self._rot(b, ay, ax)
+            shade = 0.55 + 0.45 * (1 - (pa[2] + pb[2] + 2) / 4)
+            cv.coords(item, *self._proj(pa, cx, cy, sc), *self._proj(pb, cx, cy, sc))
+            cv.itemconfigure(item, fill=blend_hex("#020405", col, shade))
+        # voxel blocks orbit the emblem (copper ore / teal crystal), with simple shading and back-face culling
+        for k, cube in enumerate(self.cubes):
+            ph = t * 0.9 + cube["phase"]
+            ox, oz = math.cos(ph) * 2.0, math.sin(ph) * 0.8
+            oy = math.sin(t * 2 + k) * 0.25 + 0.15
+            spin = t * (1.4 + 0.3 * k)
+            hs = 0.24
+            corners = [(sx * hs, sy * hs, sz * hs) for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)]
+            rc = [self._rot(c, spin, 0.5) for c in corners]
+            wc = [(x + ox, y + oy, z + oz) for x, y, z in rc]
+            faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+            top = "#d07940" if k == 0 else "#52bcaf"
+            side = "#7a4626" if k == 0 else "#2b6f68"
+            order = sorted(range(6), key=lambda f: -sum(wc[i][2] for i in faces[f]))
+            for item_idx, f in enumerate(order):
+                quad = faces[f]
+                p = [self._proj(wc[i], cx, cy, sc * 0.9) for i in quad]
+                ux, uy = p[1][0] - p[0][0], p[1][1] - p[0][1]
+                vx, vy = p[2][0] - p[0][0], p[2][1] - p[0][1]
+                visible = (ux * vy - uy * vx) < 0
+                item = cube["faces"][item_idx]
+                if not visible:
+                    cv.itemconfigure(item, state="hidden")
+                    continue
+                ny = sum(rc[i][1] for i in quad) / 4
+                col = top if ny < -0.2 else side
+                light = 0.6 + 0.4 * (1 - (sum(wc[i][2] for i in quad) / 4 + 2.5) / 5)
+                cv.coords(item, *[v for xy in p for v in xy])
+                cv.itemconfigure(item, state="normal", fill=blend_hex("#020405", col, light),
+                                 outline=blend_hex("#020405", col, min(1, light + 0.3)))
+            behind = oz > 0
+            for item in cube["faces"]:
+                (cv.tag_lower if behind else cv.tag_raise)(item, self.emblem_lines[0] if behind else self.emblem_lines[-1])
+        # title: per-letter bounce and colour cycle
+        for i, (item, x) in enumerate(zip(self.title_items, self.title_x)):
+            y = H * 0.1 + math.sin(t * 4 + i * 0.5) * px(6) - kick * px(4)
+            tcol = (math.sin(t * 2 + i * 0.35) + 1) / 2
+            cv.coords(item, x, y)
+            cv.itemconfigure(item, fill=blend_hex(C_COPPER, C_INK if i < 7 else C_TELEMETRY, tcol))
+        # sine scroller
+        pos = t * px(150)
+        first = int(pos // self.char_w)
+        shift = pos % self.char_w
+        for j, item in enumerate(self.scroll_items):
+            ch = KEYGEN_SCROLL[(first + j) % len(KEYGEN_SCROLL)]
+            x = j * self.char_w - shift + self.char_w / 2
+            y = H * 0.86 + math.sin(x * 0.018 + t * 4) * px(14)
+            hue = (math.sin(x * 0.01 + t * 1.5) + 1) / 2
+            cv.coords(item, x, y)
+            cv.itemconfigure(item, text=ch, fill=blend_hex(C_TELEMETRY, C_COPPER, hue))
+        cv.tag_raise(self.hint)
+        cv.tag_raise(self.flash)
+
+
 class MeridianLauncher(tk.Tk):
     def __init__(self) -> None:
         global UI_SCALE
@@ -1778,6 +2039,8 @@ class MeridianLauncher(tk.Tk):
         self._relayout_pending = False
         self.backdrop = MeridianBackdrop(root, self._animations)
         root.bind("<Configure>", self._on_canvas_configure, add="+")
+        root.bind("<Button-1>", self._on_canvas_click, add="+")
+        root.bind("<Motion>", self._on_canvas_motion, add="+")
         self.update_link = tk.Label(root, textvariable=self.launcher_update_var, bg=C_BG, fg=C_TELEMETRY,
                                     font=("Consolas", 9, "bold"), cursor="hand2")
         self.update_link.bind("<Button-1>", lambda _e: webbrowser.open(LAUNCHER_DOWNLOAD_PAGE))
@@ -2099,6 +2362,7 @@ class MeridianLauncher(tk.Tk):
         cx, cy = x0 + 27 * k, y0 + 24 * k
         r, ext, ir = 15 * k, 20 * k, 7 * k
         tags = ("header",)
+        self._brand_box = (cx - ext - 4, cy - ext - 4, cx + ext + 4, cy + ext + 4)  # click target of the intro
         # Website: a square rotated 45deg -> diamond, its pseudo-elements become diagonal cross-lines
         cv.create_polygon(cx, cy - r, cx + r, cy, cx, cy + r, cx - r, cy, outline=C_COPPER, fill="", width=2, tags=tags)
         cv.create_line(cx - ext, cy - ext, cx + ext, cy + ext, fill=C_COPPER, width=1, tags=tags)
@@ -2106,6 +2370,29 @@ class MeridianLauncher(tk.Tk):
         # inner telemetry square
         cv.create_polygon(cx, cy - ir, cx + ir, cy, cx, cy + ir, cx - ir, cy, outline=C_TELEMETRY, fill="", width=2,
                           tags=tags)
+
+    def _over_brand(self, event: tk.Event) -> bool:
+        box = getattr(self, "_brand_box", None)
+        return bool(box) and box[0] <= event.x <= box[2] and box[1] <= event.y <= box[3]
+
+    def _on_canvas_motion(self, event: tk.Event) -> None:
+        over = self._over_brand(event)
+        if over != getattr(self, "_brand_hover", False):
+            self._brand_hover = over
+            self._root_frame.configure(cursor="hand2" if over else "")
+
+    def _on_canvas_click(self, event: tk.Event) -> None:
+        if self._over_brand(event):
+            self._open_keygen()
+
+    def _open_keygen(self, sound: bool = True) -> KeygenShow:
+        show = getattr(self, "_keygen", None)
+        if show is not None and not show.closed:
+            show.win.lift()
+            show.win.focus_set()
+            return show
+        self._keygen = KeygenShow(self, sound=sound)
+        return self._keygen
 
     def _animate_ui(self) -> None:
         self._animation_phase += 0.12
@@ -3293,6 +3580,8 @@ def main() -> None:
         app.after(300, app._open_skin_dialog)
     if "--ui-preview=log" in sys.argv:
         app.after(300, app._open_log_dialog)
+    if "--ui-preview=keygen" in sys.argv:
+        app.after(300, lambda: app._open_keygen(sound="--mute" not in sys.argv))
     if "--ui-preview=auth" in sys.argv:
         # screenshots of the sign-in dialog: no Microsoft request, placeholder code
         app.auth_code_var.set("XXXX-XXXX")
@@ -3306,6 +3595,11 @@ def main() -> None:
             app.after(6500, lambda t=target: app.write_layout_report(t[:-5] + "-2.json" if t.endswith(".json") else t + "-2"))
     if "--smoke-ui" in sys.argv:
         app.update_idletasks()
+        show = app._open_keygen(sound=False)   # the intro draws a few frames without errors
+        for _ in range(5):
+            show._frame(time.perf_counter() - show.start + 1.0)
+            app.update_idletasks()
+        show.close()
         app.destroy()
         return
     app.mainloop()
