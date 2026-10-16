@@ -1,0 +1,143 @@
+name: Add Create Mob Farming to public stable pack
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/mob-farming-stable-trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-stable-create-mob-farming
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download original stable ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .out
+          gh release download pack-stable-r2j-menu2 \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "Project-Meridian-Stable-r2j-Menu2-client.zip" \
+            --dir .out
+
+      - name: Download and verify Create Mob Farming 1.1.0
+        run: |
+          set -euo pipefail
+          curl -fL --retry 5 --retry-delay 3 --connect-timeout 20 \
+            "https://edge.forgecdn.net/files/8914/259/createmobfarming-1.1.0.jar" \
+            -o .out/createmobfarming-1.1.0.jar
+          test "$(stat -c %s .out/createmobfarming-1.1.0.jar)" = "323854"
+          echo "21af5df588f7adc1ee0a670498a9080852a0b452  .out/createmobfarming-1.1.0.jar" | sha1sum -c -
+          unzip -t .out/createmobfarming-1.1.0.jar >/dev/null
+
+      - name: Patch only the client ZIP and prepare new manifest
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import shutil
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+
+          root = Path(".out")
+          original = root / "Project-Meridian-Stable-r2j-Menu2-client.zip"
+          patched = root / "Project-Meridian-Stable-r2j-Menu2-MobFarming1-client.zip"
+          jar = root / "createmobfarming-1.1.0.jar"
+          manifest_path = Path("launcher/manifest.json")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          assert manifest["packVersion"] == "stable-r2j-menu2", "The public pack has changed; refusing to overwrite it."
+
+          def digest(path):
+              h = hashlib.sha256()
+              with path.open("rb") as stream:
+                  for chunk in iter(lambda: stream.read(4 * 1024 * 1024), b""):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          assert original.stat().st_size == manifest["package"]["size"]
+          assert digest(original) == manifest["package"]["sha256"], "Original ZIP hash mismatch"
+          with ZipFile(original, "r") as source:
+              infos = source.infolist()
+              names = [info.filename for info in infos if not info.is_dir()]
+              candidates = [
+                  (prefix, sum(n.startswith(prefix + "mods/") and n.lower().endswith(".jar") for n in names))
+                  for prefix in ("", ".minecraft/", "minecraft/")
+              ]
+              prefix, count = max(candidates, key=lambda t: t[1])
+              assert count >= 20, f"Could not locate Minecraft mods in ZIP: {candidates}"
+              # Launcher strips a common Minecraft root; do not introduce a new root.
+              if prefix:
+                  assert all(n.startswith(prefix) for n in names), "Mixed ZIP roots; refusing unsafe modification."
+              target = prefix + "mods/createmobfarming-1.1.0.jar"
+              skipped = [
+                  n for n in names
+                  if n.startswith(prefix + "mods/") and
+                  Path(n).name.lower().startswith("createmobfarming") and n.lower().endswith(".jar")
+              ]
+              with ZipFile(patched, "w", allowZip64=True) as output:
+                  for info in infos:
+                      if info.filename in skipped:
+                          continue
+                      with source.open(info, "r") as source_file, output.open(info, "w", force_zip64=True) as dest_file:
+                          shutil.copyfileobj(source_file, dest_file, 4 * 1024 * 1024)
+                  output.write(jar, arcname=target, compress_type=ZIP_DEFLATED, compresslevel=6)
+
+          with ZipFile(patched) as check:
+              assert check.read(target) == jar.read_bytes(), "Mod missing or corrupted in patched ZIP"
+              after = set(check.namelist())
+              assert target in after
+              assert set(names) - set(skipped) <= after, "Unexpected missing files in patched ZIP"
+              assert len([n for n in after if n.endswith("mods/createmobfarming-1.1.0.jar")]) == 1
+          print("Mod added:", target, "; previous matching versions:", skipped)
+          print("Patched archive:", patched.stat().st_size, "bytes")
+
+          tag = "pack-stable-r2j-menu2-mobfarming1"
+          manifest["packVersion"] = "stable-r2j-menu2-mobfarming1"
+          manifest["package"]["file"] = patched.name
+          manifest["package"]["url"] = (
+              f"https://github.com/koshgamer/KoshPack-Updates/releases/download/{tag}/{patched.name}"
+          )
+          manifest["package"]["size"] = patched.stat().st_size
+          manifest["package"]["sha256"] = digest(patched)
+          (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+      - name: Publish updated client archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="pack-stable-r2j-menu2-mobfarming1"
+          ASSET=".out/Project-Meridian-Stable-r2j-Menu2-MobFarming1-client.zip"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" \
+              --title "Project Meridian Stable r2j Menu 2 — Create Mob Farming" \
+              --notes "Public stable client pack with Create Mob Farming 1.1.0 added. Other mods and the server pack are unchanged." \
+              --latest=false
+          fi
+
+      - name: Publish manifest only after the ZIP is uploaded
+        run: |
+          set -euo pipefail
+          cp .out/manifest.json launcher/manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "stable: include Create Mob Farming 1.1.0 in public pack"
+          git pull --rebase origin main
+          git push origin HEAD:main
