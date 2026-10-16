@@ -72,6 +72,18 @@ jobs:
         run: |
           python launcher/source/launcher.py --smoke-ui
 
+      - name: Smoke-test PortableMC macOS arm64 core
+        shell: bash
+        run: |
+          python - <<'PY'
+          import subprocess
+          from launcher.source.launcher import IS_MACOS_ARM64, ensure_portablemc
+          assert IS_MACOS_ARM64, "This build must run on Apple Silicon"
+          pmc = ensure_portablemc()
+          assert pmc.is_file() and pmc.stat().st_mode & 0o111, pmc
+          subprocess.run([str(pmc), "--version"], check=True)
+          PY
+
       - name: Build native macOS arm64 app
         shell: bash
         run: |
