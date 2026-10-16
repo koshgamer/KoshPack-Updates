@@ -312,7 +312,7 @@ PRESERVE_FILES = {
 # Upstream Voxy requires OpenGL 4.6; macOS exposes OpenGL 4.1.
 # Keep the normal Voxy client mod on Windows, but never install it into the native macOS client instance.
 MACOS_EXCLUDED_PACK_PATTERNS = (
-    re.compile(r"^mods/voxy(?:[-_].*)?\\.jar$", re.IGNORECASE),
+    re.compile(r"^mods/voxy(?:[-_].*)?\.jar$", re.IGNORECASE),
 )
 
 
