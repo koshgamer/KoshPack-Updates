@@ -474,6 +474,76 @@ def test_skins_online():
             print("NOT RUN", source, e)
 
 
+def test_voice_legacy_repair():
+    original_instance, original_index, original_resolver = L.INSTANCE_DIR, L.FILE_INDEX, L.get_release_asset
+    L.INSTANCE_DIR = SANDBOX / "voice-legacy-repair"
+    L.FILE_INDEX = SANDBOX / "voice-legacy-index.json"
+    voice_path = "config/voicechat/voicechat-client.properties"
+    volume_path = "config/voicechat/player-volumes.properties"
+    files = {"mods/menu.jar": b"valid-menu", voice_path: b"default-device\n", volume_path: b"default-volumes\n"}
+    package, asset = make_pack("voice-legacy-repair.zip", files)
+    try:
+        L.install_from_zip(package, [])
+        legacy_index = {name: hashlib.sha256(content).hexdigest() for name, content in files.items()}
+        L.atomic_write_json(L.FILE_INDEX, {"identity": asset["identity"], "files": legacy_index})
+        (L.INSTANCE_DIR / voice_path).write_bytes(b"chosen-microphone\n")
+        (L.INSTANCE_DIR / volume_path).write_bytes(b"friend=0.42\n")
+        (L.INSTANCE_DIR / "mods/menu.jar").write_bytes(b"damaged-menu")
+        cached = L.cached_pack_path(asset)
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(package, cached)
+        app = FakeApp()
+        app.state_data.update({"channel": "stable", "pack_identity": asset["identity"], "pack_digest": asset["digest"]})
+        use_asset(app, asset)
+        app._repair_pack()
+        check("voice legacy repair: chosen microphone kept", (L.INSTANCE_DIR / voice_path).read_bytes() == b"chosen-microphone\n")
+        check("voice legacy repair: individual volumes kept", (L.INSTANCE_DIR / volume_path).read_bytes() == b"friend=0.42\n")
+        check("voice legacy repair: damaged binary restored", (L.INSTANCE_DIR / "mods/menu.jar").read_bytes() == b"valid-menu")
+        check("voice legacy repair: migrated index omits user settings", not {voice_path, volume_path} & set(L.load_file_index()))
+        (L.INSTANCE_DIR / voice_path).write_bytes(b"chosen-microphone\n")
+        restored = L.restore_files_from_zip(package, [voice_path])
+        check("voice direct restore: user setting is never overwritten", (L.INSTANCE_DIR / voice_path).read_bytes() == b"chosen-microphone\n" and not restored)
+    finally:
+        L.INSTANCE_DIR, L.FILE_INDEX, L.get_release_asset = original_instance, original_index, original_resolver
+
+
+def test_voice_settings_preserved():
+    original_instance = L.INSTANCE_DIR
+    L.INSTANCE_DIR = SANDBOX / "voice-preservation"
+    voice_files = {
+        "config/voicechat/voicechat-client.properties": b"microphone=User microphone\nspeaker=User headphones\n",
+        "config/voicechat/player-volumes.properties": b"friend=0.42\n",
+    }
+    baseline, _ = make_pack("voice-before.zip", {
+        "mods/menu.jar": b"old-menu",
+        **{name: b"pack defaults\n" for name in voice_files},
+    })
+    candidate, _ = make_pack("voice-after.zip", {
+        "mods/menu.jar": b"new-menu",
+        **{name: b"new pack defaults\n" for name in voice_files},
+    })
+    try:
+        managed, _ = L.install_from_zip(baseline, [])
+        check("voice: clean install seeds missing defaults", all(
+            (L.INSTANCE_DIR / name).read_bytes() == b"pack defaults\n" for name in voice_files))
+        for name, content in voice_files.items():
+            (L.INSTANCE_DIR / name).write_bytes(content)
+        legacy_managed = sorted(set(managed) | set(voice_files))
+        updated_managed, index = L.install_from_zip(candidate, legacy_managed)
+        check("voice: update preserves selected devices and player volumes", all(
+            (L.INSTANCE_DIR / name).read_bytes() == content for name, content in voice_files.items()))
+        check("voice: user settings are not managed or repaired", not set(voice_files) & (set(updated_managed) | set(index)))
+        L.install_from_zip(candidate, updated_managed)
+        check("voice: reinstall preserves current settings", all(
+            (L.INSTANCE_DIR / name).read_bytes() == content for name, content in voice_files.items()))
+        L.remove_obsolete_files(list(voice_files), set())
+        check("voice: legacy managed-file cleanup keeps settings", all(
+            (L.INSTANCE_DIR / name).is_file() for name in voice_files))
+        check("voice: menu binaries still update", (L.INSTANCE_DIR / "mods/menu.jar").read_bytes() == b"new-menu")
+    finally:
+        L.INSTANCE_DIR = original_instance
+
+
 def test_real_pack(path: Path):
     shutil.rmtree(L.INSTANCE_DIR, ignore_errors=True)
     L.INSTANCE_DIR.mkdir(parents=True)
@@ -481,7 +551,7 @@ def test_real_pack(path: Path):
     managed, index = L.install_from_zip(path, [])
     took = time.time() - t
     with zipfile.ZipFile(path) as zf:
-        n = len([i for i in zf.infolist() if not i.is_dir()])
+        n = len([i for i in zf.infolist() if not i.is_dir() and not L.is_preserved(i.filename)])
         jars = len([i for i in zf.infolist() if i.filename.startswith("mods/") and i.filename.endswith(".jar")])
     installed = len(list((L.INSTANCE_DIR / "mods").glob("*.jar")))
     check(f"pack ZIP {path.name}: installs completely", len(managed) == n and installed == jars,
@@ -505,6 +575,8 @@ def main():
     test_offline(app)
     test_legacy_dev_migration()
     test_zip_safety()
+    test_voice_legacy_repair()
+    test_voice_settings_preserved()
     test_skins()
     test_skins_online()
     if real:

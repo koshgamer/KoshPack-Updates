@@ -30,7 +30,7 @@ import tkinter as tk
 from tkinter import filedialog, font as tkfont, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 # The public launcher reads only the Stable manifest; there is no other channel in this build.
@@ -279,6 +279,7 @@ PRESERVE_PREFIXES = (
     "screenshots/",
     "crash-reports/",
     "logs/",
+    "config/voicechat/",
 )
 PRESERVE_FILES = {
     "options.txt",
@@ -713,7 +714,7 @@ def load_file_index() -> dict[str, str]:
         data = json.loads(FILE_INDEX.read_text(encoding="utf-8"))
         files = data.get("files") if isinstance(data, dict) else None
         if isinstance(files, dict):
-            return {str(k): str(v).lower() for k, v in files.items()}
+            return {str(k): str(v).lower() for k, v in files.items() if not is_preserved(str(k))}
     except (OSError, ValueError):
         pass
     return {}
@@ -798,7 +799,7 @@ def verify_installed_files(index: dict[str, str]) -> list[str]:
 def restore_files_from_zip(zip_path: Path, rels: list[str]) -> dict[str, str]:
     with zipfile.ZipFile(zip_path) as zf:
         members = pack_members(zf)
-        wanted = [rel for rel in rels if rel in members]
+        wanted = [rel for rel in rels if rel in members and not is_preserved(rel)]
         ensure_free_space(INSTANCE_DIR, sum(members[rel].file_size for rel in wanted), "восстановления файлов")
         return {rel: _write_member(zf, members[rel], INSTANCE_DIR / rel) for rel in wanted}
 
