@@ -7,8 +7,10 @@ import io
 import math
 import json
 import os
+import platform
 import queue
 import random
+import tarfile
 import re
 import shutil
 import subprocess
@@ -39,8 +41,24 @@ MC_VERSION = "1.21.1"
 NEOFORGE_VERSION = "21.1.249"
 LAUNCH_SPEC = f"neoforge::{NEOFORGE_VERSION}"
 PMC_VERSION = "5.0.5"
-PMC_ARCHIVE_URL = "https://github.com/theorzr/portablemc/releases/download/v5.0.5/portablemc-5.0.5-windows-x86_64-msvc.zip"
-PMC_ARCHIVE_SHA256 = "c1ad577e9441040e65a55b521c6ab0fc4c32ec0c6f114d169ae6eee7d3d9fda6"
+IS_MACOS = sys.platform == "darwin"
+IS_MACOS_ARM64 = IS_MACOS and platform.machine().lower() in {"arm64", "aarch64"}
+
+if os.name == "nt":
+    PMC_ARCHIVE_NAME = f"portablemc-{PMC_VERSION}-windows-x86_64-msvc.zip"
+    PMC_ARCHIVE_URL = f"https://github.com/theorzr/portablemc/releases/download/v{PMC_VERSION}/{PMC_ARCHIVE_NAME}"
+    PMC_ARCHIVE_SHA256 = "c1ad577e9441040e65a55b521c6ab0fc4c32ec0c6f114d169ae6eee7d3d9fda6"
+    PMC_BINARY_NAME = "portablemc.exe"
+elif IS_MACOS_ARM64:
+    PMC_ARCHIVE_NAME = f"portablemc-{PMC_VERSION}-macos-aarch64.tar.gz"
+    PMC_ARCHIVE_URL = f"https://github.com/theorzr/portablemc/releases/download/v{PMC_VERSION}/{PMC_ARCHIVE_NAME}"
+    PMC_ARCHIVE_SHA256 = "339102c5f72bb5463c707d08c35c808280bbf4aa0eca0684dcdfb482bc545cf7"
+    PMC_BINARY_NAME = "portablemc"
+else:
+    PMC_ARCHIVE_NAME = ""
+    PMC_ARCHIVE_URL = ""
+    PMC_ARCHIVE_SHA256 = ""
+    PMC_BINARY_NAME = "portablemc"
 PROJECT_SITE_URL = "https://projectmeridian-minecraft.lovable.app/"
 LAUNCHER_DOWNLOAD_PAGE = PROJECT_SITE_URL + "download"
 SERVER_HOST = ""
@@ -124,7 +142,10 @@ def resource_file(name: str) -> Path | None:
     if meipass:
         candidates.append(Path(meipass) / name)
     if getattr(sys, "frozen", False):
-        candidates.append(Path(sys.executable).resolve().parent / name)
+        executable_dir = Path(sys.executable).resolve().parent
+        candidates.append(executable_dir / name)
+        if sys.platform == "darwin":
+            candidates.append(executable_dir.parent / "Resources" / name)
     here = Path(__file__).resolve().parent
     candidates += [here / name, here.parent / name]
     for candidate in candidates:
@@ -292,6 +313,8 @@ PRESERVE_FILES = {
 def _app_root() -> Path:
     if os.name == "nt":
         base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
     else:
         base = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share"))
     return base / "ProjectMeridianLauncher"
@@ -304,7 +327,7 @@ LOG_DIR = APP_ROOT / "logs"
 STATE_FILE = APP_ROOT / "state.json"
 LAUNCH_LOG = LOG_DIR / "minecraft-launch.log"
 TOOLS_DIR = APP_ROOT / "tools"
-PMC_EXE = TOOLS_DIR / f"portablemc-{PMC_VERSION}.exe"
+PMC_EXE = TOOLS_DIR / PMC_BINARY_NAME
 FILE_INDEX = APP_ROOT / "installed-files.json"
 INSTALL_JOURNAL = APP_ROOT / "install-journal.json"
 # Left behind by DEV builds of the old launcher; only used to clean up once during migration.
@@ -621,6 +644,24 @@ def safe_extract(zip_path: Path, dest: Path) -> None:
             except ValueError:
                 raise RuntimeError(f"Небезопасный путь в архиве: {info.filename}")
         zf.extractall(dest)
+
+
+def safe_extract_tar_gz(archive: Path, dest: Path) -> None:
+    """Safely extracts the official PortableMC macOS archive without allowing traversal or links."""
+    root = dest.resolve()
+    with tarfile.open(archive, "r:gz") as tf:
+        members = tf.getmembers()
+        for member in members:
+            candidate = (dest / member.name).resolve()
+            try:
+                candidate.relative_to(root)
+            except ValueError:
+                raise RuntimeError(f"Небезопасный путь в архиве: {member.name}")
+            if member.issym() or member.islnk():
+                raise RuntimeError(f"Небезопасная ссылка в архиве: {member.name}")
+            if not (member.isdir() or member.isfile()):
+                raise RuntimeError(f"Неподдерживаемый тип файла в архиве: {member.name}")
+        tf.extractall(dest)
 
 
 def is_preserved(rel: str) -> bool:
@@ -1081,9 +1122,20 @@ def skin_command(source: str, url: str = "", slim: bool = False) -> str:
 
 def ensure_portablemc() -> Path:
     if PMC_EXE.is_file():
+        if os.name != "nt":
+            try:
+                PMC_EXE.chmod(0o755)
+            except OSError:
+                pass
         return PMC_EXE
 
-    archive = CACHE_DIR / f"portablemc-{PMC_VERSION}-windows-x86_64.zip"
+    if not PMC_ARCHIVE_URL or not PMC_ARCHIVE_NAME or not PMC_ARCHIVE_SHA256:
+        raise RuntimeError(
+            "Эта версия Project Meridian Launcher поддерживает Windows x64 и macOS Apple Silicon (arm64). "
+            "Для этого компьютера подходящее ядро PortableMC не собрано."
+        )
+
+    archive = CACHE_DIR / PMC_ARCHIVE_NAME
     valid = archive.is_file() and sha256_file(archive) == PMC_ARCHIVE_SHA256
     if not valid:
         archive.unlink(missing_ok=True)
@@ -1098,14 +1150,20 @@ def ensure_portablemc() -> Path:
 
     temp_dir = Path(tempfile.mkdtemp(prefix="portablemc-", dir=str(APP_ROOT)))
     try:
-        safe_extract(archive, temp_dir)
-        candidates = list(temp_dir.rglob("portablemc.exe"))
+        if IS_MACOS_ARM64:
+            safe_extract_tar_gz(archive, temp_dir)
+            candidates = [p for p in temp_dir.rglob("portablemc") if p.is_file()]
+        else:
+            safe_extract(archive, temp_dir)
+            candidates = list(temp_dir.rglob("portablemc.exe"))
+            if not candidates:
+                candidates = [p for p in temp_dir.rglob("*.exe") if "portablemc" in p.name.lower()]
         if not candidates:
-            candidates = [p for p in temp_dir.rglob("*.exe") if "portablemc" in p.name.lower()]
-        if not candidates:
-            raise RuntimeError("В официальном архиве PortableMC не найден portablemc.exe.")
+            raise RuntimeError(f"В официальном архиве PortableMC не найден {PMC_BINARY_NAME}.")
         PMC_EXE.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(candidates[0], PMC_EXE)
+        if os.name != "nt":
+            PMC_EXE.chmod(0o755)
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
@@ -1128,12 +1186,27 @@ def run_pmc(
         log.write(f"PortableMC core: {PMC_VERSION}\n")
         log.write("PortableMC args: " + mask_secrets(" ".join(pmc_args)) + "\n")
         log.flush()
+        env = os.environ.copy()
+        if sys.platform == "darwin":
+            # Finder-launched apps can carry PyInstaller's DYLD paths into child processes.
+            # PortableMC is standalone, so remove bundle-internal loader paths before spawning it.
+            meipass = str(getattr(sys, "_MEIPASS", "") or "")
+            if meipass:
+                for key in ("DYLD_LIBRARY_PATH", "DYLD_FALLBACK_LIBRARY_PATH"):
+                    value = env.get(key, "")
+                    if value:
+                        cleaned = os.pathsep.join(p for p in value.split(os.pathsep) if meipass not in p)
+                        if cleaned:
+                            env[key] = cleaned
+                        else:
+                            env.pop(key, None)
         proc = subprocess.Popen(
             build_pmc_command(pmc_args),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             cwd=str(APP_ROOT),
             creationflags=creationflags,
+            env=env,
             text=True,
             encoding="utf-8",
             errors="replace",
