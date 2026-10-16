@@ -309,6 +309,12 @@ PRESERVE_FILES = {
     "usercache.json",
 }
 
+# Upstream Voxy requires OpenGL 4.6; macOS exposes OpenGL 4.1.
+# Keep the normal Voxy client mod on Windows, but never install it into the native macOS client instance.
+MACOS_EXCLUDED_PACK_PATTERNS = (
+    re.compile(r"^mods/voxy(?:[-_].*)?\\.jar$", re.IGNORECASE),
+)
+
 
 def _app_root() -> Path:
     if os.name == "nt":
@@ -698,8 +704,13 @@ def pack_members(zf: zipfile.ZipFile) -> dict[str, zipfile.ZipInfo]:
             rel = safe_rel_path(rel[len(prefix):])
         if rel is not None:
             members[rel] = info
+    if IS_MACOS_ARM64:
+        members = {
+            rel: info for rel, info in members.items()
+            if not any(pattern.match(rel) for pattern in MACOS_EXCLUDED_PACK_PATTERNS)
+        }
     if not members:
-        raise RuntimeError("Архив сборки пуст.")
+        raise RuntimeError("После применения ограничений платформы архив сборки не содержит устанавливаемых файлов.")
     return members
 
 
@@ -3670,6 +3681,8 @@ class MeridianLauncher(tk.Tk):
         atomic_write_json(FILE_INDEX, {"identity": asset["identity"], "files": index})
         atomic_write_json(STATE_FILE, self.state_data)
         finish_legacy_dev_cleanup()
+        if IS_MACOS_ARM64:
+            self._emit("log", "macOS Apple Silicon: Voxy не устанавливается — текущая версия Voxy требует OpenGL 4.6, которого нет в macOS.")
         INSTALL_JOURNAL.unlink(missing_ok=True)
         self._prune_pack_cache(keep={zip_path.name, cached_pack_path({"digest": previous.get("pack_digest") or "",
                                                                      "identity": "-"}).name})
