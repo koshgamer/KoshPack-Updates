@@ -91,6 +91,9 @@ jobs:
                   for info in infos:
                       if info.filename in skipped:
                           continue
+                      if info.is_dir():
+                          output.writestr(info, b"")
+                          continue
                       with source.open(info, "r") as source_file, output.open(info, "w", force_zip64=True) as dest_file:
                           shutil.copyfileobj(source_file, dest_file, 4 * 1024 * 1024)
                   output.write(jar, arcname=target, compress_type=ZIP_DEFLATED, compresslevel=6)
