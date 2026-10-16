@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "channel": "current",
-  "launcherMinVersion": "0.2.20",
+  "launcherMinVersion": "1.0.2",
   "pack": "KoshPack",
-  "packVersion": "stable-r2j-menu1",
+  "packVersion": "stable-r2j-menu2",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "Project-Meridian-Stable-r2j-Menu1-client.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu1/Project-Meridian-Stable-r2j-Menu1-client.zip",
-    "size": 779244185,
-    "sha256": "b8d1556a80107a9df5d73558982ff03784000babdd2f41d647e0a1ae165351ab"
+    "file": "Project-Meridian-Stable-r2j-Menu2-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2/Project-Meridian-Stable-r2j-Menu2-client.zip",
+    "size": 779245224,
+    "sha256": "bdc2beed47bbe792081a511c25a46d6308f0e8dd4b14f395565cdba870f7b8d3"
   },
   "launcher": {
     "version": "1.0.2",
