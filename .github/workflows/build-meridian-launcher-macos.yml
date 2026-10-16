@@ -1,0 +1,178 @@
+name: Build Project Meridian Launcher — macOS Apple Silicon
+
+on:
+  push:
+    branches:
+      - macos-arm64-launcher
+    paths:
+      - "launcher/source/**"
+      - "launcher/tests/**"
+      - ".github/workflows/build-meridian-launcher-macos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meridian-launcher-macos
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: macOS arm64 (.app + .dmg)
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Verify Apple Silicon runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "arm64"
+          sw_vers -productVersion
+          python3 --version
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pyinstaller>=6.22,<7" "pillow>=10,<13"
+
+      - name: Syntax check
+        shell: bash
+        run: |
+          python -m py_compile launcher/source/launcher.py launcher/source/make_icon.py
+
+      - name: Generate Project Meridian icons
+        shell: bash
+        run: |
+          python launcher/source/make_icon.py
+          rm -rf launcher/meridian.iconset
+          mkdir -p launcher/meridian.iconset
+          sips -z 16 16 launcher/meridian.png --out launcher/meridian.iconset/icon_16x16.png
+          sips -z 32 32 launcher/meridian.png --out launcher/meridian.iconset/icon_16x16@2x.png
+          sips -z 32 32 launcher/meridian.png --out launcher/meridian.iconset/icon_32x32.png
+          sips -z 64 64 launcher/meridian.png --out launcher/meridian.iconset/icon_32x32@2x.png
+          sips -z 128 128 launcher/meridian.png --out launcher/meridian.iconset/icon_128x128.png
+          sips -z 256 256 launcher/meridian.png --out launcher/meridian.iconset/icon_128x128@2x.png
+          sips -z 256 256 launcher/meridian.png --out launcher/meridian.iconset/icon_256x256.png
+          sips -z 512 512 launcher/meridian.png --out launcher/meridian.iconset/icon_256x256@2x.png
+          iconutil -c icns launcher/meridian.iconset -o launcher/meridian.icns
+
+      - name: Smoke-test UI
+        shell: bash
+        run: |
+          python launcher/source/launcher.py --smoke-ui
+
+      - name: Smoke-test PortableMC macOS arm64 core
+        shell: bash
+        run: |
+          python - <<'PY'
+          import subprocess
+          import tempfile
+          import zipfile
+          from pathlib import Path
+          from launcher.source.launcher import IS_MACOS_ARM64, ensure_portablemc, pack_members
+
+          assert IS_MACOS_ARM64, "This build must run on Apple Silicon"
+          pmc = ensure_portablemc()
+          assert pmc.is_file() and pmc.stat().st_mode & 0o111, pmc
+          subprocess.run([str(pmc), "--version"], check=True)
+
+          with tempfile.TemporaryDirectory() as tmp:
+              archive = Path(tmp) / "pack.zip"
+              with zipfile.ZipFile(archive, "w") as zf:
+                  zf.writestr("mods/voxy-1.0.0.jar", b"voxy")
+                  zf.writestr("mods/project-meridian-test.jar", b"test")
+              with zipfile.ZipFile(archive) as zf:
+                  members = pack_members(zf)
+              assert "mods/voxy-1.0.0.jar" not in members
+              assert "mods/project-meridian-test.jar" in members
+          PY
+
+      - name: Build native macOS arm64 app
+        shell: bash
+        run: |
+          rm -rf build dist
+          pyinstaller \
+            --noconfirm \
+            --clean \
+            --onedir \
+            --windowed \
+            --target-arch arm64 \
+            --icon launcher/meridian.icns \
+            --add-data "launcher/meridian.png:." \
+            --add-data "launcher/meridian-keygen.wav:." \
+            --osx-bundle-identifier "com.projectmeridian.launcher" \
+            --name "Project Meridian Launcher" \
+            launcher/source/launcher.py
+
+      - name: Verify app bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="dist/Project Meridian Launcher.app"
+          BIN="$APP/Contents/MacOS/Project Meridian Launcher"
+          test -d "$APP"
+          test -x "$BIN"
+          file "$BIN"
+          lipo -archs "$BIN" | grep -qw arm64
+          codesign --verify --deep --strict --verbose=2 "$APP"
+
+      - name: Create DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="dist/Project Meridian Launcher.app"
+          STAGE="$RUNNER_TEMP/meridian-dmg"
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE"
+          cp -R "$APP" "$STAGE/Project Meridian Launcher.app"
+          ln -s /Applications "$STAGE/Applications"
+          hdiutil create \
+            -volname "Project Meridian Launcher" \
+            -srcfolder "$STAGE" \
+            -format UDZO \
+            -ov \
+            "dist/Project-Meridian-Launcher-macOS-arm64.dmg"
+
+      - name: Verify DMG and calculate checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          DMG="dist/Project-Meridian-Launcher-macOS-arm64.dmg"
+          hdiutil imageinfo "$DMG" >/dev/null
+          shasum -a 256 "$DMG" | tee "dist/Project-Meridian-Launcher-macOS-arm64.dmg.sha256"
+          stat -f "%z bytes" "$DMG"
+
+      - name: Package source report
+        shell: bash
+        run: |
+          cat > dist/Project-Meridian-Launcher-macOS-arm64-build.txt <<EOF
+          Project Meridian Launcher
+          Platform: macOS Apple Silicon (arm64)
+          Launcher version: $(grep -E '^[[:space:]]*APP_VERSION = ' launcher/source/launcher.py | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          PortableMC: 5.0.5 macOS aarch64
+          Python: $(python --version)
+          PyInstaller: $(pyinstaller --version)
+          Runner: $(uname -m) / $(sw_vers -productVersion)
+          EOF
+
+      - name: Upload macOS build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Project-Meridian-Launcher-macOS-arm64
+          path: |
+            dist/Project-Meridian-Launcher-macOS-arm64.dmg
+            dist/Project-Meridian-Launcher-macOS-arm64.dmg.sha256
+            dist/Project-Meridian-Launcher-macOS-arm64-build.txt
+          if-no-files-found: error
+          retention-days: 30
