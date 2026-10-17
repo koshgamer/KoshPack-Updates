@@ -3,19 +3,24 @@
   "channel": "current",
   "launcherMinVersion": "1.0.2",
   "pack": "KoshPack",
-  "packVersion": "stable-r2j-menu2-mobfarming1",
+  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "Project-Meridian-Stable-r2j-Menu2-MobFarming1-client.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1/Project-Meridian-Stable-r2j-Menu2-MobFarming1-client.zip",
-    "size": 779564613,
-    "sha256": "dff546dac4b76dc96c53b7e1f4384c21b2a75528802aa013f3ad83b5a774a214"
+    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-client.zip",
+    "sha256": "6c16d22fcb58fa995a4bea7e6b360068c77a5bca0b6a154a39ddf22ab714ac3a",
+    "size": 779656071
   },
   "launcher": {
-    "version": "1.0.2",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-current/Project-Meridian-Launcher.exe",
-    "sha256": "8af65cc1f2ae49ddcb9098b60bd3ff73aede53005f07e70441ec1b6ec0e12be6",
-    "size": 21791749
+    "version": "1.1.0",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-1.1.0/Project-Meridian-Launcher.exe",
+    "sha256": "48ed331706b390fbbd80a577b3ef9043f4ca3fcdd7a152bea178ac9f73a78c69",
+    "size": 21842097
+  },
+  "fileIndex": {
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1/files-6c16d22fcb58fa99.json",
+    "sha256": "c42372723ac7eababe2fb743e757777470b2d742ff9b3dddf21e5df9be374c6b",
+    "size": 295072
   }
 }
