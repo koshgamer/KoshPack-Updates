@@ -40,12 +40,12 @@ jobs:
             gh release create "$TAG" --title "Project Meridian — zoom and incremental updates" --notes "Zume 1.2.2 added to the client. Launcher 1.1 supports verified per-file updates. Existing worlds and settings are preserved." --latest=false
           fi
           # Never replace published pack bytes; retries reuse the same immutable asset.
-          if ! gh release view "$TAG" --json assets --jq '.assets[].name' | rg -Fx "$PACK"; then
+          if ! gh release view "$TAG" --json assets --jq '.assets[].name' | grep -Fx "$PACK"; then
             gh release upload "$TAG" ".out/$PACK"
           fi
           for INDEX in .out/files-*.json; do
             NAME=$(basename "$INDEX")
-            if ! gh release view "$TAG" --json assets --jq '.assets[].name' | rg -Fx "$NAME"; then
+            if ! gh release view "$TAG" --json assets --jq '.assets[].name' | grep -Fx "$NAME"; then
               gh release upload "$TAG" "$INDEX"
             fi
           done
