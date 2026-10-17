@@ -2100,6 +2100,7 @@ class MeridianLauncher(tk.Tk):
         self.ram_scale = RamSlider(root, self.ram_var, from_=4, to=16)
         self.folder_btn = self._button(root, "ПАПКА ИГРЫ", self._open_game_folder)
         self.logs_btn = self._button(root, "ЖУРНАЛ", self._open_log_dialog)
+        self.news_btn = self._button(root, "НОВОСТИ СБОРКИ", lambda: webbrowser.open(PROJECT_SITE_URL + "updates"))
         self.repair_btn = self._button(root, "ПРОВЕРИТЬ / ПОЧИНИТЬ ФАЙЛЫ", self._repair_pack)
         Tooltip(self.repair_btn, lambda: "Сверяет каждый файл сборки с эталоном (SHA-256) и заново скачивает только "
                                          "повреждённые. Миры, скриншоты и настройки не затрагиваются.")
@@ -2255,7 +2256,9 @@ class MeridianLauncher(tk.Tk):
         if d["hints"]:
             settings += [("gap", 3), ("hint", "Рекомендуется 6–8 ГБ. Больше половины памяти ПК не ставьте.")]
         settings += [("title", "03 / ФАЙЛЫ ИГРЫ"), ("row", [(self.folder_btn, 1), (self.logs_btn, 1)]), ("gap", gap),
-                     ("w", self.repair_btn)]
+                     ("w", self.repair_btn), ("gap", gap), ("w", self.news_btn)]
+        if d["hints"]:
+            settings += [("gap", 4), ("hint", "Обновления сборки: только изменённые файлы. Самообновление лаунчера встроено.")]
         launch: list[tuple[str, Any]] = [("title", "MERIDIAN // LAUNCH CONTROL"), ("status", None), ("gap", gap + 4),
                                          ("w", self.progress_shell), ("gap", gap), ("w", self.play_btn), ("gap", gap + 2),
                                          ("info", None), ("gap", gap), ("fill", self.console_wrap)]
@@ -3033,6 +3036,7 @@ class MeridianLauncher(tk.Tk):
 
     def _initial_check(self) -> None:
         self._sync_auth_fields()
+        self._log("Новое в 1.1: пофайловые обновления сборки и самообновление лаунчера.")
         if INSTALL_JOURNAL.exists():
             self._log("Предыдущая установка была прервана — при запуске сборка будет восстановлена.")
         self._start_thread(lambda: self._check_update_only())
@@ -3056,6 +3060,8 @@ class MeridianLauncher(tk.Tk):
             self._emit("status", "Нужен новый лаунчер")
             self._emit("detail", str(e))
             return
+        if "zoom1" in asset["identity"]:
+            self._emit("log", "В актуальной сборке добавлен Zume — приближение камеры. Клавиша настраивается в управлении игры.")
         current = self.state_data.get("pack_identity") == asset["identity"] and self._pack_installed()
         if INSTALL_JOURNAL.exists():
             self._emit("status", "Установка не завершена")

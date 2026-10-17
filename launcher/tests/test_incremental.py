@@ -84,7 +84,7 @@ class IncrementalTests(unittest.TestCase):
         self.write('config/test.txt', b'old')
         original = U.atomic_copy
         def fail(src, dst):
-            if str(src).endswith('.blob') and str(dst).endswith('mods/new.jar'):
+            if str(src).endswith('.blob') and Path(dst).as_posix().endswith('mods/new.jar'):
                 raise OSError('simulated disk failure')
             return original(src, dst)
         with patch.object(U, 'atomic_copy', side_effect=fail):

@@ -116,7 +116,7 @@ jobs:
           $tag = "launcher-$version"
           gh release view $tag 2>$null
           if ($LASTEXITCODE -eq 0) { throw "Launcher version already published. Increment APP_VERSION." }
-          gh release create $tag dist/Project-Meridian-Launcher.exe --title "Project Meridian Launcher $version" --notes "Self-update inside the launcher; verified per-file pack updates; automatic rollback on file replacement failures. Download this version once to migrate from 1.0.2." --latest=false
+          gh release create $tag dist/Project-Meridian-Launcher.exe --title "Project Meridian Launcher $version" --notes "Self-update inside the launcher; verified per-file pack updates; automatic rollback on file replacement failures. Zume camera zoom is included in the current client pack." --latest=false
           if ($LASTEXITCODE -ne 0) { throw "Versioned release failed" }
           gh release upload launcher-current dist/Project-Meridian-Launcher.exe --clobber
           if ($LASTEXITCODE -ne 0) { throw "Current launcher upload failed" }
