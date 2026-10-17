@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import base64
+import incremental
+import self_update
 import ctypes
 import hashlib
 import io
@@ -30,7 +32,7 @@ import tkinter as tk
 from tkinter import filedialog, font as tkfont, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.1.0"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 # The public launcher reads only the Stable manifest; there is no other channel in this build.
@@ -417,6 +419,8 @@ def get_release_asset() -> dict[str, Any]:
         "release_name": pack_version_label(pack_version),
         "launcher_version": str(launcher.get("version") or ""),
         "launcher_min": str(manifest.get("launcherMinVersion") or ""),
+        "launcher_asset": launcher,
+        "file_index": manifest.get("fileIndex"),
     }
 
 
@@ -2046,7 +2050,7 @@ class MeridianLauncher(tk.Tk):
         root.bind("<Motion>", self._on_canvas_motion, add="+")
         self.update_link = tk.Label(root, textvariable=self.launcher_update_var, bg=C_BG, fg=C_TELEMETRY,
                                     font=("Consolas", 9, "bold"), cursor="hand2")
-        self.update_link.bind("<Button-1>", lambda _e: webbrowser.open(LAUNCHER_DOWNLOAD_PAGE))
+        self.update_link.bind("<Button-1>", lambda _e: self._update_launcher())
         self._build_account(root)
         self._build_settings(root)
         self._build_launch(root)
@@ -2642,12 +2646,15 @@ class MeridianLauncher(tk.Tk):
                 self._sync_auth_fields()
                 self._set_skin_placeholder()
             elif kind == "launcher_update":
-                self.launcher_update_var.set(f"ДОСТУПЕН ЛАУНЧЕР v{value} — СКАЧАТЬ ›")
+                self.launcher_update_var.set(f"ОБНОВИТЬ ЛАУНЧЕР ДО v{value} ›")
                 try:
                     self._root_frame.itemconfigure(self.update_item, state="normal")
                 except (tk.TclError, AttributeError):
                     pass
                 self._log(f"Доступна новая версия лаунчера {value}: {LAUNCHER_DOWNLOAD_PAGE}")
+            elif kind == "restart_launcher":
+                self.destroy()
+                return
             elif kind == "busy":
                 self._set_busy(bool(value))
             elif kind == "play_text":
@@ -3061,7 +3068,7 @@ class MeridianLauncher(tk.Tk):
             self._emit("log", "Сборка актуальна.")
         elif self._pack_installed():
             self._emit("status", "Доступно обновление")
-            self._emit("detail", f"{asset['release_name']} • {format_bytes(asset['size'])} • установится при запуске")
+            self._emit("detail", f"{asset['release_name']} • " + ("только изменённые файлы" if asset.get("file_index") else format_bytes(asset["size"])) + " • установится при запуске")
             self._emit("play_text", "ОБНОВИТЬ И ИГРАТЬ")
             self._emit("log", f"Доступна сборка {asset['release_name']}. Нажмите «ОБНОВИТЬ И ИГРАТЬ».")
         else:
@@ -3070,6 +3077,7 @@ class MeridianLauncher(tk.Tk):
             self._emit("play_text", "УСТАНОВИТЬ И ИГРАТЬ")
 
     def _ensure_pack(self, force: bool = False) -> None:
+        incremental.recover(INSTANCE_DIR, CACHE_DIR / "incremental")
         asset = get_release_asset()
         self._check_launcher_version(asset)
         up_to_date = (self.state_data.get("pack_identity") == asset["identity"] and self._pack_installed()
@@ -3077,7 +3085,10 @@ class MeridianLauncher(tk.Tk):
         if up_to_date and not force:
             self._emit("log", "Сборка актуальна.")
             return
-        self._install_zip(self._obtain_verified_zip(asset), asset)
+        if asset.get("file_index") and self._pack_installed() and not legacy_dev_state_present(self.state_data):
+            self._install_incremental(asset)
+        else:
+            self._install_zip(self._obtain_verified_zip(asset), asset)
         self._emit("status", "Сборка готова")
         self._emit("detail", f"{asset['release_name']} • Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}")
         self._emit("play_text", "ИГРАТЬ")
@@ -3097,6 +3108,10 @@ class MeridianLauncher(tk.Tk):
                 self._emit("log", f"Манифест недоступен ({e}); проверяю по сохранённому эталону.")
             except Exception as e:
                 self._emit("log", f"Манифест недоступен ({type(e).__name__}); проверяю по сохранённому эталону.")
+            if asset and asset.get("file_index") and not legacy_dev_state_present(self.state_data):
+                self._install_incremental(asset)
+                self._emit("status", "Сборка проверена и восстановлена")
+                return
             if not index or INSTALL_JOURNAL.exists() or legacy_dev_state_present(self.state_data):
                 if asset is None:
                     raise RuntimeError("Для восстановления нужен интернет: эталон файлов ещё не сохранён.")
@@ -3522,6 +3537,53 @@ class MeridianLauncher(tk.Tk):
 
         self._start_thread(job)
 
+    def _update_launcher(self) -> None:
+        def job() -> None:
+            asset = get_release_asset()
+            info = asset.get("launcher_asset") or {}
+            if version_tuple(str(info.get("version", ""))) <= version_tuple(APP_VERSION):
+                self._emit("status", "Лаунчер уже обновлён")
+                return
+            url, digest = str(info.get("url", "")), str(info.get("sha256", ""))
+            if not url.startswith("https://") or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise RuntimeError("Некорректные данные обновления лаунчера.")
+            self._emit("status", "Скачиваю новую версию лаунчера…")
+            staged = CACHE_DIR / ("launcher-" + digest + ".exe")
+            download_file(url, staged, int(info["size"]),
+                          lambda n,t: self._emit("progress", n/max(t,1)*100))
+            self_update.prepare(staged, digest)
+            self._emit("restart_launcher", None)
+        self._start_thread(job)
+
+    def _install_incremental(self, asset: dict[str, Any]) -> None:
+        ref = asset["file_index"]
+        digest = str(ref.get("sha256", ""))
+        if not re.fullmatch(r"[0-9a-f]{64}", digest) or not str(ref.get("url", "")).startswith("https://"):
+            raise RuntimeError("Некорректный индекс обновления.")
+        path = CACHE_DIR / ("index-" + digest + ".json")
+        download_file(ref["url"], path, int(ref["size"]), lambda n,t: None)
+        if sha256_file(path) != digest:
+            raise RuntimeError("Индекс обновления повреждён.")
+        index = incremental.validate_index(json.loads(path.read_text("utf-8")))
+        if index["packageSha256"] != expected_sha256(asset) or index["url"] != asset["url"] or index["packageSize"] != asset["size"]:
+            raise RuntimeError("Индекс относится к другой версии сборки.")
+        previous = list(self.state_data.get("managed_files", []))
+        self._emit("status", "Сравниваю файлы сборки…")
+        def progress(done: int, total: int) -> None:
+            self._emit("progress", done / max(total, 1) * 100)
+            self._emit("progress_text", f"Изменённые файлы: {format_bytes(done)} / {format_bytes(total)}")
+        atomic_write_json(INSTALL_JOURNAL, {"target": asset["identity"], "incremental": True})
+        managed, hashes = incremental.sync_pack(index, INSTANCE_DIR, previous, CACHE_DIR / "incremental", is_preserved,
+                                                progress=progress)
+        self.state_data.update(pack_digest=asset["digest"], pack_identity=asset["identity"],
+                               pack_version=asset["release_name"], managed_files=managed)
+        atomic_write_json(FILE_INDEX, {"identity": asset["identity"], "files": hashes})
+        atomic_write_json(STATE_FILE, self.state_data)
+        INSTALL_JOURNAL.unlink(missing_ok=True)
+        self._emit("pack_value", asset["release_name"])
+        self._emit("progress", 100)
+        self._emit("log", "Обновление завершено. Неизменённые файлы повторно не скачивались.")
+
     def _check_launcher_version(self, asset: dict[str, Any]) -> None:
         latest, minimum = asset.get("launcher_version") or "", asset.get("launcher_min") or ""
         if latest and version_tuple(latest) > version_tuple(APP_VERSION):
@@ -3654,6 +3716,9 @@ class MeridianLauncher(tk.Tk):
 
 
 def main() -> None:
+    if len(sys.argv) == 3 and sys.argv[1] == "--apply-self-update":
+        self_update.apply_job(sys.argv[2])
+        return
     hide_console_if_needed()
     ensure_dirs()
     app = MeridianLauncher()

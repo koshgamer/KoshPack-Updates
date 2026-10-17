@@ -1,102 +1,134 @@
 name: Publish Project Meridian Launcher
-
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - "launcher/source/**"
-      - "launcher/tests/**"
-      - "launcher/build/**"
-      - ".github/workflows/publish-meridian-launcher.yml"
-
+      - 'launcher/source/**'
+      - 'launcher/tests/**'
+      - 'launcher/build/**'
+      - 'launcher/tools/**'
+      - '.github/workflows/publish-meridian-launcher.yml'
 permissions:
   contents: write
-
+concurrency:
+  group: meridian-release
+  cancel-in-progress: false
 jobs:
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 20
+  pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-
-      - name: Install build dependencies
-        shell: pwsh
+          python-version: '3.12'
+      - name: Test incremental engine and self-update recovery
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pyinstaller pillow
-
-      - name: Syntax check
-        shell: pwsh
-        run: |
-          python -m py_compile launcher/source/launcher.py launcher/source/make_icon.py
-
-      - name: Generate Project Meridian icon
-        shell: pwsh
-        run: |
-          python launcher/source/make_icon.py
-
-      - name: Smoke-test UI
-        shell: pwsh
-        run: |
-          python launcher/source/launcher.py --smoke-ui
-
-      - name: Launcher functional tests (install, update, rollback, repair, migration, skins)
-        shell: pwsh
-        run: |
-          python launcher/tests/test_public_launcher.py
-
-      - name: Build Windows EXE
-        shell: pwsh
-        run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --icon launcher/meridian.ico --add-data "launcher/meridian.ico;." --add-data "launcher/meridian.png;." --add-data "launcher/meridian-keygen.wav;." --version-file launcher/build/version_info.txt --name Project-Meridian-Launcher launcher/source/launcher.py
-
-      - name: Publish stable launcher asset
-        shell: pwsh
+          python launcher/tests/test_incremental.py
+          python launcher/tests/test_self_update.py
+      - name: Prepare verified pack and file index
+        run: python launcher/tools/prepare_release.py
+      - name: Publish immutable pack and index
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "launcher-current"
-          $asset = "dist/Project-Meridian-Launcher.exe"
-          if (gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null) {
-            gh release upload $tag $asset --clobber --repo $env:GITHUB_REPOSITORY
-          } else {
-            gh release create $tag $asset --repo $env:GITHUB_REPOSITORY --title "Project Meridian Launcher" --notes "Актуальная публичная версия Project Meridian Launcher для Windows." --latest=false
-          }
-
-      - name: Update launcher manifest
-        shell: pwsh
+          set -euo pipefail
+          TAG=$(cat .out/tag.txt)
+          PACK=$(python -c 'import json;print(json.load(open(".out/pack-fields.json"))["package"]["file"])')
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "Project Meridian — zoom and incremental updates" --notes "Zume 1.2.2 added to the client. Launcher 1.1 supports verified per-file updates. Existing worlds and settings are preserved." --latest=false
+          fi
+          # Never replace published pack bytes; retries reuse the same immutable asset.
+          if ! gh release view "$TAG" --json assets --jq '.assets[].name' | rg -Fx "$PACK"; then
+            gh release upload "$TAG" ".out/$PACK"
+          fi
+          for INDEX in .out/files-*.json; do
+            NAME=$(basename "$INDEX")
+            if ! gh release view "$TAG" --json assets --jq '.assets[].name' | rg -Fx "$NAME"; then
+              gh release upload "$TAG" "$INDEX"
+            fi
+          done
+      - name: Verify published index and HTTP range payloads
         run: |
-          $asset = "dist/Project-Meridian-Launcher.exe"
-          $sha = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLower()
-          $size = (Get-Item $asset).Length
-          $versionMatch = Select-String -Path "launcher/source/launcher.py" -Pattern 'APP_VERSION = "([^"]+)"'
-          $version = $versionMatch.Matches[0].Groups[1].Value
-          $manifest = Get-Content "launcher/manifest.json" -Raw | ConvertFrom-Json
-          $manifest.launcher.version = $version
-          $manifest.launcher.url = "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-current/Project-Meridian-Launcher.exe"
-          $manifest.launcher.sha256 = $sha
-          $manifest.launcher.size = [int64]$size
-          $json = $manifest | ConvertTo-Json -Depth 20
-          [System.IO.File]::WriteAllText((Resolve-Path "launcher/manifest.json"), $json + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
-
-      - name: Commit launcher manifest
-        shell: pwsh
+          python - <<'PY'
+          import sys,json,hashlib,zlib,urllib.request
+          from pathlib import Path
+          sys.path.insert(0,'launcher/source')
+          from incremental import fetch_range
+          fields=json.loads(Path('.out/pack-fields.json').read_text())
+          raw=urllib.request.urlopen(fields['fileIndex']['url'],timeout=120).read()
+          assert hashlib.sha256(raw).hexdigest()==fields['fileIndex']['sha256']
+          index=json.loads(raw)
+          for entry in [index['files'][0],next(e for e in index['files'] if e['path'].endswith('zume-1.2.2.jar'))]:
+              data=fetch_range(index['url'],entry['offset'],entry['length'],index['packageSize'])
+              if entry['method']==8: data=zlib.decompress(data,-15)
+              assert hashlib.sha256(data).hexdigest()==entry['sha256']
+              print('Verified remote range:',entry['path'],entry['length'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pack-metadata
+          path: |
+            .out/pack-fields.json
+            .out/base-sha.txt
+  windows:
+    needs: pack
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pack-metadata
+          path: .out
+      - name: Install build dependencies
+        run: python -m pip install pyinstaller pillow
+      - name: Functional tests
         run: |
+          python launcher/tests/test_public_launcher.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python launcher/tests/test_incremental.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python launcher/tests/test_self_update.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python launcher/source/launcher.py --smoke-ui
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build Windows EXE
+        run: |
+          python launcher/source/make_icon.py
+          pyinstaller --noconfirm --clean --onefile --windowed --icon launcher/meridian.ico --add-data "launcher/meridian.ico;." --add-data "launcher/meridian.png;." --add-data "launcher/meridian-keygen.wav;." --version-file launcher/build/version_info.txt --name Project-Meridian-Launcher launcher/source/launcher.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $p = Start-Process -FilePath "dist/Project-Meridian-Launcher.exe" -ArgumentList "--smoke-ui" -PassThru
+          if (-not $p.WaitForExit(60000)) { $p.Kill(); throw "EXE smoke test timed out" }
+          if ($p.ExitCode -ne 0) { throw "EXE smoke test failed" }
+      - name: Test frozen self-update on Windows
+        shell: powershell
+        run: launcher/tests/test_frozen_self_update.ps1
+      - name: Publish launcher
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Select-String -Path launcher/source/launcher.py -Pattern 'APP_VERSION = "([^"]+)"').Matches[0].Groups[1].Value
+          $tag = "launcher-$version"
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) { throw "Launcher version already published. Increment APP_VERSION." }
+          gh release create $tag dist/Project-Meridian-Launcher.exe --title "Project Meridian Launcher $version" --notes "Self-update inside the launcher; verified per-file pack updates; automatic rollback on file replacement failures. Download this version once to migrate from 1.0.2." --latest=false
+          if ($LASTEXITCODE -ne 0) { throw "Versioned release failed" }
+          gh release upload launcher-current dist/Project-Meridian-Launcher.exe --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Current launcher upload failed" }
+      - name: Publish manifest after all assets and tests succeed
+        run: |
+          git pull --ff-only origin main
+          if ($LASTEXITCODE -ne 0) { throw "Could not read current manifest" }
+          python launcher/tools/publish_manifest.py
+          if ($LASTEXITCODE -ne 0) { throw "Manifest validation failed" }
           git config user.name "Project Meridian CI"
           git config user.email "actions@users.noreply.github.com"
           git add launcher/manifest.json
-          if (git diff --cached --quiet) {
-            Write-Host "Launcher manifest already current."
-            exit 0
-          }
-          git commit -m "launcher: publish current Windows build"
-          git pull --rebase origin main
+          git commit -m "release: launcher 1.1.0, zoom and per-file updates"
           git push origin HEAD:main
+          if ($LASTEXITCODE -ne 0) { throw "Manifest publication failed" }

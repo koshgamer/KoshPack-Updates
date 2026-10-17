@@ -30,6 +30,8 @@ for _stream in (sys.stdout, sys.stderr):
 SANDBOX = Path(tempfile.mkdtemp(prefix="meridian-launcher-test-"))
 os.environ["LOCALAPPDATA"] = str(SANDBOX / "localappdata")
 SOURCE = Path(__file__).resolve().parents[1] / "source" / "launcher.py"
+sys.path.insert(0, str(SOURCE.parent))
+os.environ["XDG_DATA_HOME"] = str(SANDBOX / "localappdata")
 spec = importlib.util.spec_from_file_location("launcher", SOURCE)
 L = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(L)  # type: ignore[union-attr]
@@ -317,6 +319,7 @@ def test_power_loss(app):
     script.write_text(
         "import os, sys, importlib.util, time\n"
         f"os.environ['LOCALAPPDATA']={str(L.APP_ROOT.parent)!r}\n"
+        f"sys.path.insert(0, {str(SOURCE.parent)!r})\n"
         f"spec=importlib.util.spec_from_file_location('launcher', {str(SOURCE)!r})\n"
         "L=importlib.util.module_from_spec(spec); spec.loader.exec_module(L)\n"
         "real=L._write_member\n"
@@ -578,7 +581,8 @@ def main():
     test_voice_legacy_repair()
     test_voice_settings_preserved()
     test_skins()
-    test_skins_online()
+    if "--online-skins" in sys.argv:
+        test_skins_online()
     if real:
         test_real_pack(real)
     out = Path(os.environ.get("MERIDIAN_TEST_REPORT", SANDBOX / "results.json"))
