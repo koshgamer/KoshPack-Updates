@@ -417,6 +417,7 @@ def get_release_asset() -> dict[str, Any]:
         "release_name": pack_version_label(pack_version),
         "launcher_version": str(launcher.get("version") or ""),
         "launcher_min": str(manifest.get("launcherMinVersion") or ""),
+        "files_manifest": package.get("files") if isinstance(package.get("files"), dict) else None,
     }
 
 
@@ -719,6 +720,91 @@ def load_file_index() -> dict[str, str]:
         pass
     return {}
 
+
+
+def install_incremental(asset: dict[str, Any], previous_managed: list[str],
+                        on_progress: Callable[[int, int], None] | None = None) -> tuple[list[str], dict[str, str]]:
+    """Download only changed pack files, verify checksums, and roll back on failure.
+
+    A complete files map is mandatory. Never remove unknown/user files. All downloads
+    finish and pass checksum verification before any installed file is changed.
+    """
+    entries = asset.get("files_manifest")
+    if not isinstance(entries, dict) or not entries:
+        raise RuntimeError("Отсутствует полный список файлов обновления.")
+    wanted: dict[str, tuple[str, int, str]] = {}
+    for raw_rel, item in entries.items():
+        rel = safe_rel_path(str(raw_rel))
+        if rel is None or is_preserved(rel):
+            raise RuntimeError(f"Недопустимый путь в манифесте: {raw_rel}")
+        if not isinstance(item, dict):
+            raise RuntimeError(f"Неверное описание файла: {rel}")
+        url = str(item.get("url") or "")
+        digest = str(item.get("sha256") or "").lower()
+        size = int(item.get("size") or 0)
+        if urllib.parse.urlsplit(url).scheme != "https" or not re.fullmatch(r"[a-f0-9]{64}", digest) or size < 0:
+            raise RuntimeError(f"Неверный URL, размер или SHA-256 файла: {rel}")
+        wanted[rel] = (url, size, digest)
+
+    need = [(rel, *entry) for rel, entry in wanted.items()
+            if not (INSTANCE_DIR / rel).is_file()
+            or sha256_file(INSTANCE_DIR / rel) != entry[2]]
+    stage = Path(tempfile.mkdtemp(prefix="meridian-stage-", dir=APP_ROOT))
+    backup = stage / "_previous"
+    snapshots: list[tuple[Path, Path | None]] = []
+    previous_set = set(previous_managed)
+    old_index = load_file_index()
+    try:
+        ensure_free_space(APP_ROOT, sum(size for _, _, size, _ in need), "пофайлового обновления")
+        for count, (rel, url, size, digest) in enumerate(need, 1):
+            target = stage / "new" / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            download_file(url, target, size, lambda _d, _t: None)
+            if sha256_file(target) != digest:
+                raise RuntimeError(f"Контрольная сумма не совпала: {rel}")
+            if on_progress:
+                on_progress(count, max(1, len(need)))
+        # Keep a copy of all replaced/removed managed files before the first mutation.
+        touched = {rel for rel, *_ in need}
+        touched.update(previous_set - set(wanted))
+        for rel in sorted(touched):
+            dest = INSTANCE_DIR / rel
+            saved = None
+            if dest.is_file():
+                saved = backup / rel
+                saved.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(dest, saved)
+            snapshots.append((dest, saved))
+        try:
+            for rel, *_ in need:
+                dest = INSTANCE_DIR / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                _make_writable(dest)
+                os.replace(stage / "new" / rel, dest)
+            remove_obsolete_files(previous_managed, set(wanted))
+        except BaseException:
+            for dest, saved in reversed(snapshots):
+                if saved is None:
+                    dest.unlink(missing_ok=True)
+                else:
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    _make_writable(dest)
+                    shutil.copy2(saved, dest)
+            raise
+        return sorted(wanted), {rel: entry[2] for rel, entry in wanted.items()}
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+
+
+def save_incremental_state(asset: dict[str, Any], managed: list[str],
+                           index: dict[str, str]) -> None:
+    state = load_state()
+    state["pack_digest"] = asset["digest"]
+    state["pack_identity"] = asset["identity"]
+    state["pack_version"] = asset["release_name"]
+    state["managed_files"] = managed
+    atomic_write_json(FILE_INDEX, {"identity": asset["identity"], "files": index})
+    atomic_write_json(STATE_FILE, state)
 
 def install_from_zip(
     zip_path: Path,
@@ -3077,7 +3163,18 @@ class MeridianLauncher(tk.Tk):
         if up_to_date and not force:
             self._emit("log", "Сборка актуальна.")
             return
-        self._install_zip(self._obtain_verified_zip(asset), asset)
+        if asset.get("files_manifest"):
+            self._emit("status", "Загружаю только изменённые файлы…")
+            previous_managed = list(self.state_data.get("managed_files", []))
+            def progress(done: int, total: int) -> None:
+                self._emit("progress", done / total * 100)
+                self._emit("progress_text", f"Изменённые файлы: {done} / {total}")
+            managed, index = install_incremental(asset, previous_managed, progress)
+            save_incremental_state(asset, managed, index)
+            self.state_data.update({"pack_digest": asset["digest"], "pack_identity": asset["identity"],
+                                    "pack_version": asset["release_name"], "managed_files": managed})
+        else:
+            self._install_zip(self._obtain_verified_zip(asset), asset)
         self._emit("status", "Сборка готова")
         self._emit("detail", f"{asset['release_name']} • Minecraft {MC_VERSION} • NeoForge {NEOFORGE_VERSION}")
         self._emit("play_text", "ИГРАТЬ")
