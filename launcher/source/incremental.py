@@ -119,6 +119,43 @@ def atomic_copy(src, dst):
     finally: tmp.unlink(missing_ok=True)
 
 
+def download_range(url, offset, length, total, path, attempts=3):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and path.stat().st_size > length:
+        path.unlink()
+    for attempt in range(attempts):
+        done = path.stat().st_size if path.exists() else 0
+        if done == length:
+            path.touch(exist_ok=True)
+            return
+        end = offset + length - 1
+        request = urllib.request.Request(url, headers={
+            'Range': f'bytes={offset + done}-{end}', 'Accept-Encoding': 'identity',
+            'User-Agent': 'ProjectMeridianLauncher/2.0'})
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                if response.status != 206 or response.headers.get('Content-Range') != f'bytes {offset + done}-{end}/{total}':
+                    raise ValueError('Сервер не поддержал выборочную докачку. Полный архив не скачивался.')
+                with path.open('ab') as output:
+                    try:
+                        while done < length:
+                            block = response.read1(min(64 * 1024, length - done))
+                            if not block:
+                                raise OSError('Incomplete file download')
+                            output.write(block)
+                            output.flush()
+                            done += len(block)
+                    finally:
+                        output.flush()
+                        os.fsync(output.fileno())
+            return
+        except (OSError, TimeoutError):
+            if attempt == attempts - 1:
+                raise
+            time.sleep(attempt + 1)
+
+
 def recover(root, cache):
     tx = cache / 'transaction'
     journal = tx / 'journal.json'
@@ -135,7 +172,12 @@ def recover(root, cache):
     if tx.exists(): shutil.rmtree(tx)
 
 
-def sync_pack(index, root, previous, cache, preserved, fetch=fetch_range, progress=lambda a,b: None):
+def range_cache_path(index, entry, cache):
+    identity = f"{index['packageSha256']}:{entry['offset']}:{entry['length']}"
+    return cache / (hashlib.sha256(identity.encode()).hexdigest() + '.range.part')
+
+
+def sync_pack(index, root, previous, cache, preserved, fetch=None, progress=lambda a,b: None):
     validate_index(index)
     root, cache = Path(root), Path(cache)
     cache.mkdir(parents=True, exist_ok=True)
@@ -151,7 +193,16 @@ def sync_pack(index, root, previous, cache, preserved, fetch=fetch_range, progre
     obsolete = [p for p in previous if p not in managed and not preserved(p)]
     for p in obsolete: target(root, p)
     affected = sorted(set([e['path'] for e in needed] + obsolete))
-    required = sum(e['size']*2 for e in needed) + sum(target(root,p).stat().st_size for p in affected if target(root,p).is_file())
+    required = sum(target(root, name).stat().st_size for name in affected if target(root, name).is_file())
+    for entry in needed:
+        blob = cache / (entry['sha256'] + '.blob')
+        verified = blob.is_file() and sha256(blob) == entry['sha256']
+        partial = range_cache_path(index, entry, cache)
+        saved = partial.stat().st_size if partial.is_file() else 0
+        if saved > entry['length']:
+            partial.unlink()
+            saved = 0
+        required += entry['size'] if verified else entry['size'] * 2 + entry['length'] - saved
     if shutil.disk_usage(cache).free < required + 64*1024*1024:
         raise OSError('Недостаточно места для обновления и резервной копии.')
     total = sum(e['length'] for e in needed)
@@ -161,19 +212,29 @@ def sync_pack(index, root, previous, cache, preserved, fetch=fetch_range, progre
     for e in needed:
         blob = cache / (e['sha256'] + '.blob')
         if not blob.is_file() or sha256(blob) != e['sha256']:
-            raw = fetch(index['url'], e['offset'], e['length'], index['packageSize'])
-            if e['method'] == 8:
-                dec = zlib.decompressobj(-15)
-                data = dec.decompress(raw, e['size']+1)
-                if not dec.eof or dec.unused_data or dec.unconsumed_tail:
-                    raise ValueError('Invalid compressed file')
-            else: data = raw
-            if len(data) != e['size'] or hashlib.sha256(data).hexdigest() != e['sha256']:
-                raise ValueError(f"Файл повреждён: {e['path']}")
+            partial = range_cache_path(index, e, cache)
+            if fetch is None:
+                download_range(index['url'], e['offset'], e['length'], index['packageSize'], partial)
+                raw = partial.read_bytes()
+            else:
+                raw = fetch(index['url'], e['offset'], e['length'], index['packageSize'])
+            try:
+                if e['method'] == 8:
+                    dec = zlib.decompressobj(-15)
+                    data = dec.decompress(raw, e['size']+1)
+                    if not dec.eof or dec.unused_data or dec.unconsumed_tail:
+                        raise ValueError('Invalid compressed file')
+                else: data = raw
+                if len(data) != e['size'] or hashlib.sha256(data).hexdigest() != e['sha256']:
+                    raise ValueError(f"Файл повреждён: {e['path']}")
+            except (ValueError, zlib.error):
+                partial.unlink(missing_ok=True)
+                raise
             tmp = blob.with_suffix('.part')
             with tmp.open('wb') as f:
                 f.write(data); f.flush(); os.fsync(f.fileno())
             os.replace(tmp, blob)
+            partial.unlink(missing_ok=True)
         done += e['length']
         progress(done, total)
     if not affected: return sorted(managed), managed

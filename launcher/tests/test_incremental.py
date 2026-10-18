@@ -91,6 +91,24 @@ class IncrementalTests(unittest.TestCase):
             with self.assertRaises(OSError): self.sync()
         self.assertEqual((self.root/'config/test.txt').read_bytes(), b'old')
         self.assertFalse((self.root/'mods/new.jar').exists())
+
+    def test_resume_space_check_uses_remaining_download_bytes(self):
+        self.assertTrue(hasattr(U, 'range_cache_path'), 'Reusable download space is not accounted for')
+        self.cache.mkdir()
+        entry = self.index['files'][0]
+        partial = U.range_cache_path(self.index, entry, self.cache)
+        with self.zip.open('rb') as archive:
+            archive.seek(entry['offset'])
+            compressed = archive.read(entry['length'])
+        partial.write_bytes(compressed[:-1])
+        required = sum(item['size'] * 2 + item['length'] for item in self.index['files'])
+        free = 64 * 1024 * 1024 + required - len(compressed[:-1])
+        def complete(url, offset, length, total, destination):
+            destination.write_bytes(self.fetch(url, offset, length, total))
+        with patch.object(U.shutil, 'disk_usage', return_value=type('Usage', (), {'free': free})()), \
+             patch.object(U, 'download_range', side_effect=complete):
+            U.sync_pack(self.index, self.root, [], self.cache, lambda name: False)
+        self.assertEqual((self.root / 'mods/new.jar').read_bytes(), self.data['mods/new.jar'])
     def test_pending_transaction_recovered_before_retry(self):
         self.write('config/test.txt', b'partial')
         tx = self.cache / 'transaction'
@@ -112,6 +130,40 @@ class IncrementalTests(unittest.TestCase):
 
 
 class RangeTests(unittest.TestCase):
+    def test_interrupted_file_resumes_from_saved_bytes(self):
+        self.assertTrue(hasattr(U, 'download_range'), 'Persistent per-file downloads are missing')
+        payload = b'0123456789'
+        requests = []
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+            def do_GET(self):
+                requested = self.headers['Range']
+                requests.append(requested)
+                start, end = map(int, requested[6:].split('-'))
+                self.send_response(206)
+                self.send_header('Content-Range', f'bytes {start}-{end}/{len(payload)}')
+                self.send_header('Content-Length', str(end - start + 1))
+                self.end_headers()
+                self.wfile.write(payload[start:start + 3] if len(requests) == 1 else payload[start:end + 1])
+                self.wfile.flush()
+                self.close_connection = True
+        server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            with tempfile.TemporaryDirectory() as folder:
+                partial = Path(folder) / 'range.part'
+                url = f'http://127.0.0.1:{server.server_port}'
+                with self.assertRaises(OSError):
+                    U.download_range(url, 2, 6, 10, partial, attempts=1)
+                self.assertEqual(partial.read_bytes(), b'234')
+                U.download_range(url, 2, 6, 10, partial, attempts=1)
+                self.assertEqual(partial.read_bytes(), b'234567')
+                self.assertEqual(requests, ['bytes=2-7', 'bytes=5-7'])
+        finally:
+            server.shutdown()
+            server.server_close()
+
     def test_bounded_range_and_refusal_to_download_full_archive(self):
         self.assertIsNotNone(U)
         payload=b'0123456789'

@@ -183,7 +183,7 @@ def test_versions_and_identity():
         ok = update_notice = False
     check("launcher update notice when newer version exists", ok and update_notice)
     try:
-        app._check_launcher_version({"launcher_version": "2.0.0", "launcher_min": "2.0.0"})
+        app._check_launcher_version({"launcher_version": "99.0.0", "launcher_min": "99.0.0"})
         blocked = False
     except RuntimeError:
         blocked = True

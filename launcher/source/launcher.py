@@ -1,6 +1,19 @@
 from __future__ import annotations
 
+import sys
+
+if __name__ == '__main__' and len(sys.argv) == 3:
+    if sys.argv[1] == '--game-session':
+        import game_session
+        sys.exit(game_session.main(sys.argv[2]))
+    if sys.argv[1] == '--apply-self-update':
+        import self_update
+        self_update.apply_job(sys.argv[2])
+        sys.exit(0)
+
 import base64
+import game_session
+from game_session import mask_secrets
 import incremental
 import self_update
 import ctypes
@@ -32,7 +45,7 @@ import tkinter as tk
 from tkinter import filedialog, font as tkfont, messagebox, ttk
 
 APP_NAME = "Project Meridian Launcher"
-APP_VERSION = "1.1.0"
+APP_VERSION = "2.0.1"
 REPO = "koshgamer/KoshPack-Updates"
 RELEASE_TAG = "current"
 # The public launcher reads only the Stable manifest; there is no other channel in this build.
@@ -440,20 +453,6 @@ def offline_uuid(nick: str) -> str:
     raw[8] = (raw[8] & 0x3F) | 0x80
     h = raw.hex()
     return f"{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:]}"
-
-
-_SECRET_PATTERNS = (
-    re.compile(r"eyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,}"),
-    re.compile(r"(?i)((?:access|refresh|xbl|xsts|mc)[_-]?token[\"'=: ]+)[^\s\"',]+"),
-    re.compile(r"(?i)(--accessToken\s+)\S+"),
-)
-
-
-def mask_secrets(text: str) -> str:
-    """Logs never contain sign-in tokens, even if a component prints one."""
-    for pattern in _SECRET_PATTERNS:
-        text = pattern.sub(lambda m: (m.group(1) if m.groups() else "") + "***", text)
-    return text
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -2658,6 +2657,10 @@ class MeridianLauncher(tk.Tk):
             elif kind == "restart_launcher":
                 self.destroy()
                 return
+            elif kind == "game_ready":
+                self._log("Главное меню Minecraft готово. Закрываю лаунчер; игра продолжает работать.")
+                self.destroy()
+                return
             elif kind == "busy":
                 self._set_busy(bool(value))
             elif kind == "play_text":
@@ -2746,8 +2749,8 @@ class MeridianLauncher(tk.Tk):
             pid = parts[1] if len(parts) > 1 else ""
             self._emit("progress_indeterminate", False)
             self._emit("progress", 100)
-            self._emit("status", "Minecraft запущен")
-            self._emit("progress_text", f"Игра запущена{f' • PID {pid}' if pid else ''}")
+            self._emit("status", "Minecraft загружается…")
+            self._emit("progress_text", f"Ожидаю готовности главного меню{f' • PID {pid}' if pid else ''}")
         elif code == "terminated":
             self._emit("progress_indeterminate", False)
             self._emit("progress", 100)
@@ -2755,7 +2758,7 @@ class MeridianLauncher(tk.Tk):
         elif code.startswith("error_"):
             self._emit("progress_indeterminate", False)
             self._emit("status", "Ошибка запуска")
-            self._emit("progress_text", code)
+            self._emit("progress_text", "Закройте окно Minecraft, чтобы повторить запуск." if code == "error_session" else code)
             self._emit("log", "PortableMC: " + " | ".join(parts))
 
     def _open_auth_dialog(self) -> None:
@@ -3036,7 +3039,7 @@ class MeridianLauncher(tk.Tk):
 
     def _initial_check(self) -> None:
         self._sync_auth_fields()
-        self._log("Новое в 1.1: пофайловые обновления сборки и самообновление лаунчера.")
+        self._log("Новое в 2.0: закрытие после готовности Minecraft, докачка файлов и обновление всего лаунчера.")
         if INSTALL_JOURNAL.exists():
             self._log("Предыдущая установка была прервана — при запуске сборка будет восстановлена.")
         self._start_thread(lambda: self._check_update_only())
@@ -3220,10 +3223,11 @@ class MeridianLauncher(tk.Tk):
             self._emit("progress", 0)
             self._emit("progress_indeterminate", True)
             self._emit("progress_text", "Проверяю Minecraft, NeoForge, Java и библиотеки…")
-            code = run_pmc(args, LAUNCH_LOG, on_event=self._handle_pmc_event)
-            if code != 0:
-                raise RuntimeError(f"Minecraft завершился с ошибкой (код {code}). Нажмите «ЖУРНАЛ» — там причина. "
-                                   "Если ошибка повторяется, нажмите «ПРОВЕРИТЬ / ПОЧИНИТЬ ФАЙЛЫ».")
+            process, session_folder = game_session.start(build_pmc_command(args), APP_ROOT, LAUNCH_LOG,
+                                                        INSTANCE_DIR / 'logs' / 'latest.log')
+            if game_session.wait_for_start(process, session_folder, self._handle_pmc_event):
+                self._emit("game_ready")
+                return
             self._emit("status", "Minecraft закрыт")
             self._emit("detail", "Можно запускать снова")
             self._emit("log", "Игровой процесс завершён.")
@@ -3550,14 +3554,15 @@ class MeridianLauncher(tk.Tk):
             if version_tuple(str(info.get("version", ""))) <= version_tuple(APP_VERSION):
                 self._emit("status", "Лаунчер уже обновлён")
                 return
-            url, digest = str(info.get("url", "")), str(info.get("sha256", ""))
+            bundle = info.get("bundle") or {}
+            url, digest = str(bundle.get("url", "")), str(bundle.get("sha256", ""))
             if not url.startswith("https://") or not re.fullmatch(r"[0-9a-f]{64}", digest):
-                raise RuntimeError("Некорректные данные обновления лаунчера.")
+                raise RuntimeError("Нет проверенного комплекта обновления. Скачайте установщик со страницы проекта.")
             self._emit("status", "Скачиваю новую версию лаунчера…")
-            staged = CACHE_DIR / ("launcher-" + digest + ".exe")
-            download_file(url, staged, int(info["size"]),
+            staged = CACHE_DIR / ("launcher-" + digest + ".zip")
+            download_file(url, staged, int(bundle["size"]),
                           lambda n,t: self._emit("progress", n/max(t,1)*100))
-            self_update.prepare(staged, digest)
+            self_update.prepare_bundle(staged, digest)
             self._emit("restart_launcher", None)
         self._start_thread(job)
 
