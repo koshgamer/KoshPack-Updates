@@ -856,9 +856,15 @@
       "size": 329492,
       "sha256": "c333a8f91acc5b4db6658e1de40b5039689f0dd5a46588ebae32b638705637eb",
       "version": "1.4.0"
+    },
+    {
+      "path": "mods/meridian_savanna_people-dev.jar",
+      "url": "https://raw.githubusercontent.com/koshgamer/KoshPack-Updates/main/launcher/dev/meridian_savanna_people-dev.jar",
+      "size": 197238,
+      "sha256": "2a0b11a9ac50194c739cf5889b20e35ffeadbfa0175149bd093490bc128752c4"
     }
   ],
-  "hotfixRevision": 103,
+  "hotfixRevision": 104,
   "removedModIds": [
     "create_enchantment_industry",
     "enchantmentlibrary"
@@ -870,5 +876,5 @@
     "size": 19716404,
     "sha256": "1bed73e296e2977e1ae7a6eef82927182cadeb6a1af801096f0b0f4c76da4846"
   },
-  "note": "DEV 102: alpha3 events and adaptive UI preserved; strict gear/enchantment policy, repaired downstream crafting dependencies and processing recipes. Remove Create Enchantment Industry and Enchantment Library only in DEV; keep Dragons Plus for Central Kitchen. DEV 103: Piggyback 1.1.1 and Faewulf Lib 1.4.0; Forge UI alpha19 limits player mounting to one free pair, preventing chains and towers."
+  "note": "DEV 102: alpha3 events and adaptive UI preserved; strict gear/enchantment policy, repaired downstream crafting dependencies and processing recipes. Remove Create Enchantment Industry and Enchantment Library only in DEV; keep Dragons Plus for Central Kitchen. DEV 103: Piggyback 1.1.1 and Faewulf Lib 1.4.0; Forge UI alpha19 limits player mounting to one free pair, preventing chains and towers. DEV 104: Project Meridian: Savanna People 0.1.0-alpha1 (savanna endermen communities, in-world barter)."
 }
