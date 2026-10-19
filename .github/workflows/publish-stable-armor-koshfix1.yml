@@ -1,0 +1,81 @@
+name: Publish Stable pack with fixed armor (koshfix1)
+
+# Swaps only mods/koshpack-armor-specialties-alpha-0.120.jar for the fixed -koshfix1 JAR in the public
+# Stable client pack, publishes a new immutable pack release with its per-file index, verifies a live
+# HTTP range, and only then points launcher/manifest.json at it. Existing players fetch just the JAR.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/armor-koshfix1-stable-trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: meridian-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BASE_TAG: pack-stable-r2j-menu2-mobfarming1-zoom1
+      BASE_ZIP: Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-client.zip
+      BASE_INDEX: files-6c16d22fcb58fa99.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Launcher incremental tests
+        run: python launcher/tests/test_incremental.py
+
+      - name: Download current Stable pack and index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .out/base
+          gh release download "$BASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$BASE_ZIP" --pattern "$BASE_INDEX" --dir .out/base
+
+      - name: Patch pack, build index and manifest
+        run: |
+          set -euo pipefail
+          python tools/pack/patch_stable_armor.py patch launcher/manifest.json \
+            ".out/base/$BASE_ZIP" ".out/base/$BASE_INDEX" \
+            files/koshpack-armor-specialties-alpha-0.120-koshfix1.jar .out/new
+          echo "TAG=$(cat .out/new/tag.txt)" >> "$GITHUB_ENV"
+
+      - name: Publish new immutable pack release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; published pack bytes must not be overwritten." >&2
+            exit 1
+          fi
+          mapfile -t ASSETS < .out/new/assets.txt
+          gh release create "$TAG" "${ASSETS[@]}" --repo "$GITHUB_REPOSITORY" \
+            --title "Project Meridian Stable r2j — armor fix (koshfix1)" \
+            --notes "Stable client pack: KoshPack Armor Specialties alpha-0.120 replaced by the koshfix1 build (UV overflow, Miner texture seams, floating parts). All other files are unchanged; launchers update only this JAR." \
+            --latest=false
+
+      - name: Verify live per-file download
+        run: python tools/pack/patch_stable_armor.py verify .out/new
+
+      - name: Publish manifest only after the pack is live
+        run: |
+          set -euo pipefail
+          cp .out/new/manifest.json launcher/manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "stable: armor koshfix1 in public pack [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
