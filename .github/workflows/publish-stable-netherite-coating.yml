@@ -1,0 +1,85 @@
+name: Publish Stable pack with Netherite Coating
+
+# Adds only mods/meridian_netherite_coating-0.1.0-alpha2.jar to the public Stable client pack, publishes a new
+# immutable pack release with its per-file index, verifies a live HTTP range, and only then points
+# launcher/manifest.json at it. Existing players fetch just this JAR. The server needs the same JAR in mods/.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/netherite-coating-stable-trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: meridian-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BASE_PACK: stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1
+      SUFFIX: coating1
+      NEW_JAR: files/meridian_netherite_coating-0.1.0-alpha2.jar
+      NEW_SHA: c6a84baef52f846fcd01f9b65d2c9851c30db80b7214f403448dc62060f11194
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Launcher incremental tests
+        run: python launcher/tests/test_incremental.py
+
+      - name: Download current Stable pack and index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_ZIP=$(python -c "import json;print(json.load(open('launcher/manifest.json'))['package']['file'])")
+          BASE_INDEX=$(python -c "import json;print(json.load(open('launcher/manifest.json'))['fileIndex']['url'].rsplit('/',1)[1])")
+          echo "BASE_ZIP=$BASE_ZIP" >> "$GITHUB_ENV"
+          echo "BASE_INDEX=$BASE_INDEX" >> "$GITHUB_ENV"
+          mkdir -p .out/base
+          gh release download "pack-$BASE_PACK" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$BASE_ZIP" --pattern "$BASE_INDEX" --dir .out/base
+
+      - name: Patch pack, build index and manifest
+        run: |
+          set -euo pipefail
+          python tools/pack/add_stable_mod.py patch launcher/manifest.json \
+            ".out/base/$BASE_ZIP" ".out/base/$BASE_INDEX" "$NEW_JAR" "$NEW_SHA" "$BASE_PACK" "$SUFFIX" .out/new
+          echo "TAG=$(cat .out/new/tag.txt)" >> "$GITHUB_ENV"
+
+      - name: Publish new immutable pack release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; published pack bytes must not be overwritten." >&2
+            exit 1
+          fi
+          mapfile -t ASSETS < .out/new/assets.txt
+          gh release create "$TAG" "${ASSETS[@]}" --repo "$GITHUB_REPOSITORY" \
+            --title "Project Meridian Stable r2j — Netherite Coating" \
+            --notes "Stable client pack: adds Project Meridian: Netherite Coating Casting 0.1.0-alpha2 (pour 90 mB of molten netherite over a diamond Silent Gear item on a casting table to give it a netherite coating). All other files are unchanged; launchers fetch only this JAR. Servers need the same JAR in mods/." \
+            --latest=false
+
+      - name: Verify live per-file download
+        run: python tools/pack/add_stable_mod.py verify .out/new
+
+      - name: Publish manifest only after the pack is live
+        run: |
+          set -euo pipefail
+          cp .out/new/manifest.json launcher/manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "stable: Netherite Coating in public pack [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
