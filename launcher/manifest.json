@@ -3,14 +3,14 @@
   "channel": "current",
   "launcherMinVersion": "1.0.2",
   "pack": "KoshPack",
-  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1",
+  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-client.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-client.zip",
-    "sha256": "761d3450f095e8a8060091ee8b1d8e3c0878dc36c34b3065ab731c54221ae46d",
-    "size": 780906096
+    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-client.zip",
+    "sha256": "6f6b4a913fb3875d6c98c2369132c4bd23480e9f65fafdf219e310ba4d884f80",
+    "size": 780913850
   },
   "launcher": {
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-2.0.1/Project-Meridian-Launcher.exe",
@@ -26,8 +26,8 @@
     }
   },
   "fileIndex": {
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1/files-761d3450f095e8a8.json",
-    "sha256": "498914692e6a8cb1f58e7687c383975b2f5221dbda1ee22c711a1276016780d0",
-    "size": 295313
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1/files-6f6b4a913fb3875d.json",
+    "sha256": "de1a65d5f4e654cc86a45fba11b10d10309cc5f2a57dfe5ef99ebb759e74f9e2",
+    "size": 295523
   }
 }
