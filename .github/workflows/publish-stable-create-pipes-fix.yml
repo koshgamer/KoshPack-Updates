@@ -1,0 +1,88 @@
+name: Publish Stable pack with fixed Create Pipes (pipesfix1)
+
+# Swaps only mods/create_pipes-0.1.2.jar for the fixed -koshfix1 JAR (pipe networks no longer go stale after
+# chunks unload/reload) in the public Stable client pack, publishes a new immutable pack release with its
+# per-file index, verifies a live HTTP range, and only then points launcher/manifest.json at it. Existing
+# players fetch just this JAR. The server needs the same JAR in mods/ instead of the old one.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/create-pipes-fix-stable-trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: meridian-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BASE_PACK: stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1
+      SUFFIX: pipesfix1
+      OLD_PATH: mods/create_pipes-0.1.2.jar
+      OLD_SHA: c71520642d978fe3008cb3ddd492e749a8bc7a5f3119b5ce1a3cc2e5fd80f305
+      NEW_JAR: files/create_pipes-0.1.2-koshfix1.jar
+      NEW_SHA: 2139654be7f82d144f88e6d891b0e2a4d654ac94c1e33cafdbbf5dca13a93edd
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Launcher incremental tests
+        run: python launcher/tests/test_incremental.py
+
+      - name: Download current Stable pack and index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_ZIP=$(python -c "import json;print(json.load(open('launcher/manifest.json'))['package']['file'])")
+          BASE_INDEX=$(python -c "import json;print(json.load(open('launcher/manifest.json'))['fileIndex']['url'].rsplit('/',1)[1])")
+          echo "BASE_ZIP=$BASE_ZIP" >> "$GITHUB_ENV"
+          echo "BASE_INDEX=$BASE_INDEX" >> "$GITHUB_ENV"
+          mkdir -p .out/base
+          gh release download "pack-$BASE_PACK" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$BASE_ZIP" --pattern "$BASE_INDEX" --dir .out/base
+
+      - name: Patch pack, build index and manifest
+        run: |
+          set -euo pipefail
+          python tools/pack/add_stable_mod.py patch launcher/manifest.json \
+            ".out/base/$BASE_ZIP" ".out/base/$BASE_INDEX" "$NEW_JAR" "$NEW_SHA" "$BASE_PACK" "$SUFFIX" .out/new
+          echo "TAG=$(cat .out/new/tag.txt)" >> "$GITHUB_ENV"
+
+      - name: Publish new immutable pack release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; published pack bytes must not be overwritten." >&2
+            exit 1
+          fi
+          mapfile -t ASSETS < .out/new/assets.txt
+          gh release create "$TAG" "${ASSETS[@]}" --repo "$GITHUB_REPOSITORY" \
+            --title "Project Meridian Stable r2j — Create Pipes fix" \
+            --notes "Stable client pack: replaces Create: Pipes 0.1.2 with create_pipes-0.1.2-koshfix1.jar. Steam item pipes no longer stop after leaving and rejoining (the cached pipe network is dropped when chunks load/unload and refreshed every 2 seconds). All other files are unchanged; launchers fetch only this JAR. Servers need the same JAR in mods/ instead of create_pipes-0.1.2.jar." \
+            --latest=false
+
+      - name: Verify live per-file download
+        run: python tools/pack/replace_stable_mod.py verify .out/new
+
+      - name: Publish manifest only after the pack is live
+        run: |
+          set -euo pipefail
+          cp .out/new/manifest.json launcher/manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "stable: Create Pipes fix in public pack [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
