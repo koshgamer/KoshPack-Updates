@@ -3,14 +3,14 @@
   "channel": "current",
   "launcherMinVersion": "1.0.2",
   "pack": "KoshPack",
-  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1",
+  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-client.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-client.zip",
-    "sha256": "6f6b4a913fb3875d6c98c2369132c4bd23480e9f65fafdf219e310ba4d884f80",
-    "size": 780913850
+    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-client.zip",
+    "sha256": "c62113d1ea7b2b741569ca17c6be731d2421865b181341879efb4b036bda735c",
+    "size": 780915132
   },
   "launcher": {
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-2.0.1/Project-Meridian-Launcher.exe",
@@ -26,8 +26,8 @@
     }
   },
   "fileIndex": {
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1/files-6f6b4a913fb3875d.json",
-    "sha256": "de1a65d5f4e654cc86a45fba11b10d10309cc5f2a57dfe5ef99ebb759e74f9e2",
-    "size": 295523
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1/files-c62113d1ea7b2b74.json",
+    "sha256": "afdc0e40a853478b620af54ea55d44ca68fd3df963b99c6c844cae0cf7277ee2",
+    "size": 295553
   }
 }
