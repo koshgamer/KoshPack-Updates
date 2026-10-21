@@ -53,8 +53,9 @@ jobs:
       - name: Patch pack, build index and manifest
         run: |
           set -euo pipefail
-          python tools/pack/add_stable_mod.py patch launcher/manifest.json \
-            ".out/base/$BASE_ZIP" ".out/base/$BASE_INDEX" "$NEW_JAR" "$NEW_SHA" "$BASE_PACK" "$SUFFIX" .out/new
+          python tools/pack/replace_stable_mod.py patch launcher/manifest.json \
+            ".out/base/$BASE_ZIP" ".out/base/$BASE_INDEX" "$OLD_PATH" "$OLD_SHA" "$NEW_JAR" "$NEW_SHA" \
+            "$BASE_PACK" "$SUFFIX" .out/new
           echo "TAG=$(cat .out/new/tag.txt)" >> "$GITHUB_ENV"
 
       - name: Publish new immutable pack release
