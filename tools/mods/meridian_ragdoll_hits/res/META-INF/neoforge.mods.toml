@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="meridian_ragdoll_hits"
+version="0.1.1"
+displayName="Project Meridian: Ragdoll Hits"
+authors="KoshGamer"
+description='''Lets players hit ragdolled players and mobs (Sable: Ragdolls): a melee hit on a ragdoll body part becomes a real attack on its owner.'''
+
+[[dependencies.meridian_ragdoll_hits]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.200,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.meridian_ragdoll_hits]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.meridian_ragdoll_hits]]
+modId="sable_player_ragdoll"
+type="required"
+versionRange="[0.7.5,0.8)"
+ordering="AFTER"
+side="BOTH"
