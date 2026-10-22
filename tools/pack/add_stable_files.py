@@ -1,12 +1,13 @@
-"""Add new non-mod files (configs, kubejs data, ...) to the public Stable client pack and build its per-file index.
+"""Add new (or, with `replace`, update existing) non-mod files (configs, kubejs data, ...) in the public Stable
+client pack and build its per-file index.
 
 Every existing ZIP entry is copied unchanged; every file under <files-dir> is added at the same relative path
 inside the pack (e.g. files/steel-casting1/kubejs/data/x.json -> kubejs/data/x.json). None of them may exist in
-the pack yet. A new immutable release (pack-<version>) gets the ZIP and the index, and the public manifest is
+the pack yet; in `replace` mode every one of them must already exist and only those entries change. A new immutable release (pack-<version>) gets the ZIP and the index, and the public manifest is
 updated with packVersion + package + fileIndex together, as required by docs/launcher-updates.md.
 Existing players then fetch only the new files.
 
-  patch    <manifest.json> <current.zip> <current-index.json> <files-dir> <base-pack> <suffix> <out-dir>
+  patch    <manifest.json> <current.zip> <current-index.json> <files-dir> <base-pack> <suffix> <out-dir> [replace]
   verify   <out-dir>      (after upload: every new file must be fetchable through an exact HTTP range)
 """
 import hashlib
@@ -23,7 +24,8 @@ from incremental import build_index, fetch_range, sha256, validate_index  # noqa
 REPO_DOWNLOADS = 'https://github.com/koshgamer/KoshPack-Updates/releases/download/'
 
 
-def patch(manifest_path, archive, current_index_path, files_dir, base_pack, suffix, out, downloads=REPO_DOWNLOADS):
+def patch(manifest_path, archive, current_index_path, files_dir, base_pack, suffix, out, downloads=REPO_DOWNLOADS,
+          replace=False):
     manifest = json.loads(Path(manifest_path).read_text('utf-8'))
     assert manifest['packVersion'] == base_pack, f"Public pack is {manifest['packVersion']}, expected {base_pack}; refusing."
     assert archive.stat().st_size == manifest['package']['size'], 'Base pack size mismatch'
@@ -45,9 +47,15 @@ def patch(manifest_path, archive, current_index_path, files_dir, base_pack, suff
         names = [i.filename for i in infos if not i.is_dir()]
         prefix = next((p for p in ('.minecraft/', 'minecraft/') if all(n.startswith(p) for n in names)), '')
         for rel in new_files:
-            assert prefix + rel not in names, f'{prefix + rel} is already in the pack'
+            if replace:
+                assert prefix + rel in names, f'{prefix + rel} is not in the pack; nothing to replace'
+            else:
+                assert prefix + rel not in names, f'{prefix + rel} is already in the pack'
+        replaced = {prefix + rel for rel in new_files} if replace else set()
         with zipfile.ZipFile(package, 'w', allowZip64=True) as dst:
             for info in infos:
+                if info.filename in replaced:
+                    continue
                 if info.is_dir():
                     dst.writestr(info, b'')
                     continue
@@ -67,7 +75,10 @@ def patch(manifest_path, archive, current_index_path, files_dir, base_pack, suff
     removed = sorted(set(before) - set(after))
     added = sorted(set(after) - set(before))
     changed = sorted(p for p in set(before) & set(after) if before[p] != after[p])
-    assert removed == [] and added == sorted(new_files) and not changed, (removed, added, changed)
+    if replace:
+        assert removed == [] and added == [] and changed == sorted(new_files), (removed, added, changed)
+    else:
+        assert removed == [] and added == sorted(new_files) and not changed, (removed, added, changed)
     expected = {rel: sha256(path) for rel, path in new_files.items()}
     assert all(after[rel] == sha for rel, sha in expected.items())
 
@@ -82,7 +93,8 @@ def patch(manifest_path, archive, current_index_path, files_dir, base_pack, suff
     (out / 'tag.txt').write_text(tag)
     (out / 'assets.txt').write_text(f'{package}\n{index_path}\n')
     (out / 'added.json').write_text(json.dumps(expected, indent=2))
-    print(f'{version}: {len(index["files"])} files; added {added}; unchanged {len(before)}; '
+    print(f'{version}: {len(index["files"])} files; added {added}; replaced {changed}; '
+          f'unchanged {len(before) - len(changed)}; '
           f'package {package.stat().st_size} bytes, sha256 {index["packageSha256"]}')
     return manifest, index
 
@@ -105,7 +117,7 @@ def verify(out):
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'patch':
         patch(sys.argv[2], Path(sys.argv[3]), Path(sys.argv[4]), Path(sys.argv[5]), sys.argv[6], sys.argv[7],
-              Path(sys.argv[8]))
+              Path(sys.argv[8]), replace=len(sys.argv) > 9 and sys.argv[9] == 'replace')
     elif len(sys.argv) > 1 and sys.argv[1] == 'verify':
         verify(Path(sys.argv[2]))
     else:

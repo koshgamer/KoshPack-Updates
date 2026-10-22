@@ -1,0 +1,85 @@
+name: Publish Stable pack with tier-aware armor trait tooltips (armortips1)
+
+# Replaces only kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js in the public Stable client pack:
+# profession armor tooltips listed every tier's bonuses at once; now they show the tier actually worn (or
+# "not active: worn N of 4"). Publishes a new immutable pack release with its per-file index, verifies live HTTP
+# ranges, and only then points launcher/manifest.json at it. Client-only script: servers need no change.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/armor-tier-tooltips-stable-trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: meridian-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BASE_PACK: stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1
+      SUFFIX: armortips1
+      FILES_DIR: files/armor-tier-tooltips1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Launcher incremental tests
+        run: python launcher/tests/test_incremental.py
+
+      - name: Download current Stable pack and index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_ZIP=$(python -c "import json;print(json.load(open('launcher/manifest.json'))['package']['file'])")
+          BASE_INDEX=$(python -c "import json;print(json.load(open('launcher/manifest.json'))['fileIndex']['url'].rsplit('/',1)[1])")
+          echo "BASE_ZIP=$BASE_ZIP" >> "$GITHUB_ENV"
+          echo "BASE_INDEX=$BASE_INDEX" >> "$GITHUB_ENV"
+          mkdir -p .out/base
+          gh release download "pack-$BASE_PACK" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$BASE_ZIP" --pattern "$BASE_INDEX" --dir .out/base
+
+      - name: Patch pack, build index and manifest
+        run: |
+          set -euo pipefail
+          python tools/pack/add_stable_files.py patch launcher/manifest.json \
+            ".out/base/$BASE_ZIP" ".out/base/$BASE_INDEX" "$FILES_DIR" "$BASE_PACK" "$SUFFIX" .out/new replace
+          echo "TAG=$(cat .out/new/tag.txt)" >> "$GITHUB_ENV"
+
+      - name: Publish new immutable pack release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; published pack bytes must not be overwritten." >&2
+            exit 1
+          fi
+          mapfile -t ASSETS < .out/new/assets.txt
+          gh release create "$TAG" "${ASSETS[@]}" --repo "$GITHUB_REPOSITORY" \
+            --title "Project Meridian Stable r2j — Armor tier tooltips" \
+            --notes "Stable client pack: profession armor trait tooltips now show the real bonuses/drawbacks of the tier the player actually wears (or \"not active: worn N of 4\" with the hovered piece tier). Only kubejs/client_scripts/koshpack_profession_armor_trait_tooltips.js changes; launchers fetch only that file. Client-only: servers need no change." \
+            --latest=false
+
+      - name: Verify live per-file download
+        run: python tools/pack/add_stable_files.py verify .out/new
+
+      - name: Publish manifest only after the pack is live
+        run: |
+          set -euo pipefail
+          cp .out/new/manifest.json launcher/manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add launcher/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "stable: armor tier tooltips in public pack [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
