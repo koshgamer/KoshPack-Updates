@@ -3,14 +3,14 @@
   "channel": "current",
   "launcherMinVersion": "1.0.2",
   "pack": "KoshPack",
-  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1",
+  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-armortips1",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-client.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-client.zip",
-    "sha256": "d342731f366f7e6c83e68d1c131e272137d2f7b151c3806d8f27b66cefe695d1",
-    "size": 780920764
+    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-armortips1-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-armortips1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-armortips1-client.zip",
+    "sha256": "b93d9a6e057b60ff5e943e0ffa32670e67b8d857681ac12157c480e31b8bcc33",
+    "size": 780922029
   },
   "launcher": {
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-2.0.1/Project-Meridian-Launcher.exe",
@@ -26,8 +26,8 @@
     }
   },
   "fileIndex": {
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1/files-d342731f366f7e6c.json",
-    "sha256": "402d000a05a9fb691143a5e0456d3acf21e2f5d0cac6843f294a74f6d5264742",
-    "size": 296558
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-armortips1/files-b93d9a6e057b60ff.json",
+    "sha256": "6baf04f81277d53d5b201eda21f9c1157dd0253c24b4392ad8ee8d013a416b97",
+    "size": 296583
   }
 }
