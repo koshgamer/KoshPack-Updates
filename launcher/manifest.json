@@ -3,14 +3,14 @@
   "channel": "current",
   "launcherMinVersion": "1.0.2",
   "pack": "KoshPack",
-  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1",
+  "packVersion": "stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1",
   "minecraft": "1.21.1",
   "neoforge": "21.1.249",
   "package": {
-    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-client.zip",
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-client.zip",
-    "sha256": "7b4c44bd32763a03c6243d320288bd32df9b14b96fc52dc82c509e2bbe4bcfbc",
-    "size": 780916484
+    "file": "Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-client.zip",
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1/Project-Meridian-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1-client.zip",
+    "sha256": "d342731f366f7e6c83e68d1c131e272137d2f7b151c3806d8f27b66cefe695d1",
+    "size": 780920764
   },
   "launcher": {
     "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/launcher-2.0.1/Project-Meridian-Launcher.exe",
@@ -26,8 +26,8 @@
     }
   },
   "fileIndex": {
-    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1/files-7b4c44bd32763a03.json",
-    "sha256": "45998ad1ea20495e874855d26eee52bbb8e32fa831352d053666ec0d1d82d97f",
-    "size": 296352
+    "url": "https://github.com/koshgamer/KoshPack-Updates/releases/download/pack-stable-r2j-menu2-mobfarming1-zoom1-armorfix1-savanna1-coating1-pipesfix1-steelcast1-ragdollhits1/files-d342731f366f7e6c.json",
+    "sha256": "402d000a05a9fb691143a5e0456d3acf21e2f5d0cac6843f294a74f6d5264742",
+    "size": 296558
   }
 }
